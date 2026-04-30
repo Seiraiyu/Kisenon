@@ -1,0 +1,17 @@
+{
+  "name": "kisenon-example-nodejs-pg",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Minimal Node.js + node-postgres example talking to a Kisenon endpoint over the public proxy.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "pg": "^8.13.1"
+  }
+}

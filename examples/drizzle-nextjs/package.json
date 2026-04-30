@@ -1,0 +1,31 @@
+{
+  "name": "kisenon-example-drizzle-nextjs",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Next.js App Router + Drizzle ORM talking to a Kisenon endpoint.",
+  "license": "MIT",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "drizzle:push": "drizzle-kit push"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "drizzle-orm": "^0.36.4",
+    "next": "^15.0.3",
+    "pg": "^8.13.1",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@types/pg": "^8.11.10",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "drizzle-kit": "^0.28.1",
+    "typescript": "^5.7.2"
+  }
+}
