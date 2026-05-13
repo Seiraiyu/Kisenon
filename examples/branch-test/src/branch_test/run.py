@@ -13,6 +13,7 @@ from branch_test.kisenon import (
     KeonNotFound,
     create_branch,
     delete_branch,
+    find_branch_id,
     get_branch_url,
 )
 from branch_test.output import tail_truncate
@@ -23,6 +24,49 @@ from branch_test.schema_diff import (
 )
 
 _TIMEOUT_EXIT_CODE = 124  # GNU `timeout` convention
+
+# Newly-created Kisenon branches need a few seconds before their compute
+# endpoint becomes routable. Without this wait, the migrate step races the
+# endpoint and fails with "endpoint not found". 30s is generous; typical
+# readiness is under 5s.
+_ENDPOINT_READY_MAX_WAIT_S = 30
+_ENDPOINT_READY_POLL_INTERVAL_S = 1.0
+
+
+def wait_for_endpoint_ready(
+    branch_url: str,
+    *,
+    max_wait_s: int = _ENDPOINT_READY_MAX_WAIT_S,
+    poll_interval_s: float = _ENDPOINT_READY_POLL_INTERVAL_S,
+) -> bool:
+    """Poll `psql -c "SELECT 1"` against the branch URL until it succeeds.
+
+    Returns True if the endpoint became ready in time, False otherwise.
+    If psql isn't available, falls back to a fixed sleep so the rest of
+    the pipeline still gets a fighting chance.
+    """
+    deadline = time.monotonic() + max_wait_s
+    psql_missing = False
+    while time.monotonic() < deadline:
+        try:
+            proc = subprocess.run(
+                ["psql", branch_url, "-c", "SELECT 1", "-At"],
+                capture_output=True,
+                text=True,
+                timeout=5,
+            )
+            if proc.returncode == 0:
+                return True
+        except FileNotFoundError:
+            psql_missing = True
+            break
+        except subprocess.TimeoutExpired:
+            pass
+        time.sleep(poll_interval_s)
+    if psql_missing:
+        time.sleep(min(5.0, float(max_wait_s)))
+        return True
+    return False
 
 
 @dataclass(slots=True)
@@ -122,14 +166,45 @@ def execute_run(
     pg_dump_skipped_reason: str | None = None
 
     try:
-        branch = create_branch(project=project, name=branch_name, parent="main")
-        branch_url = get_branch_url(project=project, branch=branch.name)
+        parent_id = find_branch_id(project=project, name="main")
     except (KeonNotFound, KeonError) as e:
-        # Couldn't even create the branch; surface error and bail.
         result = RunResult(
             status="red",
             branch={"name": branch_name, "url": None, "created_in_ms": 0,
                     "deleted": False, "delete_skipped_reason": str(e)},
+        )
+        return result, 1
+
+    try:
+        branch = create_branch(project=project, name=branch_name, parent_id=parent_id)
+    except (KeonNotFound, KeonError) as e:
+        result = RunResult(
+            status="red",
+            branch={"name": branch_name, "url": None, "created_in_ms": 0,
+                    "deleted": False, "delete_skipped_reason": str(e)},
+        )
+        return result, 1
+
+    # Branch exists from here on; any failure must attempt cleanup so we
+    # don't leave orphans on the project.
+    try:
+        branch_url = get_branch_url(project=project, branch=branch.name)
+        # Wait for the compute endpoint to actually accept connections
+        # before we hand the URL off to the user's migrate command.
+        wait_for_endpoint_ready(branch_url)
+    except KeonError as e:
+        cleanup_note = ""
+        try:
+            delete_branch(branch_id=branch.id)
+            cleanup_note = "; branch cleaned up"
+        except KeonError as ce:
+            cleanup_note = f"; cleanup also failed: {ce}"
+        result = RunResult(
+            status="red",
+            branch={"name": branch.name, "url": None,
+                    "created_in_ms": branch.created_in_ms,
+                    "deleted": "cleaned up" in cleanup_note,
+                    "delete_skipped_reason": f"{e}{cleanup_note}"},
         )
         return result, 1
 
@@ -211,7 +286,7 @@ def execute_run(
     delete_skipped_reason: str | None = None
     if should_delete and branch is not None:
         try:
-            delete_branch(project=project, branch=branch.name)
+            delete_branch(branch_id=branch.id)
             deleted = True
         except KeonError as e:
             delete_skipped_reason = f"keon delete failed: {e}"
