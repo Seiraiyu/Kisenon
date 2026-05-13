@@ -10,7 +10,7 @@ This repository is the **public portal** for Kisenon. It tracks issues, hosts op
 
 Kisenon is in invite-only alpha. Request access:
 
-- Email **hello@kisenon.com** with the subject `Alpha access`
+- Email **alpha@kisenon.com** with the subject `Alpha access`
 - Or click the **Request alpha access** pill on [kisenon.com](https://kisenon.com)
 
 Once you have an invite, sign in at [kisenon.com](https://kisenon.com) → create a project → grab the connection string → connect with any Postgres 17 client.
@@ -53,7 +53,7 @@ For security issues, please email **security@kisenon.com** instead of opening a 
 
 - Service status: status.kisenon.com (coming soon)
 - Public docs: [docs.kisenon.com](https://kisenon.com/docs)
-- Email: **hello@kisenon.com**
+- Email: **support@kisenon.com**
 
 ## Data usage and privacy
 
