@@ -22,7 +22,6 @@ from branch_test.schema_diff import (
     compute_diff,
 )
 
-
 _TIMEOUT_EXIT_CODE = 124  # GNU `timeout` convention
 
 

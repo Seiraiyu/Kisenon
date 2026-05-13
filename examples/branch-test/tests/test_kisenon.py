@@ -13,7 +13,9 @@ from branch_test.kisenon import (
 )
 
 
-def _fake_completed(stdout: str, returncode: int = 0, stderr: str = "") -> subprocess.CompletedProcess:
+def _fake_completed(
+    stdout: str, returncode: int = 0, stderr: str = ""
+) -> subprocess.CompletedProcess:
     return subprocess.CompletedProcess(
         args=["keon"], returncode=returncode, stdout=stdout, stderr=stderr
     )

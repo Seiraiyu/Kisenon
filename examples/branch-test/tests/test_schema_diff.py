@@ -11,7 +11,9 @@ from branch_test.schema_diff import (
 
 
 def _completed(stdout: str, returncode: int = 0) -> subprocess.CompletedProcess:
-    return subprocess.CompletedProcess(args=["pg_dump"], returncode=returncode, stdout=stdout, stderr="")
+    return subprocess.CompletedProcess(
+        args=["pg_dump"], returncode=returncode, stdout=stdout, stderr=""
+    )
 
 
 def test_strip_noise_removes_timestamp_comments():
