@@ -25,49 +25,6 @@ from branch_test.schema_diff import (
 
 _TIMEOUT_EXIT_CODE = 124  # GNU `timeout` convention
 
-# Newly-created Kisenon branches need a few seconds before their compute
-# endpoint becomes routable. Without this wait, the migrate step races the
-# endpoint and fails with "endpoint not found". 30s is generous; typical
-# readiness is under 5s.
-_ENDPOINT_READY_MAX_WAIT_S = 30
-_ENDPOINT_READY_POLL_INTERVAL_S = 1.0
-
-
-def wait_for_endpoint_ready(
-    branch_url: str,
-    *,
-    max_wait_s: int = _ENDPOINT_READY_MAX_WAIT_S,
-    poll_interval_s: float = _ENDPOINT_READY_POLL_INTERVAL_S,
-) -> bool:
-    """Poll `psql -c "SELECT 1"` against the branch URL until it succeeds.
-
-    Returns True if the endpoint became ready in time, False otherwise.
-    If psql isn't available, falls back to a fixed sleep so the rest of
-    the pipeline still gets a fighting chance.
-    """
-    deadline = time.monotonic() + max_wait_s
-    psql_missing = False
-    while time.monotonic() < deadline:
-        try:
-            proc = subprocess.run(
-                ["psql", branch_url, "-c", "SELECT 1", "-At"],
-                capture_output=True,
-                text=True,
-                timeout=5,
-            )
-            if proc.returncode == 0:
-                return True
-        except FileNotFoundError:
-            psql_missing = True
-            break
-        except subprocess.TimeoutExpired:
-            pass
-        time.sleep(poll_interval_s)
-    if psql_missing:
-        time.sleep(min(5.0, float(max_wait_s)))
-        return True
-    return False
-
 
 @dataclass(slots=True)
 class StepResult:
@@ -189,9 +146,6 @@ def execute_run(
     # don't leave orphans on the project.
     try:
         branch_url = get_branch_url(project=project, branch=branch.name)
-        # Wait for the compute endpoint to actually accept connections
-        # before we hand the URL off to the user's migrate command.
-        wait_for_endpoint_ready(branch_url)
     except KeonError as e:
         cleanup_note = ""
         try:
