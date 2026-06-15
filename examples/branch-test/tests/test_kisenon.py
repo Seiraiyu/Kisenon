@@ -28,7 +28,10 @@ def test_create_branch_returns_branch_with_name(monkeypatch):
 
     def fake_run(args, **kw):
         calls.append(args)
-        return _fake_completed(json.dumps({"name": "auto-name", "id": "br_42"}))
+        return _fake_completed(json.dumps({
+            "branch": {"name": "auto-name", "id": "br_42"},
+            "operations": [],
+        }))
 
     monkeypatch.setattr(subprocess, "run", fake_run)
     branch = create_branch(project="proj_1", name="auto-name", parent_id="parent_id_42")
@@ -43,26 +46,28 @@ def test_create_branch_returns_branch_with_name(monkeypatch):
     assert "parent_id_42" in calls[0]
 
 
-def test_get_branch_url_parses_url_field(monkeypatch):
+def test_get_branch_url_parses_connection_string(monkeypatch):
     def fake_run(args, **kw):
-        return _fake_completed(json.dumps({"url": "postgresql://x:y@h/main?sslmode=require"}))
+        return _fake_completed(json.dumps({
+            "connection_string": "postgresql://x:y@h/main?sslmode=require",
+            "connection_uri":    "postgresql://x:y@h/main?sslmode=require",
+        }))
 
     monkeypatch.setattr(subprocess, "run", fake_run)
     url = get_branch_url(project="proj_1", branch="auto-name")
     assert url.startswith("postgresql://")
 
 
-def test_get_branch_url_handles_alternate_key(monkeypatch):
-    """Some `keon` versions may return `connection_string` instead of `url`."""
+def test_get_branch_url_raises_when_missing_connection_string(monkeypatch):
     def fake_run(args, **kw):
-        return _fake_completed(json.dumps({"connection_string": "postgresql://abc"}))
+        return _fake_completed(json.dumps({"foo": "bar"}))
 
     monkeypatch.setattr(subprocess, "run", fake_run)
-    url = get_branch_url(project="proj_1", branch="x")
-    assert url == "postgresql://abc"
+    with pytest.raises(KeonError, match="no connection_string"):
+        get_branch_url(project="proj_1", branch="x")
 
 
-def test_delete_branch_invokes_with_positional_id_only(monkeypatch):
+def test_delete_branch_invokes_with_cascade_and_positional_id(monkeypatch):
     captured: list[list[str]] = []
 
     def fake_run(args, **kw):
@@ -71,7 +76,7 @@ def test_delete_branch_invokes_with_positional_id_only(monkeypatch):
 
     monkeypatch.setattr(subprocess, "run", fake_run)
     delete_branch(branch_id="br_42")
-    assert captured[0] == ["keon", "branches", "delete", "br_42"]
+    assert captured[0] == ["keon", "branches", "delete", "--cascade", "br_42"]
     # The real `keon branches delete` takes no --project flag.
     assert "--project" not in captured[0]
 
@@ -99,13 +104,14 @@ def test_branch_dataclass_has_created_in_ms_field():
     assert b.created_in_ms == 123
 
 
-def test_list_branches_parses_items(monkeypatch):
+def test_list_branches_parses_branches_array(monkeypatch):
     def fake_run(args, **kw):
         return _fake_completed(json.dumps({
-            "items": [
+            "branches": [
                 {"id": "id_main", "name": "main"},
                 {"id": "id_dev",  "name": "dev"},
             ],
+            "pagination": {},
         }))
 
     monkeypatch.setattr(subprocess, "run", fake_run)
@@ -117,7 +123,7 @@ def test_list_branches_parses_items(monkeypatch):
 def test_find_branch_id_returns_matching_id(monkeypatch):
     def fake_run(args, **kw):
         return _fake_completed(json.dumps({
-            "items": [{"id": "id_main", "name": "main"}],
+            "branches": [{"id": "id_main", "name": "main"}],
         }))
 
     monkeypatch.setattr(subprocess, "run", fake_run)
@@ -126,7 +132,7 @@ def test_find_branch_id_returns_matching_id(monkeypatch):
 
 def test_find_branch_id_raises_when_missing(monkeypatch):
     def fake_run(args, **kw):
-        return _fake_completed(json.dumps({"items": []}))
+        return _fake_completed(json.dumps({"branches": []}))
 
     monkeypatch.setattr(subprocess, "run", fake_run)
     with pytest.raises(KeonError, match="no branch named"):

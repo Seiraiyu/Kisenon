@@ -57,10 +57,9 @@ def list_branches(*, project: str) -> list[Branch]:
         "-o", "json",
     ])
     data = json.loads(out)
-    items = data.get("items", data) if isinstance(data, dict) else data
     return [
         Branch(name=item.get("name", ""), id=str(item.get("id", "")))
-        for item in items
+        for item in data.get("branches", [])
     ]
 
 
@@ -83,10 +82,11 @@ def create_branch(*, project: str, name: str, parent_id: str) -> Branch:
         "-o", "json",
     ])
     elapsed_ms = int((time.monotonic() - started) * 1000)
-    data = json.loads(out)
+    payload = json.loads(out)
+    branch = payload.get("branch", {})
     return Branch(
-        name=data.get("name", name),
-        id=str(data.get("id", "")),
+        name=branch.get("name", name),
+        id=str(branch.get("id", "")),
         created_in_ms=elapsed_ms,
     )
 
@@ -98,12 +98,14 @@ def get_branch_url(*, project: str, branch: str) -> str:
         "-o", "json",
     ])
     data = json.loads(out)
-    for key in ("connection_uri", "url", "connection_string", "uri", "connectionString"):
-        if key in data and data[key]:
-            return data[key]
-    raise KeonError(f"`keon connection-string` returned no URL field: {data!r}")
+    url = data.get("connection_string")
+    if not url:
+        raise KeonError(f"`keon connection-string` returned no connection_string: {data!r}")
+    return url
 
 
 def delete_branch(*, branch_id: str) -> None:
-    """`keon branches delete <id>` takes a positional id; no --project flag."""
-    _run_keon(["branches", "delete", branch_id])
+    """`keon branches delete --cascade <id>` removes the branch and any
+    endpoints attached to it (Kisenon issue #4 — `--cascade` is the
+    official knob)."""
+    _run_keon(["branches", "delete", "--cascade", branch_id])
