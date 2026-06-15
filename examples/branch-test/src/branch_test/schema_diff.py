@@ -12,11 +12,16 @@ class PgDumpNotFound(RuntimeError):
 
 # Timestamps and version markers introduce noise that isn't a real schema
 # change. We strip lines matching these patterns before diffing.
+# pg_dump 17+ also writes `\restrict <random-token>` / `\unrestrict <token>`
+# pairs that rotate every run; those are normalization-only directives, not
+# schema content, so they have to go too.
 _NOISE_PATTERNS = [
     re.compile(r"^-- Dumped from database version .*$", re.MULTILINE),
     re.compile(r"^-- Dumped by pg_dump version .*$", re.MULTILINE),
     re.compile(r"^-- Started on .*$", re.MULTILINE),
     re.compile(r"^-- Completed on .*$", re.MULTILINE),
+    re.compile(r"^\\restrict .*$", re.MULTILINE),
+    re.compile(r"^\\unrestrict .*$", re.MULTILINE),
 ]
 
 

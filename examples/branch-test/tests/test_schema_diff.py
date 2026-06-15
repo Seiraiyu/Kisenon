@@ -30,6 +30,19 @@ def test_strip_noise_removes_timestamp_comments():
     assert "CREATE TABLE users" in cleaned
 
 
+def test_strip_noise_removes_pg_dump17_restrict_directives():
+    # pg_dump 17 emits these with a randomized token on every run.
+    raw = (
+        "\\restrict Ig0csuopHEn5oVeOZXjUKLgMryroN3pvdGu36DxS0t5aZPam4EWm3qj3xsbtKKd\n"
+        "CREATE TABLE users (id INT);\n"
+        "\\unrestrict Ig0csuopHEn5oVeOZXjUKLgMryroN3pvdGu36DxS0t5aZPam4EWm3qj3xsbtKKd\n"
+    )
+    cleaned = strip_noise(raw)
+    assert "\\restrict" not in cleaned
+    assert "\\unrestrict" not in cleaned
+    assert "CREATE TABLE users" in cleaned
+
+
 def test_strip_noise_drops_trailing_blanks():
     raw = "CREATE TABLE x ();\n\n\n\n"
     cleaned = strip_noise(raw)
