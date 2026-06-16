@@ -1,7 +1,7 @@
 import base64
 import json
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from decimal import Decimal
 from uuid import UUID
 
@@ -65,7 +65,7 @@ def test_output_error_custom_exit_code(monkeypatch):
 
 
 def test_json_default_serializes_datetime_via_isoformat():
-    dt = datetime(2026, 6, 16, 12, 34, 56, tzinfo=timezone.utc)
+    dt = datetime(2026, 6, 16, 12, 34, 56, tzinfo=UTC)
     assert json.loads(json.dumps({"t": dt}, default=_json_default))["t"] == dt.isoformat()
 
 
