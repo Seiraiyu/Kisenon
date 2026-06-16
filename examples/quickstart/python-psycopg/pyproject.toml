@@ -1,0 +1,9 @@
+[project]
+name = "kisenon-example-python-psycopg"
+version = "0.1.0"
+description = "Minimal Python + psycopg3 example talking to a Kisenon endpoint over the public proxy."
+requires-python = ">=3.11"
+license = { text = "MIT" }
+dependencies = [
+  "psycopg[binary]>=3.2",
+]
