@@ -58,9 +58,18 @@ def main() -> int:
         output_error(f"{provider_env} is not set.",
                      {"hint": f"Add {provider_env} to .env or your environment."}, exit_code=2)
 
+    # `keon sandbox run --parent` wants a branch id; let users pass a name.
+    try:
+        parent_id = keon.resolve_branch_id(project=project, name=args.parent)
+    except keon.KeonNotFound as e:
+        output_error(str(e), exit_code=2)
+    except keon.KeonError as e:
+        output_error(str(e), {"hint": f"Check that branch {args.parent!r} exists in the project."},
+                     exit_code=2)
+
     opts = LoopOptions(
         request=args.request, provider_name=args.provider, model=args.model,
-        project=project, parent=args.parent, kisenon_url=kisenon_url,
+        project=project, parent=parent_id, kisenon_url=kisenon_url,
         max_attempts=args.max_attempts, timeout_s=args.timeout_s, auto_promote=args.auto_promote,
     )
     provider = get_provider(args.provider, model=args.model)

@@ -8,6 +8,7 @@ from agent_migrate.keon import (
     KeonNotFound,
     SandboxRunResult,
     SandboxUnavailable,
+    resolve_branch_id,
     sandbox_discard,
     sandbox_log,
     sandbox_promote,
@@ -124,6 +125,42 @@ def test_keon_not_found(monkeypatch):
     monkeypatch.setattr(subprocess, "run", fake_run)
     with pytest.raises(KeonNotFound):
         sandbox_promote(sandbox_id="sb_1")
+
+
+_BRANCHES = {"branches": [
+    {"id": "a6c9e0c3-2293-4057-b6d4-becc1d4fdfda", "name": "main"},
+    {"id": "250ddb2a-74e8-4316-b3aa-ac8e308115d8", "name": "feature-x"},
+]}
+
+
+def test_resolve_branch_id_maps_name(monkeypatch):
+    captured = {}
+
+    def fake_run(args, **kw):
+        captured["args"] = args
+        return _completed(json.dumps(_BRANCHES))
+    monkeypatch.setattr(subprocess, "run", fake_run)
+    assert resolve_branch_id(project="p", name="main") == "a6c9e0c3-2293-4057-b6d4-becc1d4fdfda"
+    assert (resolve_branch_id(project="p", name="feature-x")
+            == "250ddb2a-74e8-4316-b3aa-ac8e308115d8")
+    assert captured["args"][:3] == ["keon", "branches", "list"]
+
+
+def test_resolve_branch_id_passes_through_uuid(monkeypatch):
+    # A value that already looks like a UUID is returned without a branches call.
+    def fake_run(args, **kw):
+        raise AssertionError("should not call keon for a UUID")
+    monkeypatch.setattr(subprocess, "run", fake_run)
+    uid = "a6c9e0c3-2293-4057-b6d4-becc1d4fdfda"
+    assert resolve_branch_id(project="p", name=uid) == uid
+
+
+def test_resolve_branch_id_unknown_raises(monkeypatch):
+    def fake_run(args, **kw):
+        return _completed(json.dumps(_BRANCHES))
+    monkeypatch.setattr(subprocess, "run", fake_run)
+    with pytest.raises(KeonError, match="no branch named"):
+        resolve_branch_id(project="p", name="nope")
 
 
 # KeonError is part of the public surface (base class for the others).

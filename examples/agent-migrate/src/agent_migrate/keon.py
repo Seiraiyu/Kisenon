@@ -14,8 +14,13 @@ Observed JSON shapes:
 from __future__ import annotations
 
 import json
+import re
 import subprocess
 from dataclasses import dataclass, field
+
+_UUID_RE = re.compile(
+    r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", re.IGNORECASE
+)
 
 
 class KeonError(RuntimeError):
@@ -94,13 +99,26 @@ def _run_json(args: list[str], *, allow_nonzero: bool) -> dict:
     return data
 
 
+def resolve_branch_id(*, project: str, name: str) -> str:
+    """Map a branch name to its id. `keon sandbox run --parent` wants a branch
+    UUID, not a name; the CLI lets users say `--parent main`, so we look the
+    name up here. A value that already looks like a UUID is passed through."""
+    if _UUID_RE.match(name):
+        return name
+    data = _run_json(["branches", "list", "--project", project, "-o", "json"], allow_nonzero=False)
+    for b in data.get("branches", []):
+        if b.get("name") == name:
+            return b["id"]
+    raise KeonError(f"no branch named {name!r} in project {project}")
+
+
 def sandbox_run(
     *, project: str, parent: str | None, migrate_cmd: str,
     verify_cmd: str | None = None, working_dir: str | None = None, timeout_s: int = 300,
 ) -> SandboxRunResult:
     args = ["sandbox", "run", "--project", project, "--migrate", migrate_cmd,
             "--timeout-s", str(timeout_s), "-o", "json"]
-    if parent:
+    if parent:  # must be a branch id; resolve names with resolve_branch_id first
         args += ["--parent", parent]
     if verify_cmd:
         args += ["--verify", verify_cmd]
