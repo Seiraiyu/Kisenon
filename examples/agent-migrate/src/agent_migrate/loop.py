@@ -66,6 +66,12 @@ You have two tools:
   A "green" result means migrate and verify both succeeded on the fork; "red" means
   one failed — read the stderr, fix your SQL, and call run_migration again.
 
+Promote replays your captured statements inside a single transaction, so anything that
+can't run in a transaction is NOT promotable. In particular, do NOT use `CREATE INDEX
+CONCURRENTLY` — it succeeds on the fork but is excluded from the promote set, so the
+index would never reach production. Use a plain `CREATE INDEX` (and other transactional
+DDL) so everything you verify is exactly what promotes.
+
 Production is never touched by your SQL. When you get a green result, stop and tell the
 user the migration is ready and how to promote it. If you cannot get green within the
 attempt budget, explain what blocked you."""
