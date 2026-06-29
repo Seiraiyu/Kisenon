@@ -78,7 +78,8 @@ def test_red_then_green(monkeypatch):
 
 
 def test_cap_exhausted_is_red(monkeypatch):
-    red = SandboxRunResult("sb_x", "red", [{"name": "migrate", "exit_code": 1, "stderr_tail": "syntax"}],
+    red = SandboxRunResult("sb_x", "red",
+                           [{"name": "migrate", "exit_code": 1, "stderr_tail": "syntax"}],
                            [], "red — preserved")
     _patch_env(monkeypatch, [red, red, red])
     # model keeps trying; loop must stop after max_attempts run_migration calls

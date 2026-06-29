@@ -93,7 +93,8 @@ def test_sandbox_discard(monkeypatch):
 
 def test_sandbox_log_returns_actions(monkeypatch):
     def fake_run(args, **kw):
-        return _completed(json.dumps({"actions": [{"seq": 1, "statement": "ALTER ..."}], "max_seq": 1}))
+        return _completed(json.dumps(
+            {"actions": [{"seq": 1, "statement": "ALTER ..."}], "max_seq": 1}))
     monkeypatch.setattr(subprocess, "run", fake_run)
     actions = sandbox_log(sandbox_id="sb_1")
     assert actions[0]["seq"] == 1

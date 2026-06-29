@@ -88,7 +88,9 @@ def _run_json(args: list[str], *, allow_nonzero: bool) -> dict:
             f"`keon {' '.join(args)}` failed ({rc}): {(stderr or stdout).strip()[:300]}"
         ) from e
     if rc != 0 and not allow_nonzero:
-        raise KeonError(f"`keon {' '.join(args)}` failed ({rc}): {(stderr or stdout).strip()[:300]}")
+        raise KeonError(
+            f"`keon {' '.join(args)}` failed ({rc}): {(stderr or stdout).strip()[:300]}"
+        )
     return data
 
 

@@ -38,7 +38,7 @@ def run_select(conn, sql: str, *, row_cap: int = 200) -> list[dict[str, Any]]:
         cur.execute(sql)
         cols = [d.name for d in cur.description] if cur.description else []
         rows = cur.fetchmany(row_cap)
-        return [dict(zip(cols, r)) for r in rows]
+        return [dict(zip(cols, r, strict=False)) for r in rows]
 
 
 def summarize(conn) -> str:  # pragma: no cover — exercised live

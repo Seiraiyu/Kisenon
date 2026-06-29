@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 
 from agent_migrate import keon
@@ -52,19 +52,31 @@ class LoopResult:
     total_duration_ms: int = 0
 
 
-_SYSTEM_PROMPT = """You are a careful database migration engineer. The user wants a schema change to a production Postgres database.
+_SYSTEM_PROMPT = """You are a careful database migration engineer. The user wants a schema
+change to a production Postgres database.
 
 You have two tools:
-- `inspect_schema(sql)`: run a read-only SELECT/WITH against the *live* database to understand the current schema and data. You cannot write here.
-- `run_migration(migration_sql, verify_sql)`: apply your migration to a disposable, scoped *fork* of production and then run your verify check. `migration_sql` is the raw SQL of the change (DDL + any backfill). `verify_sql` must RAISE an exception if the migration did not achieve the goal (e.g. `DO $$ BEGIN IF EXISTS (SELECT 1 FROM orders WHERE status IS NULL) THEN RAISE EXCEPTION 'nulls remain'; END IF; END $$;`). A "green" result means migrate and verify both succeeded on the fork; "red" means one failed — read the stderr, fix your SQL, and call run_migration again.
+- `inspect_schema(sql)`: run a read-only SELECT/WITH against the *live* database to
+  understand the current schema and data. You cannot write here.
+- `run_migration(migration_sql, verify_sql)`: apply your migration to a disposable,
+  scoped *fork* of production and then run your verify check. `migration_sql` is the
+  raw SQL of the change (DDL + any backfill). `verify_sql` must RAISE an exception if
+  the migration did not achieve the goal (e.g. `DO $$ BEGIN IF EXISTS (SELECT 1 FROM
+  orders WHERE status IS NULL) THEN RAISE EXCEPTION 'nulls remain'; END IF; END $$;`).
+  A "green" result means migrate and verify both succeeded on the fork; "red" means
+  one failed — read the stderr, fix your SQL, and call run_migration again.
 
-Production is never touched by your SQL. When you get a green result, stop and tell the user the migration is ready and how to promote it. If you cannot get green within the attempt budget, explain what blocked you."""
+Production is never touched by your SQL. When you get a green result, stop and tell the
+user the migration is ready and how to promote it. If you cannot get green within the
+attempt budget, explain what blocked you."""
 
 
 _TOOLS_ANTHROPIC = [
     {
         "name": "inspect_schema",
-        "description": "Run a read-only SELECT/WITH against the live database to inspect schema or data.",
+        "description": (
+            "Run a read-only SELECT/WITH against the live database to inspect schema or data."
+        ),
         "input_schema": {
             "type": "object",
             "properties": {"sql": {"type": "string", "description": "One SELECT/WITH statement."}},
@@ -73,12 +85,21 @@ _TOOLS_ANTHROPIC = [
     },
     {
         "name": "run_migration",
-        "description": "Apply migration_sql to a scoped fork, then run verify_sql; returns a green/red verdict.",
+        "description": (
+            "Apply migration_sql to a scoped fork, then run verify_sql; "
+            "returns a green/red verdict."
+        ),
         "input_schema": {
             "type": "object",
             "properties": {
-                "migration_sql": {"type": "string", "description": "Raw SQL of the migration (DDL + backfill)."},
-                "verify_sql": {"type": "string", "description": "SQL that RAISEs if the goal isn't met."},
+                "migration_sql": {
+                    "type": "string",
+                    "description": "Raw SQL of the migration (DDL + backfill).",
+                },
+                "verify_sql": {
+                    "type": "string",
+                    "description": "SQL that RAISEs if the goal isn't met.",
+                },
             },
             "required": ["migration_sql", "verify_sql"],
         },
@@ -89,9 +110,17 @@ _TOOLS_ANTHROPIC = [
 def _tools_for(provider_name: str) -> list[dict]:
     if provider_name == "anthropic":
         return _TOOLS_ANTHROPIC
-    return [{"type": "function",
-             "function": {"name": t["name"], "description": t["description"], "parameters": t["input_schema"]}}
-            for t in _TOOLS_ANTHROPIC]
+    return [
+        {
+            "type": "function",
+            "function": {
+                "name": t["name"],
+                "description": t["description"],
+                "parameters": t["input_schema"],
+            },
+        }
+        for t in _TOOLS_ANTHROPIC
+    ]
 
 
 # Indirections so tests can stub the live edges.
@@ -130,7 +159,9 @@ def _do_inspect(conn, sql: str) -> str:
     return f"{len(rows)} row(s):\n{head}"
 
 
-def _do_migration(opts, work: Path, attempt: int, migration_sql: str, verify_sql: str) -> tuple[AttemptRecord, keon.SandboxRunResult]:
+def _do_migration(
+    opts, work: Path, attempt: int, migration_sql: str, verify_sql: str,
+) -> tuple[AttemptRecord, keon.SandboxRunResult]:
     (work / "migration.sql").write_text(migration_sql)
     (work / "verify.sql").write_text(verify_sql)
     migrate_cmd = 'psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f migration.sql'
@@ -159,7 +190,8 @@ def _migration_feedback(r: keon.SandboxRunResult) -> str:
                 f"Promote with: {r.promote_hint}. Stop here and tell the user.")
     fs = r.failing_step() or {}
     return (f"RED. step `{fs.get('name')}` failed (exit {fs.get('exit_code')}). "
-            f"stderr:\n{fs.get('stderr_tail') or '(none)'}\nFix the SQL and try run_migration again.")
+            f"stderr:\n{fs.get('stderr_tail') or '(none)'}\n"
+            "Fix the SQL and try run_migration again.")
 
 
 def run_ask(opts: LoopOptions, *, provider: Provider) -> LoopResult:
