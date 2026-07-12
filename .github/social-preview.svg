@@ -1,0 +1,62 @@
+<svg width="1280" height="640" viewBox="0 0 1280 640" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0a0e14"/>
+      <stop offset="0.55" stop-color="#0d1420"/>
+      <stop offset="1" stop-color="#0a1118"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#38bdf8"/>
+      <stop offset="1" stop-color="#22d3a6"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.82" cy="0.25" r="0.6">
+      <stop offset="0" stop-color="#16b3ff" stop-opacity="0.18"/>
+      <stop offset="1" stop-color="#16b3ff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1280" height="640" fill="url(#bg)"/>
+  <rect width="1280" height="640" fill="url(#glow)"/>
+
+  <!-- top accent bar -->
+  <rect x="0" y="0" width="1280" height="6" fill="url(#accent)"/>
+
+  <!-- wordmark -->
+  <text x="96" y="150" font-family="DejaVu Sans, sans-serif" font-size="52" font-weight="bold" fill="#e6edf3" letter-spacing="1">Kisenon</text>
+  <circle cx="366" cy="146" r="7" fill="url(#accent)"/>
+
+  <!-- headline -->
+  <text x="96" y="290" font-family="DejaVu Sans, sans-serif" font-size="72" font-weight="bold" fill="#f4f8fb">The execution environment</text>
+  <text x="96" y="378" font-family="DejaVu Sans, sans-serif" font-size="72" font-weight="bold" fill="url(#accent)">for AI database agents</text>
+
+  <!-- subhead -->
+  <text x="98" y="452" font-family="DejaVu Sans, sans-serif" font-size="30" fill="#9fb2c6">A disposable branch of your Postgres for every AI task.</text>
+  <text x="98" y="494" font-family="DejaVu Sans, sans-serif" font-size="30" fill="#9fb2c6">It runs the SQL, proves the answer, then disappears.</text>
+
+  <!-- branch motif -->
+  <g stroke="#22d3a6" stroke-width="3" fill="none" opacity="0.9">
+    <path d="M 96 560 L 470 560"/>
+    <path d="M 300 560 C 340 560 340 592 380 592 L 470 592"/>
+  </g>
+  <circle cx="96" cy="560" r="6" fill="#38bdf8"/>
+  <circle cx="470" cy="560" r="6" fill="#38bdf8"/>
+  <g stroke="#22d3a6" stroke-width="3" opacity="0.9">
+    <line x1="459" y1="581" x2="481" y2="603"/>
+    <line x1="481" y1="581" x2="459" y2="603"/>
+  </g>
+  <text x="120" y="552" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#6b7f94">production</text>
+  <text x="330" y="628" font-family="DejaVu Sans, sans-serif" font-size="18" fill="#6b7f94">branch destroyed</text>
+
+  <!-- pills -->
+  <g font-family="DejaVu Sans, sans-serif" font-size="22" fill="#cde3f5">
+    <rect x="740" y="520" width="140" height="52" rx="26" fill="#12202e" stroke="#1e3a4d"/>
+    <text x="772" y="553">Postgres</text>
+    <rect x="896" y="520" width="128" height="52" rx="26" fill="#12202e" stroke="#1e3a4d"/>
+    <text x="926" y="553">Branching</text>
+    <rect x="1040" y="520" width="144" height="52" rx="26" fill="#12202e" stroke="#1e3a4d"/>
+    <text x="1068" y="553">Serverless</text>
+  </g>
+
+  <!-- url -->
+  <text x="1184" y="150" text-anchor="end" font-family="DejaVu Sans, sans-serif" font-size="26" fill="#7c93a8">kisenon.com</text>
+</svg>
