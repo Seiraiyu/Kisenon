@@ -48,7 +48,7 @@ Everything lives in its own `rag_simple` schema (`rag_simple.chunks`,
 ### 1. Ingest the sample corpus
 
 `corpus/` holds this repo's README plus three public-domain Project Gutenberg
-excerpts (see [`corpus/SOURCES.md`](corpus/SOURCES.md)).
+excerpts (see [`SOURCES.md`](SOURCES.md)).
 
 ```bash
 uv run rag-simple ingest corpus

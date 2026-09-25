@@ -1,4 +1,4 @@
-# Sample corpus sources
+# Sample corpus sources (`corpus/`)
 
 | File | Source | License |
 |---|---|---|
