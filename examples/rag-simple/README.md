@@ -60,7 +60,7 @@ uv run rag-simple ingest corpus
 [ingested: file=corpus/pride-and-prejudice-ch1.txt | chunks=8]
 [ingested: file=corpus/sherlock-scandal-in-bohemia.txt | chunks=83]
 Ingested 121 chunks from 4 files.
-{"files": 4, "chunks": 121, "embedder": "fastembed", "dim": 384, "duration_ms": 8224}
+{"files": 4, "chunks": 121, "embedder": "fastembed", "dim": 384, "duration_ms": 16201}
 ```
 
 Re-running `ingest` is idempotent: each file's old chunks are deleted before
@@ -72,25 +72,56 @@ its new ones are inserted.
 uv run rag-simple ask "What does Kisenon give an AI agent?"
 ```
 
-With `ANTHROPIC_API_KEY` set you get a cited answer, then the sources:
+Without `ANTHROPIC_API_KEY`, the top 5 chunks are printed instead and stderr
+says so (real output, chunk text trimmed):
 
 ```
-[retrieved: hits=5 | top_score=0.78]
-Answer: It gives the agent a disposable fork of your PostgreSQL database [1] ...
+[retrieved: hits=5 | top_score=0.8171]
+[no ANTHROPIC_API_KEY: action=printing retrieved chunks instead of an answer]
+[1] corpus/kisenon-readme.md (chunk 0, score 0.8171)
+# Kisenon
+
+> **The execution environment for AI database agents.**
+
+Give Claude Code, Cursor, or your own AI agent a disposable fork of your PostgreSQL database. …
+
+[2] corpus/kisenon-readme.md (chunk 1, score 0.7937)
+…
+[5] corpus/kisenon-readme.md (chunk 3, score 0.6615)
+…
+{"question": "What does Kisenon give an AI agent?", "answer": null, "model": null, "embedder": "fastembed", "hits": [{"source": "corpus/kisenon-readme.md", "ord": 0, "score": 0.8171}, {"source": "corpus/kisenon-readme.md", "ord": 1, "score": 0.7937}, {"source": "corpus/kisenon-readme.md", "ord": 5, "score": 0.74}, {"source": "corpus/kisenon-readme.md", "ord": 2, "score": 0.7272}, {"source": "corpus/kisenon-readme.md", "ord": 3, "score": 0.6615}]}
+```
+
+With `ANTHROPIC_API_KEY` set you get a cited answer, then the same sources
+(shape only; this path was not run live, see Limitations):
+
+```
+[retrieved: hits=5 | top_score=0.8171]
+Answer: <answer text with [n] citations>
 
 Sources:
-[1] corpus/kisenon-readme.md (chunk 0, score 0.78)
+[1] corpus/kisenon-readme.md (chunk 0, score 0.8171)
 ...
 {"question": "What does Kisenon give an AI agent?", "answer": "...", "model": "claude-sonnet-5", "embedder": "fastembed", "hits": [...]}
 ```
 
-Without it, the top 5 chunks are printed instead and stderr says so:
+### 3. Switch embedders
+
+```bash
+uv run rag-simple ingest corpus --embedder voyage           # exits 2: dimension mismatch
+uv run rag-simple ingest corpus --embedder voyage --reset   # 121 chunks, "dim": 1024
+uv run rag-simple ask "Who is Irene Adler?" --embedder voyage
+```
 
 ```
-[no ANTHROPIC_API_KEY: action=printing retrieved chunks instead of an answer]
-[1] corpus/kisenon-readme.md (chunk 0, score 0.78)
-# Kisenon ...
+{"error": "chunks were embedded with dim=384, this embedder is dim=1024. Re-ingest with --reset (or use the embedder you ingested with)."}
+...
+[retrieved: hits=5 | top_score=0.6332]
+[1] corpus/sherlock-scandal-in-bohemia.txt (chunk 27, score 0.6332)
+...
 ```
+
+Run `uv run rag-simple ingest corpus --reset` to go back to fastembed.
 
 ## Flags
 
@@ -127,5 +158,7 @@ re-indexing exits 2 with `Re-ingest with --reset`.
 - `.md` and `.txt` only; no PDF parsing (see `rag-complex`).
 - Vector search only; no keyword/hybrid search or reranking (see `rag-complex`).
 - Same-dimension embedder swaps are not detected, only dimension changes.
-- The `openai` embedder path is implemented but was not verified live for this
-  release unless noted in the PR.
+- Not verified live for this release: the Claude answer path
+  (`ANTHROPIC_API_KEY`) and the `openai` embedder (`OPENAI_API_KEY`). Both are
+  implemented and unit-tested offline; the fastembed and voyage paths were run
+  live.
