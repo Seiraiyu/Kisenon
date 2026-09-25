@@ -1,0 +1,30 @@
+{"id": "q01", "question": "In the few-shot experiments, what nDCG@10 does Contriever reach on SciFact when trained only on its small in-domain set, without MS MARCO?", "source": "2112.09118", "page": 8}
+{"id": "q02", "question": "How does Contriever build a positive pair from a single document, as opposed to the inverse cloze approach?", "source": "2112.09118", "page": 5}
+{"id": "q03", "question": "When the Contriever authors compared ways of producing two views of a document for pre-training, did random span cropping beat ICT?", "source": "2112.09118", "page": 12}
+{"id": "q04", "question": "What accuracy does RAPTOR paired with GPT-4 get on the hard subset of the QuALITY test set?", "source": "2401.18059", "page": 9}
+{"id": "q05", "question": "Which model-selection criterion does RAPTOR rely on to decide how many Gaussian mixture components to fit when clustering chunks?", "source": "2401.18059", "page": 4}
+{"id": "q06", "question": "Of RAPTOR's two ways of querying its summary tree, which one did better when tried on twenty QASPER stories?", "source": "2401.18059", "page": 5}
+{"id": "q07", "question": "On the AIS attribution benchmark, how accurate was the ARES judge on the CNN/DailyMail portion?", "source": "2311.09476", "page": 7}
+{"id": "q08", "question": "Which statistical technique lets ARES combine its judge's predictions with a small human-labeled set to get tighter confidence intervals for scoring RAG systems?", "source": "2311.09476", "page": 4}
+{"id": "q09", "question": "What GPU memory requirement do the ARES authors list as a limitation for fine-tuning the judges and generating synthetic data?", "source": "2311.09476", "page": 9}
+{"id": "q10", "question": "With UperNet on ADE20K and ImageNet-1K pre-training, what mIoU does a ConvNeXt-T backbone score?", "source": "2201.03545", "page": 8}
+{"id": "q11", "question": "What does ConvNeXt use at the very start of the network instead of the usual ResNet stem to downsample input images?", "source": "2201.03545", "page": 4}
+{"id": "q12", "question": "When ConvNeXt's depthwise convolution kernel was enlarged from 3x3 upward, at what size did ImageNet accuracy stop improving?", "source": "2201.03545", "page": 4}
+{"id": "q13", "question": "In LLaVA-1.5's high-resolution ablation with a 7B model, how many MM-Vet points does adding a downsampled global-context image contribute?", "source": "2310.03744", "page": 6}
+{"id": "q14", "question": "What replaces the single linear projection between the vision encoder and the language model in LLaVA-1.5?", "source": "2310.03744", "page": 3}
+{"id": "q15", "question": "If LLaVA-1.5's instruction-tuning mixture is randomly cut to half its size, how much of the full-data performance is kept?", "source": "2310.03744", "page": 8}
+{"id": "q16", "question": "How long does GPTQ need on one A100 to fully quantize the 176-billion-parameter BLOOM model?", "source": "2210.17323", "page": 7}
+{"id": "q17", "question": "What damping constant does GPTQ add to the Hessian diagonal to avoid numerical trouble, and what reformulation handles the larger models?", "source": "2210.17323", "page": 5}
+{"id": "q18", "question": "With GPTQ's custom kernels, how much faster per token is 3-bit OPT-175B on a single A100 than the FP16 model split across five GPUs?", "source": "2210.17323", "page": 8}
+{"id": "q19", "question": "In the efficiency comparison of long-term forecasting models, what inference time and parameter count are reported for DLinear?", "source": "2205.13504", "page": 8}
+{"id": "q20", "question": "How does the NLinear variant cope with distribution shift before and after its single linear layer?", "source": "2205.13504", "page": 4}
+{"id": "q21", "question": "What happens to Informer's forecasting error on Exchange-Rate when its self-attention and embedding parts are progressively swapped for plain linear layers?", "source": "2205.13504", "page": 6}
+{"id": "q22", "question": "What execution accuracy does davinci-codex reach on the Spider dev set when the prompt gives only the question and no schema?", "source": "2204.00498", "page": 2}
+{"id": "q23", "question": "How does the Codex text-to-SQL study turn its schema-plus-sample-rows prompt into an n-shot prompt for GeoQuery and Scholar?", "source": "2204.00498", "page": 4}
+{"id": "q24", "question": "In the Codex Spider error analysis, what fraction of valid but mis-scored predictions did the human annotator still consider acceptable SQL?", "source": "2204.00498", "page": 3}
+{"id": "q25", "question": "What Game of 24 success rate does Tree of Thoughts reach with a breadth of five, compared with plain chain-of-thought prompting?", "source": "2305.10601", "page": 6}
+{"id": "q26", "question": "Which search strategy does Tree of Thoughts apply to 5x5 mini crosswords, and what does it do once a partial fill looks hopeless?", "source": "2305.10601", "page": 7}
+{"id": "q27", "question": "If Tree of Thoughts returns the oracle best DFS state on mini crosswords instead of its heuristic pick, how many of the 20 test games get solved?", "source": "2305.10601", "page": 8}
+{"id": "q28", "question": "What average MTEB score does the base E5 model get after fine-tuning on MS-MARCO plus NQ only, versus without any fine-tuning?", "source": "2212.03533", "page": 8}
+{"id": "q29", "question": "How does E5 distinguish the two sides of a text pair when a single shared encoder embeds both of them?", "source": "2212.03533", "page": 4}
+{"id": "q30", "question": "In E5's ablation with one million training pairs, how big a gain comes from the consistency-based filtering of CCPairs?", "source": "2212.03533", "page": 8}
