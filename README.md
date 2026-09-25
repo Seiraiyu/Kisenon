@@ -118,7 +118,9 @@ It measured.
 
 The fastest way to understand Kisenon is to run one of the examples.
 
-### AI Sandbox
+### AI agents & branching
+
+#### AI Sandbox
 
 Give an AI unrestricted SQL access to a disposable copy of production.
 
@@ -137,7 +139,7 @@ When the task completes, the database branch is automatically destroyed.
 
 ---
 
-### AI Migration Verification
+#### AI Migration Verification
 
 Let an AI generate and execute a migration against a disposable database.
 
@@ -156,7 +158,19 @@ Your production database never changes until you decide.
 
 ---
 
-### Branch Testing
+### RAG & search
+
+#### Simple RAG
+
+Chunk text files, embed them into pgvector, retrieve the top matches, and answer with citations. Runs with no API keys (local embeddings).
+
+➡ **[examples/rag-simple](examples/rag-simple)**
+
+---
+
+### CI & workflow
+
+#### Branch Testing
 
 Run integration tests against isolated database branches.
 
