@@ -68,12 +68,17 @@ npm run preview-branch
 ```
 
 ```
-[fork created: graphql-react-9c1e2a | 1840ms]
+[fork created: graphql-react-bde5a6 | 3644ms]
 [migration applied on fork: 002_post_tags.sql]
 Preview API on http://localhost:5679/graphql
 Open http://localhost:5173/?api=fork (main stays at http://localhost:5173/)
 Ctrl-C to stop and delete the fork.
+Server listening on port 5679 at http://[::]:5679/graphql
+^C
+[fork deleted: graphql-react-bde5a6]
 ```
+
+(`pg` also prints a `SECURITY WARNING` about `sslmode` aliases; it is harmless.)
 
 - http://localhost:5173/?api=fork shows each post's `#tag`.
 - http://localhost:5173/ (main) is unchanged: `main` has no `tags` column.
