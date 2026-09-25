@@ -1,0 +1,1077 @@
+[
+    {
+        "type": "text",
+        "text": "Evaluating the Text-to-SQL Capabilities of Large Language Models",
+        "text_level": 1,
+        "bbox": [
+            147,
+            89,
+            850,
+            111
+        ],
+        "page_idx": 0
+    },
+    {
+        "type": "text",
+        "text": "Nitarshan Rajkumar<sup>1∗</sup>, Raymond Li<sup>2</sup>, Dzmitry Bahdanau<sup>2345</sup>",
+        "bbox": [
+            233,
+            136,
+            769,
+            153
+        ],
+        "page_idx": 0
+    },
+    {
+        "type": "text",
+        "text": "<sup>1</sup>University of Cambridge, <sup>2</sup>ServiceNow, <sup>3</sup>Mila, <sup>4</sup>McGill University, <sup>5</sup>Canada CIFAR AI Chair",
+        "bbox": [
+            117,
+            153,
+            885,
+            171
+        ],
+        "page_idx": 0
+    },
+    {
+        "type": "text",
+        "text": "nr500@cam.ac.uk, {raymond.li,dzmitry.bahdanau}@servicenow.com",
+        "bbox": [
+            226,
+            173,
+            776,
+            187
+        ],
+        "page_idx": 0
+    },
+    {
+        "type": "text",
+        "text": "https://github.com/nitarshan/codex-text2sql",
+        "bbox": [
+            302,
+            190,
+            699,
+            204
+        ],
+        "page_idx": 0
+    },
+    {
+        "type": "text",
+        "text": "Abstract",
+        "text_level": 2,
+        "bbox": [
+            260,
+            252,
+            342,
+            268
+        ],
+        "page_idx": 0
+    },
+    {
+        "type": "text",
+        "text": "We perform an empirical evaluation of Text-to-SQL capabilities of the Codex language model. We find that, without any finetuning, Codex is a strong baseline on the Spider benchmark; we also analyze the failure modes of Codex in this setting. Furthermore, we demonstrate on the GeoQuery and Scholar benchmarks that a small number of in-domain examples provided in the prompt enables Codex to perform better than state-of-the-art models finetuned on such few-shot examples.",
+        "bbox": [
+            141,
+            277,
+            460,
+            435
+        ],
+        "page_idx": 0
+    },
+    {
+        "type": "text",
+        "text": "1 Introduction",
+        "text_level": 2,
+        "bbox": [
+            115,
+            444,
+            260,
+            460
+        ],
+        "page_idx": 0
+    },
+    {
+        "type": "text",
+        "text": "Translating natural language questions to SQL queries (Text-to-SQL) is an important business problem which has seen significant research interest. A common approach to this task involves training a model to produce a SQL query when given a question, a database schema, and possibly database content as inputs. A clear trend in this area is to finetune models pretrained on natural language; notably, performance significantly improves as larger pretrained models are used (Shaw et al., 2021; Scholak et al., 2021).",
+        "bbox": [
+            112,
+            469,
+            489,
+            645
+        ],
+        "page_idx": 0
+    },
+    {
+        "type": "text",
+        "text": "Recent results from the broader field demonstrate that simply scaling training data and model size for generative language models brings advanced capabilities, such as few-shot learning without finetuning (GPT-3, Brown et al., 2020) and code generation (Codex, Chen et al., 2021). In this work we study if such models are already competitive Text-to-SQL solutions without any further finetuning on task-specific training data, evaluating Codex and GPT-3 models of different sizes with varied prompts on Text-to-SQL benchmarks.",
+        "bbox": [
+            110,
+            646,
+            490,
+            824
+        ],
+        "page_idx": 0
+    },
+    {
+        "type": "text",
+        "text": "We find that Codex achieves a competitive performance of up to 67% execution accuracy on the Spider development set. We analyze the predicted queries that automatic evaluation judged as wrong and find that many of them would be judged correct by humans, whereas others could likely be fixed within the no-finetuning paradigm. Lastly, using GeoQuery and Scholar benchmarks we show that adapting Codex to a specific domain by prompting it with few examples can be more effective than fine-tuning a smaller language model on the same examples.",
+        "bbox": [
+            112,
+            824,
+            489,
+            889
+        ],
+        "page_idx": 0
+    },
+    {
+        "type": "table",
+        "img_path": "images/5619bb300d9c4ad6c33f5f1d90d3eb20723d285b84931787caa1a21d8a1d9f74.jpg",
+        "table_caption": [
+            "Table 1: Best Spider development set performance across models, as measured by percentage of predictions which are valid SQL (VA), execution accuracy (EX), test-suite accuracy (TS). Models marked with <sup>∗</sup> use database content. T5 results are from Scholak et al. (2021), BRIDGE v2 results are from Lin et al. (2020)."
+        ],
+        "table_footnote": [],
+        "table_body": "<table><tr><td>Model</td><td>VA EX</td><td></td><td>TS</td></tr><tr><td colspan=\"4\">Finetuned</td></tr><tr><td>T5-base T5-large T5-3B T5-3B*</td><td>72.7 84.1 87.6 88.2</td><td>57.9 67.2 71.4 74.4 79.1</td><td>54.5 61.4 65.7 68.3 71.7</td></tr><tr><td colspan=\"4\">BRIDGE v2* 68.0 Inference-only</td></tr><tr><td>GPT-3 ada GPT-3 babbage GPT-3 curie</td><td>33.8 48.8 70.9 65.0</td><td>2.3 5.7 12.6 26.3 63.7 53.0</td><td>0.3 3.9 8.3 21.7</td></tr></table>",
+        "bbox": [
+            559,
+            249,
+            836,
+            431
+        ],
+        "page_idx": 0
+    },
+    {
+        "type": "text",
+        "text": "",
+        "bbox": [
+            507,
+            554,
+            885,
+            683
+        ],
+        "page_idx": 0
+    },
+    {
+        "type": "text",
+        "text": "2 Experimental Setup",
+        "text_level": 2,
+        "bbox": [
+            509,
+            694,
+            719,
+            712
+        ],
+        "page_idx": 0
+    },
+    {
+        "type": "text",
+        "text": "Models Our evaluation focuses on the models accessible via the OpenAI API: GPT-3 (in the ascending ada, babbage, curie and davinci sizes) and Codex (in the ascending cushman-codex and davinci-codex sizes)<sup>1</sup>. These are generative language models which perform next-token prediction during training and inference; GPT-3 is trained on a diverse set of sources from the internet, and Codex is further finetuned on code from GitHub. We compare GPT-3 and Codex against methods from Shaw et al. (2021) using the T5 encoder-decoder model. Starting from public checkpoints pretrained on Common Crawl, the T5 model is finetuned on Spider to predict the output SQL, conditioned on the question and schema. The 3B parameter T5 model is currently the state-of-the-art on Spider when combined with constrained inference using the PICARD algorithm (Scholak et al., 2021). We also compare to BRIDGE v2 (Lin et al., 2020), a sequence-to-sequence model based on BERT.",
+        "bbox": [
+            507,
+            720,
+            887,
+            898
+        ],
+        "page_idx": 0
+    },
+    {
+        "type": "aside_text",
+        "text": "arXiv:2204.00498v1 [cs.CL] 15 Mar 2022",
+        "bbox": [
+            23,
+            305,
+            58,
+            724
+        ],
+        "page_idx": 0
+    },
+    {
+        "type": "page_footnote",
+        "text": "<sup>∗</sup>Work partially done at Mila and the Université de Montréal.",
+        "bbox": [
+            112,
+            892,
+            489,
+            920
+        ],
+        "page_idx": 0
+    },
+    {
+        "type": "page_footnote",
+        "text": "<sup>1</sup>See Appendix A.2 for a discussion on parameter counts.",
+        "bbox": [
+            531,
+            906,
+            882,
+            920
+        ],
+        "page_idx": 0
+    },
+    {
+        "type": "text",
+        "text": "",
+        "bbox": [
+            110,
+            85,
+            489,
+            229
+        ],
+        "page_idx": 1
+    },
+    {
+        "type": "text",
+        "text": "Zero-Shot Experiments We use the Spider benchmark (Yu et al., 2019) for cross-domain Textto-SQL. We report performance using percentage of development set predictions which are valid (executable) SQLite SQL, execution accuracy, and test-suite execution accuracy. The latter metric was proposed by Zhong et al. (2020) to measure semantic equivalence of SQL queries written in different styles, which is essential when comparing Codex to models trained on Spider. We address concerns around possible memorization of Spider data by Codex in Appendix A.5.",
+        "bbox": [
+            112,
+            230,
+            490,
+            424
+        ],
+        "page_idx": 1
+    },
+    {
+        "type": "text",
+        "text": "Few-Shot Experiments We re-purpose the question-splits of the GeoQuery and Scholar datasets (Zelle and Mooney, 1996; Iyer et al., 2017; Finegan-Dollak et al., 2018) to perform experiments in a few-shot setting. The examples in these datasets are grouped by query templates. Examples corresponding to the same template have the same SQL query structure, but may have different English questions and SQL literals. To define the few-shot task, we first sort the templates by their frequency in the training set. In the n-shot setting we then use one random example for each of the n most frequent templates.",
+        "bbox": [
+            110,
+            425,
+            490,
+            634
+        ],
+        "page_idx": 1
+    },
+    {
+        "type": "text",
+        "text": "Prompts We use six prompt structures in our experiments (examples provided in Appendix C). Question provides no database information and just includes the question as a SQL comment. API Docs follows the style of the Text-to-SQL example in Codex documentation and includes a schema in a comment style which does not conform to SQLite standards. Select X includes in comments the results of executing a SELECT <sub>\\*</sub> FROM T LIMIT X query on each table, including schemas via column headers. Create Table includes the CREATE TABLE commands for each table, including column type and foreign key declarations. Create Table + Select $\\mathbf { X } ^ { 2 }$ is a combination of the preceding two prompt formats. Finally, Fewshot additionally includes question-query pairs.",
+        "bbox": [
+            110,
+            636,
+            490,
+            862
+        ],
+        "page_idx": 1
+    },
+    {
+        "type": "table",
+        "img_path": "images/7b42cf4174454c3c92e9e81fea172445adb3493c42eb48c91022c99ddbeab2de.jpg",
+        "table_caption": [
+            "Table 2: Spider development set performance across prompt styles on the davinci-codex model, as measured by percentage of predictions which are valid SQL (VA), execution accuracy (EX), test-suite accuracy (TS)."
+        ],
+        "table_footnote": [],
+        "table_body": "<table><tr><td>Prompt</td><td>VA</td><td>EX</td><td>TS</td></tr><tr><td>Question</td><td>14.0</td><td>8.3</td><td>8.2</td></tr><tr><td>API Docs</td><td>83.8</td><td>56.8</td><td>47.5</td></tr><tr><td>Select 1</td><td>86.3</td><td>60.9</td><td>52.0</td></tr><tr><td>Select 3</td><td>85.8</td><td>60.3</td><td>52.2</td></tr><tr><td>Select 5</td><td>85.2</td><td>60.5</td><td>51.5</td></tr><tr><td>Select 10</td><td>86.0</td><td>60.8</td><td>51.2</td></tr><tr><td>Create Table</td><td>89.8</td><td>59.9</td><td>50.0</td></tr><tr><td>+ Select 1</td><td>92.5</td><td>64.8</td><td>53.7</td></tr><tr><td>+ Select 3</td><td>91.6</td><td>67.0</td><td>55.1</td></tr><tr><td>+ Select 5</td><td>91.0</td><td>65.3</td><td>53.9</td></tr><tr><td>+ Select 10</td><td>91.2</td><td>63.3</td><td>52.4</td></tr></table>",
+        "bbox": [
+            578,
+            80,
+            815,
+            227
+        ],
+        "page_idx": 1
+    },
+    {
+        "type": "text",
+        "text": "",
+        "bbox": [
+            507,
+            319,
+            885,
+            354
+        ],
+        "page_idx": 1
+    },
+    {
+        "type": "text",
+        "text": "3 Zero-Shot Results",
+        "text_level": 2,
+        "bbox": [
+            509,
+            363,
+            700,
+            380
+        ],
+        "page_idx": 1
+    },
+    {
+        "type": "text",
+        "text": "We present results for different model sizes in Table 1 and for different prompt styles in Table 2. Full results are available in Table 4 in Appendix B.",
+        "bbox": [
+            507,
+            390,
+            887,
+            438
+        ],
+        "page_idx": 1
+    },
+    {
+        "type": "text",
+        "text": "Codex provides a strong baseline for Text-to-SQL tasks In Table 1 the best performing model (davinci-codex, Create Table + Select 3) achieves 67% execution accuracy and 56.5% test suite execution accuracy on Spider. This is comparable to the performance of the BRIDGE v2 (Lin et al., 2020) model which achieved a (then) state-of-the-art 68% execution accuracy in December 2020.",
+        "bbox": [
+            507,
+            439,
+            887,
+            567
+        ],
+        "page_idx": 1
+    },
+    {
+        "type": "text",
+        "text": "Prompt design is critical for performance As seen in Table 2, providing the question alone results in a low 8.3% execution accuracy. There is a progressive improvement to 56.8% as schema information is introduced in API Docs, to 59.9% when valid SQL and foreign key information is used in Create Table, and to 67.0% when database content is introduced with Create Table + Select 3.",
+        "bbox": [
+            507,
+            568,
+            887,
+            696
+        ],
+        "page_idx": 1
+    },
+    {
+        "type": "text",
+        "text": "More database content can harm performance In Table 2 we observe that for the Select Limit X prompts there is a negligible change in performance when adding more rows. By contrast, Create Table + Select Limit X prompt accuracy peaks with 3 rows before significantly decreasing in performance as more rows are added.",
+        "bbox": [
+            507,
+            697,
+            887,
+            809
+        ],
+        "page_idx": 1
+    },
+    {
+        "type": "text",
+        "text": "Diminishing returns for Codex model size While GPT-3 performance significantly benefits from increased model size, the davinci-codex model does not perform drastically better than cushman-codex. Full results in Table 4 in Appendix B show cushman-codex generally being within 1 percentage point of davinci-codex for the same prompt style; it even performs 3 percentage points better for the Create Table prompt. These results suggest that davinci-codex’s longer context window may be a greater contributor to its peak performance than increased parameter count.",
+        "bbox": [
+            507,
+            809,
+            885,
+            875
+        ],
+        "page_idx": 1
+    },
+    {
+        "type": "page_footnote",
+        "text": "<sup>2</sup>Only the davinci-codex model can evaluate Create Table + Select X prompts with more than 1 row, due to its expanded 4096-token prompt window compared to the 2048-token window of all other models. In addition, GPT-3 models prepro-",
+        "bbox": [
+            110,
+            869,
+            490,
+            920
+        ],
+        "page_idx": 1
+    },
+    {
+        "type": "page_footnote",
+        "text": "cess whitespace tokens less efficiently than Codex models, and therefore cannot evaluate Create Table + Select X prompts at all.",
+        "bbox": [
+            509,
+            882,
+            885,
+            920
+        ],
+        "page_idx": 1
+    },
+    {
+        "type": "code",
+        "sub_type": "code",
+        "code_caption": [
+            "Figure 1: Examples of error types, as made by the davinci-codex model with Create Table + Select 3 prompt. NL stands for natural language question. Percentage indicates the percentage of errors which are of the given type. Further examples are provided in Figure 3 in Appendix B."
+        ],
+        "code_footnote": [],
+        "code_body": "```sql\n14% Shortcuts\nNL What is the number ofcar models created by the car maker American Motor Company?\nGold SELECT count( ) FROM CAR_MAKERS AS T1 JOIN MODEL_LIST AS T2 ON T1.Id =\nT2.Maker WHERE T1.FullName = ’American Motor Company’;\nPred SELECT COUNT(Model) FROM model_list WHERE Maker = 1;\nNL Give the city and countryfor the Alton airport.\nGold SELECT City , Country FROM AIRPORTS WHERE AirportName = \"Alton\"\nPred SELECT City, Country FROM airports WHERE AirportCode = ’ALN’;\n8% SELECT Extra Columns\nNL List names ofconductors in descending order ofyears ofwork.\nGold SELECT Name FROM conductor ORDER BY Year_of_Work DESC\nPred SELECT Name, Year_of_Work FROM conductor ORDER BY Year_of_Work DESC;\n5% SELECT Convention\nNL What are all the makers and models?\nGold SELECT Maker , Model FROM MODEL_LIST;\nPred SELECT DISTINCT car_makers.Maker, model_list.Model FROM car_makers JOIN\nmodel_list ON car_makers.Id = model_list.Maker;\n```",
+        "bbox": [
+            117,
+            82,
+            885,
+            288
+        ],
+        "page_idx": 2
+    },
+    {
+        "type": "text",
+        "text": "",
+        "bbox": [
+            110,
+            365,
+            489,
+            495
+        ],
+        "page_idx": 2
+    },
+    {
+        "type": "text",
+        "text": "3.1 Error Analysis",
+        "text_level": 2,
+        "bbox": [
+            112,
+            508,
+            280,
+            525
+        ],
+        "page_idx": 2
+    },
+    {
+        "type": "text",
+        "text": "We focus our error analysis on the davinci-codex model with Create Table + Select 3 prompt, and present a breakdown of prediction types in Table 3 and examples of errors in Figure 1. Our error categories were chosen to surface the most interesting Codex-specific behaviours we observed amongst the errors made. We randomly selected and annotated 100 predictions which were valid SQL yet were judged incorrect by test-suite evaluation.",
+        "bbox": [
+            110,
+            531,
+            490,
+            676
+        ],
+        "page_idx": 2
+    },
+    {
+        "type": "text",
+        "text": "We first consider Semantic Incorrect behaviours, which Spider evaluation and the human annotator both view as incorrect predictions. Shortcut errors are where Codex made use of either specific table values or “world knowledge” from GPT-3 pretraining, while the ground-truth query contained the exact literals from the question. GROUP BY Convention errors are where Codex incorrectly groups on a non-primary-key column (such as a name or title column).",
+        "bbox": [
+            110,
+            677,
+            492,
+            838
+        ],
+        "page_idx": 2
+    },
+    {
+        "type": "text",
+        "text": "We also consider Ambiguous Correct behaviours which are semantically different from the gold query and are therefore judged as incorrect by Spider evaluation, but which the human annotator viewed as being an acceptable SQL translation of the given question. SELECT Convention errors are where Codex selects a different column than the per-database convention of the gold queries (such as name instead of ID). SELECT Extra Columns errors are where Codex includes additional useful columns in its query beyond what the gold query includes. Argmax errors are where Codex differs from the gold query in how a min/max resolution (such as “youngest singer”) is handled for ties.",
+        "bbox": [
+            112,
+            840,
+            490,
+            921
+        ],
+        "page_idx": 2
+    },
+    {
+        "type": "table",
+        "img_path": "images/698f4275f6c3c89f1a7a8928d68f4a843b7319b32635f5e0e9db92a2a7138b5c.jpg",
+        "table_caption": [
+            "Table 3: Breakdown of prediction annotations over Spider development set for the davinci-codex model with Create Table + Select 3 prompt. % is percentage of all predictions, E% is percentage of manually annotated erroneous queries (see Section Section 3.1 for details)."
+        ],
+        "table_footnote": [],
+        "table_body": "<table><tr><td>Annotation</td><td>%</td><td>E%</td></tr><tr><td>Test-Suite Correct</td><td>55.1</td><td></td></tr><tr><td>Semantic Incorrect</td><td>25.2</td><td>69</td></tr><tr><td>– Shortcuts</td><td>5.1</td><td>14</td></tr><tr><td>- GROUP BY Convention</td><td>1.5</td><td>4</td></tr><tr><td>– Other</td><td>18.6</td><td>51</td></tr><tr><td>Ambiguous Correct</td><td>11.3</td><td>31</td></tr><tr><td>– SELECT Extra Columns</td><td>2.9</td><td>8</td></tr><tr><td>- SELECT Convention</td><td>1.8</td><td>5</td></tr><tr><td>– Argmax</td><td>1.5</td><td>4</td></tr><tr><td>– Other</td><td>5.1</td><td>14</td></tr><tr><td>Invalid SQL</td><td>8.4</td><td>一</td></tr><tr><td>– Ambiguous column name</td><td>1.9</td><td>一</td></tr><tr><td>– No such column</td><td>4.5</td><td>一</td></tr><tr><td></td><td></td><td></td></tr></table>",
+        "bbox": [
+            556,
+            361,
+            838,
+            532
+        ],
+        "page_idx": 2
+    },
+    {
+        "type": "text",
+        "text": "",
+        "bbox": [
+            507,
+            644,
+            885,
+            789
+        ],
+        "page_idx": 2
+    },
+    {
+        "type": "text",
+        "text": "We observe in Table 3 that a significant 31% of valid yet erroneous predictions are penalized by Spider evaluation as being incorrect though a human annotator viewed them as acceptable solutions. Future work could be to investigate to what extent one can control the behaviour of Codex. This could allow to fix these ambiguous errors, either by prompt design or using a few examples.",
+        "bbox": [
+            507,
+            791,
+            887,
+            922
+        ],
+        "page_idx": 2
+    },
+    {
+        "type": "text",
+        "text": "4 Few-Shot",
+        "text_level": 2,
+        "bbox": [
+            114,
+            84,
+            231,
+            99
+        ],
+        "page_idx": 3
+    },
+    {
+        "type": "text",
+        "text": "We investigate whether Codex can perform fewshot Text-to-SQL. As described in Section 2, we re-purpose the GeoQuery and Sholar datasets in a few-shot setting. It is well known that models trained on Spider transfer poorly to other singledatabase Text-to-SQL datasets (Suhr et al., 2020) in a zero-shot setting. Studying few-shot Text-to-SQL on GeoQuery and Scholar should show to what extent models are able to leverage a small amount of examples to effectively adapt to a new domain.",
+        "bbox": [
+            112,
+            111,
+            490,
+            272
+        ],
+        "page_idx": 3
+    },
+    {
+        "type": "text",
+        "text": "Baseline The baseline is a T5-3B model that was finetuned on Spider, reaching 71% exact-match accuracy on Spider validation set. The model is then further finetuned on the new domain – Geo-Query or Scholar. The learning rate for domainspecific-finetuning was selected in the 20-shot setting among $[ 0 . 1 , 0 . 2 , 0 . 5 , 1 , 2 ] \\cdot 1 0 ^ { - 5 }$ , based on the best validation set performance after 300 steps. We use batch-size 1024, such that all the few-shot examples fit in the same batch.",
+        "bbox": [
+            112,
+            273,
+            490,
+            434
+        ],
+        "page_idx": 3
+    },
+    {
+        "type": "text",
+        "text": "Codex Building on the Create Table + Select X prompt, we append n question-query examples to the input in an n-shot setting. An example of this prompt is provided in Figure 11. All samples are generated using greedy decoding, with temperature 0. Note that for a given n-shot setting, the baseline and Codex use the same set of support examples. These examples are in the prompt for Codex, and used to finetune the baseline on the new domain. Given the limited window-size of API models, on GeoQuery we can feed up to 40 support examples to davinci-codex, and up to 10 examples to cushman-codex and GPT-3 models. On Scholar the queries are longer and the schema more complex – we fit only 10 examples in the prompt of davincicodex, 5 for cushman-codex, and none at all for GPT-3 models.",
+        "bbox": [
+            110,
+            434,
+            490,
+            708
+        ],
+        "page_idx": 3
+    },
+    {
+        "type": "text",
+        "text": "4.1 Results",
+        "text_level": 2,
+        "bbox": [
+            112,
+            720,
+            220,
+            736
+        ],
+        "page_idx": 3
+    },
+    {
+        "type": "text",
+        "text": "Figure 2 shows test-suite accuracies on the Scholar and GeoQuery datasets. The baseline reaches 85.7% test-set performance when trained on the complete GeoQuery training set (549 examples). Respectively, it reaches 87.2% test accuracy when trained on the whole Scholar training set (499 examples). This simple baseline is a very competitive model when considering the entire datasets. However Figure 2 shows that it is largely beaten by Codex in few-shot settings. In a zero-shot setting, both davinci-codex and cushman-codex already beat the baseline on GeoQuery. We speculate that Codex performs well here because it uses the same argmax convention as the GeoQuery dataset, which is different than the convention used in Spider. With up to 40 examples in the prompt, davinci-codex outperforms a T5-3B model finetuned on these same examples by a large margin, whereas GPT-3 davinci performs quite poorly on this task. On the other hand, the T5 model outperforms Codex in a zero-shot setting on Scholar. In 5 and 10-shot settings, Codex shows better adaptation from these few samples and beats the T5 baseline.",
+        "bbox": [
+            110,
+            743,
+            492,
+            921
+        ],
+        "page_idx": 3
+    },
+    {
+        "type": "chart",
+        "img_path": "images/6f978f6b437c9338b69473bb8115a86741de6b3cac5f891640ea8056e103ad11.jpg",
+        "content": "",
+        "chart_caption": [],
+        "chart_footnote": [],
+        "bbox": [
+            510,
+            84,
+            878,
+            221
+        ],
+        "page_idx": 3
+    },
+    {
+        "type": "chart",
+        "img_path": "images/9abe1437d15967147f8eca38a47ce8406b2c059a3fa59ebea30630011723e5c6.jpg",
+        "content": "",
+        "chart_caption": [
+            "(a) GeoQuery. When trained on the whole GeoQuery training set (549 examples), the finetuned T5 reaches 85.7% accuracy.",
+            "(b) Scholar. When trained on the whole Scholar training set (499 examples), the finetuned T5 reaches 87.2% accuracy.",
+            "Figure 2: Test-suite accuracy with varying number of support examples. The x-axis shows the number of fewshot examples used."
+        ],
+        "chart_footnote": [],
+        "bbox": [
+            512,
+            255,
+            878,
+            391
+        ],
+        "page_idx": 3
+    },
+    {
+        "type": "text",
+        "text": "",
+        "bbox": [
+            507,
+            498,
+            887,
+            707
+        ],
+        "page_idx": 3
+    },
+    {
+        "type": "text",
+        "text": "5 Conclusion",
+        "text_level": 2,
+        "bbox": [
+            509,
+            717,
+            643,
+            733
+        ],
+        "page_idx": 3
+    },
+    {
+        "type": "text",
+        "text": "We demonstrated that generative language models trained on code provide a strong baseline for Text-to-SQL. We also provided analysis of failure modes for these models, which we hope guides further prompt design (whether few-shot or through natural language instructions) in this setting. Finally, we showed that prompt-based few-shot learning with these models performs competitively with finetuning-based few-shot learning of smaller models. A clear direction for future work is to evaluate the benefits of finetuning with Codex models.",
+        "bbox": [
+            505,
+            743,
+            887,
+            921
+        ],
+        "page_idx": 3
+    },
+    {
+        "type": "text",
+        "text": "Acknowledgements",
+        "text_level": 2,
+        "bbox": [
+            114,
+            84,
+            287,
+            99
+        ],
+        "page_idx": 4
+    },
+    {
+        "type": "text",
+        "text": "Nitarshan performed all zero-shot and finetuning experiments as well as error-analysis, and wrote most of the paper. Raymond performed all few-shot experiments and the associated writing. Dzmitry supervised, and contributed to paper editing.",
+        "bbox": [
+            112,
+            109,
+            489,
+            189
+        ],
+        "page_idx": 4
+    },
+    {
+        "type": "text",
+        "text": "We thank Dóra Jámbor for insightful discussions, Laurent Charlin for providing funding for Nitarshan and for providing feedback on this work, Fraser Kelton and Dave Cummings for support with the OpenAI API, and Ruiqi Zhong for assistance with Spider test suites. We also thank anonymous ARR reviewers for their feedback and criticism in the review process.",
+        "bbox": [
+            114,
+            190,
+            489,
+            318
+        ],
+        "page_idx": 4
+    },
+    {
+        "type": "text",
+        "text": "Nitarshan additionally thanks the city of Montréal and its cafés for providing inspirational settings in which to conduct this work.",
+        "bbox": [
+            114,
+            318,
+            490,
+            367
+        ],
+        "page_idx": 4
+    },
+    {
+        "type": "text",
+        "text": "References",
+        "text_level": 2,
+        "bbox": [
+            114,
+            393,
+            215,
+            409
+        ],
+        "page_idx": 4
+    },
+    {
+        "type": "list",
+        "sub_type": "ref_text",
+        "list_items": [
+            "Tom B. Brown, Benjamin Mann, Nick Ryder, Melanie Subbiah, Jared Kaplan, Prafulla Dhariwal, Arvind Neelakantan, Pranav Shyam, Girish Sastry, Amanda Askell, Sandhini Agarwal, Ariel Herbert-Voss, Gretchen Krueger, Tom Henighan, Rewon Child, Aditya Ramesh, Daniel M. Ziegler, Jeffrey Wu, Clemens Winter, Christopher Hesse, Mark Chen, Eric Sigler, Mateusz Litwin, Scott Gray, Benjamin Chess, Jack Clark, Christopher Berner, Sam Mc-Candlish, Alec Radford, Ilya Sutskever, and Dario Amodei. 2020. Language models are few-shot learners.",
+            "Mark Chen, Jerry Tworek, Heewoo Jun, Qiming Yuan, Henrique Ponde de Oliveira Pinto, Jared Kaplan, Harri Edwards, Yuri Burda, Nicholas Joseph, Greg Brockman, Alex Ray, Raul Puri, Gretchen Krueger, Michael Petrov, Heidy Khlaaf, Girish Sastry, Pamela Mishkin, Brooke Chan, Scott Gray, Nick Ryder, Mikhail Pavlov, Alethea Power, Lukasz Kaiser, Mohammad Bavarian, Clemens Winter, Philippe Tillet, Felipe Petroski Such, Dave Cummings, Matthias Plappert, Fotios Chantzis, Elizabeth Barnes, Ariel Herbert-Voss, William Hebgen Guss, Alex Nichol, Alex Paino, Nikolas Tezak, Jie Tang, Igor Babuschkin, Suchir Balaji, Shantanu Jain, William Saunders, Christopher Hesse, Andrew N. Carr, Jan Leike, Josh Achiam, Vedant Misra, Evan Morikawa, Alec Radford, Matthew Knight, Miles Brundage, Mira Murati, Katie Mayer, Peter Welinder, Bob McGrew, Dario Amodei, Sam McCandlish, Ilya Sutskever, and Wojciech Zaremba. 2021. Evaluating large language models trained on code.",
+            "Xiang Deng, Ahmed Hassan Awadallah, Christopher Meek, Oleksandr Polozov, Huan Sun, and Matthew Richardson. 2021. Structure-grounded pretraining for text-to-sql. Proceedings of the 2021 Conference of the North American Chapter of the Association",
+            "for Computational Linguistics: Human Language Technologies.",
+            "Catherine Finegan-Dollak, Jonathan K. Kummerfeld, Li Zhang, Karthik Ramanathan, Sesh Sadasivam, Rui Zhang, and Dragomir Radev. 2018. Improving text-to-SQL evaluation methodology. In Proceedings of the 56th Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers), pages 351–360, Melbourne, Australia. Association for Computational Linguistics.",
+            "Leo Gao. 2021. On the Sizes of OpenAI API Models.",
+            "Srinivasan Iyer, Ioannis Konstas, Alvin Cheung, Jayant Krishnamurthy, and Luke Zettlemoyer. 2017. Learning a neural semantic parser from user feedback. In Proceedings of the 55th Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers), pages 963–973, Vancouver, Canada. Association for Computational Linguistics.",
+            "Xi Victoria Lin, Richard Socher, and Caiming Xiong. 2020. Bridging textual and tabular data for crossdomain text-to-sql semantic parsing.",
+            "Torsten Scholak, Nathan Schucher, and Dzmitry Bahdanau. 2021. Picard: Parsing incrementally for constrained auto-regressive decoding from language models.",
+            "Peter Shaw, Ming-Wei Chang, Panupong Pasupat, and Kristina Toutanova. 2021. Compositional generalization and natural language variation: Can a semantic parsing approach handle both? In Proceedings of the 59th Annual Meeting of the Association for Computational Linguistics and the 11th International Joint Conference on Natural Language Processing (Volume 1: Long Papers), pages 922–938, Online. Association for Computational Linguistics.",
+            "Alane Suhr, Ming-Wei Chang, Peter Shaw, and Kenton Lee. 2020. Exploring unexplored generalization challenges for cross-database semantic parsing. In Proceedings ofthe 58th Annual Meeting ofthe Association for Computational Linguistics, pages 8372– 8388, Online. Association for Computational Linguistics.",
+            "Tao Yu, Rui Zhang, Kai Yang, Michihiro Yasunaga, Dongxu Wang, Zifan Li, James Ma, Irene Li, Qingning Yao, Shanelle Roman, Zilin Zhang, and Dragomir Radev. 2019. Spider: A largescale human-labeled dataset for complex and crossdomain semantic parsing and text-to-sql task.",
+            "John M. Zelle and Raymond J. Mooney. 1996. Learning to parse database queries using inductive logic programming. In Proceedings of the Thirteenth National Conference on Artificial Intelligence - Volume 2, pages 1050–1055.",
+            "Ruiqi Zhong, Tao Yu, and Dan Klein. 2020. Semantic evaluation for text-to-sql with distilled test suites.",
+            "Albert Ziegler. 2021. Research recitation."
+        ],
+        "bbox": [
+            117,
+            417,
+            489,
+            573
+        ],
+        "page_idx": 4
+    },
+    {
+        "type": "code",
+        "sub_type": "algorithm",
+        "code_caption": [],
+        "code_footnote": [],
+        "code_body": "Question 1: ...   \nSQL: ...",
+        "bbox": [
+            509,
+            185,
+            680,
+            221
+        ],
+        "page_idx": 5
+    },
+    {
+        "type": "text",
+        "text": "A API Details",
+        "text_level": 2,
+        "bbox": [
+            114,
+            83,
+            255,
+            99
+        ],
+        "page_idx": 5
+    },
+    {
+        "type": "text",
+        "text": "At time of writing, the OpenAI API was accessible at https://openai.com/api/. The example from which our API Docs prompt draws from can be found at https://beta.openai.com/examples/ default-sql-translate.",
+        "bbox": [
+            110,
+            109,
+            489,
+            208
+        ],
+        "page_idx": 5
+    },
+    {
+        "type": "text",
+        "text": "A.1 Hyperparameters",
+        "text_level": 2,
+        "bbox": [
+            112,
+            218,
+            307,
+            235
+        ],
+        "page_idx": 5
+    },
+    {
+        "type": "text",
+        "text": "We sample 200 tokens from GPT-3 and Codex with temperature 0, with the following strings used as stop tokens to halt generation: “--”, “\\n\\n”, “;”, “#”.",
+        "bbox": [
+            112,
+            240,
+            489,
+            290
+        ],
+        "page_idx": 5
+    },
+    {
+        "type": "text",
+        "text": "A.2 Parameter Counts",
+        "text_level": 2,
+        "bbox": [
+            114,
+            300,
+            312,
+            316
+        ],
+        "page_idx": 5
+    },
+    {
+        "type": "text",
+        "text": "Parameter counts for OpenAI API models are not openly available. Gao (2021) evaluated API GPT-3 models across a variety of language modelling tasks to compare to published results in Brown et al. (2020), finding that “Ada, Babbage, Curie and Davinci line up closely with 350M, 1.3B, 6.7B, and 175B respectively”. We presume that the davincicodex model is the same size as the GPT-3 davinci model; cushman-codex is a new model name so we can only guess that it is of a similar (but not the same) size to GPT-3 curie. Nevertheless these remain guesses which should not be relied on.",
+        "bbox": [
+            110,
+            322,
+            489,
+            516
+        ],
+        "page_idx": 5
+    },
+    {
+        "type": "text",
+        "text": "A.3 Model Versioning",
+        "text_level": 2,
+        "bbox": [
+            114,
+            526,
+            305,
+            543
+        ],
+        "page_idx": 5
+    },
+    {
+        "type": "text",
+        "text": "The exact models served through the OpenAI API may vary over time. We verified that for each model type, only a single model version was used to generate results. These versions are ada:2020-05-03, babbage:2020-05-03, curie:2020-05-03,",
+        "bbox": [
+            112,
+            548,
+            489,
+            643
+        ],
+        "page_idx": 5
+    },
+    {
+        "type": "text",
+        "text": "A.4 Finetuning",
+        "text_level": 2,
+        "bbox": [
+            114,
+            705,
+            253,
+            720
+        ],
+        "page_idx": 5
+    },
+    {
+        "type": "text",
+        "text": "In Table 4 we include preliminary results from finetuning GPT-3 models on the Spider training set. We used the full training set, and the default finetuning settings of 4 epochs, a batch size of 8, and a learning rate multiplier of 0.1. We did not perform a hyperparameter sweep due to the significant cost this would incur.",
+        "bbox": [
+            110,
+            725,
+            490,
+            839
+        ],
+        "page_idx": 5
+    },
+    {
+        "type": "text",
+        "text": "A.5 Memorization",
+        "text_level": 2,
+        "bbox": [
+            112,
+            851,
+            278,
+            866
+        ],
+        "page_idx": 5
+    },
+    {
+        "type": "text",
+        "text": "The Spider development set is available on GitHub, and is therefore possibly in the training set of Codex. We believe that this does not manifest as memorization for our results however, for the following reasons.",
+        "bbox": [
+            112,
+            871,
+            490,
+            921
+        ],
+        "page_idx": 5
+    },
+    {
+        "type": "text",
+        "text": "",
+        "bbox": [
+            507,
+            85,
+            885,
+            116
+        ],
+        "page_idx": 5
+    },
+    {
+        "type": "text",
+        "text": "Evaluation data on Spider’s repo is formatted differently to our prompts. Most related is the dev.sql file, which contains evaluation questionquery pairs in the following format:",
+        "bbox": [
+            507,
+            117,
+            885,
+            183
+        ],
+        "page_idx": 5
+    },
+    {
+        "type": "text",
+        "text": "This resembles but isn’t identical to our \"Question\" prompt. We prompted Codex with verbatim fragments of this file and generations failed to replicate any file contents. Our \"Question\" prompt has very poor performance - hardly an indication of memorization from dev.sql. Furthermore, most of Codex’s performance is due to including in the prompt the schemas (see Table 2), which are not present in dev.sql.",
+        "bbox": [
+            507,
+            239,
+            887,
+            384
+        ],
+        "page_idx": 5
+    },
+    {
+        "type": "text",
+        "text": "As well, Codex prediction style is very different to evaluation gold queries. Gold queries make use of a consistent table aliasing strategy (using T1, T2, etc.) which we never see with Codex (see Figure 3 for example comparisons).",
+        "bbox": [
+            507,
+            384,
+            885,
+            464
+        ],
+        "page_idx": 5
+    },
+    {
+        "type": "text",
+        "text": "Furthermore, in Table 4 we reported performance for all models on spider-realistic (Deng et al., 2021), a modification of the spider evaluation set that removes column name references in questions. We observe a similar trend in performance across models as on spider (the consistent performance drop on spider-realistic is expected due to the difficulty of the updated dataset). Memorization cannot account for the performance observed, as spider-realistic is not publicly available on GitHub.",
+        "bbox": [
+            507,
+            464,
+            887,
+            625
+        ],
+        "page_idx": 5
+    },
+    {
+        "type": "text",
+        "text": "Finally, Ziegler (2021) studied memorization in Copilot, a derivative of the Codex models, and found that \"Copilot can quote a body of code verbatim, but that it rarely does so, and when it does, it mostly quotes code that everybody quotes, and mostly at the beginning of a file\". Spider evaluation data is rare on GitHub, and we use long contexts in our prompts that significantly differ from the files on GitHub.",
+        "bbox": [
+            507,
+            626,
+            887,
+            771
+        ],
+        "page_idx": 5
+    },
+    {
+        "type": "text",
+        "text": "A.6 Choice of Spider Evaluation Set",
+        "text_level": 2,
+        "bbox": [
+            509,
+            781,
+            811,
+            797
+        ],
+        "page_idx": 5
+    },
+    {
+        "type": "text",
+        "text": "We chose not to evaluate on the held-out test set of Spider, as this could not be done offline - it would instead require sending these held-out examples through the API to OpenAI, which risks inadvertently leaking them for retraining of Codex.",
+        "bbox": [
+            507,
+            802,
+            887,
+            884
+        ],
+        "page_idx": 5
+    },
+    {
+        "type": "text",
+        "text": "B Additional Tables and Figures",
+        "text_level": 2,
+        "bbox": [
+            114,
+            83,
+            413,
+            101
+        ],
+        "page_idx": 6
+    },
+    {
+        "type": "table",
+        "img_path": "images/9b22156db5625b65d910487308cc9dd129f123e4d8fc8466e9895361f9edb16c.jpg",
+        "table_caption": [
+            "Table 4: Performance on Spider across all evaluated models and prompts, as measured by percentage of predictions which are valid/executable SQL (VA), execution accuracy (EX), test-suite accuracy (TS). Main results are on the Spider development set, results in parantheses are on Spider-Realistic (Deng et al., 2021), a modified subset of the Spider development set with explicit references to column names removed from questions."
+        ],
+        "table_footnote": [],
+        "table_body": "<table><tr><td>Engine</td><td>Prompt</td><td>VA</td><td>EX</td><td>TS</td></tr><tr><td colspan=\"5\">GPT-3</td></tr><tr><td>ada</td><td>Question</td><td>1.2 (1.0)</td><td>0.0 (0.0)</td><td>0.0 (0.0)</td></tr><tr><td>ada</td><td>Docs</td><td>3.4 (2.2)</td><td>0.2 (0.2)</td><td>0.1 (0.0)</td></tr><tr><td>ada</td><td>1 Row</td><td>40.1 (34.6)</td><td>1.1 (0.6)</td><td>0.2 (0.0)</td></tr><tr><td>ada</td><td>Schema</td><td>33.8 (33.9)</td><td>2.3 (3.5)</td><td>0.3 (0.0)</td></tr><tr><td>babbage</td><td>Question</td><td>4.4 (2.0)</td><td>1.0 (0.2)</td><td>1.0 (0.2)</td></tr><tr><td>babbage</td><td>Docs</td><td>22.5 (20.3)</td><td>1.0 (0.6)</td><td>0.7 (0.2)</td></tr><tr><td>babbage</td><td>1 Row</td><td>56.0 (49.8)</td><td>5.1 (1.6)</td><td>3.9 (0.0)</td></tr><tr><td>babbage</td><td>Schema</td><td>48.8 (44.9)</td><td>5.7 (0.8)</td><td>3.9 (0.0)</td></tr><tr><td>curie</td><td>Question</td><td>9.0 (6.7)</td><td>2.9 (2.4)</td><td>2.5 (1.8)</td></tr><tr><td>curie</td><td>Docs</td><td>25.2 (25.0)</td><td>7.4 (5.5)</td><td>6.3 (3.3)</td></tr><tr><td>curie</td><td>1 Row</td><td>70.6 (67.3)</td><td>10.8 (7.3)</td><td>7.6 (1.4)</td></tr><tr><td>curie</td><td>Schema</td><td>70.9 (72.2)</td><td>12.6 (11.0)</td><td>8.3 (4.1)</td></tr><tr><td>davinci</td><td>Schema</td><td>65.0 (65.4)</td><td>26.3 (23.2)</td><td>21.7 (14.2)</td></tr><tr><td>Finetuned GPT-3</td><td></td><td></td><td></td><td></td></tr><tr><td colspan=\"5\"></td></tr><tr><td>ada</td><td>Schema</td><td>27.5 (21.3)</td><td>20.2 (14.0)</td><td>19.1 (13.0)</td></tr><tr><td>babbage</td><td>Schema</td><td>47.2 (38.0)</td><td>34.8 (23.6)</td><td>31.9 (20.9)</td></tr><tr><td>curie</td><td>Schema</td><td>66.9 (60.2)</td><td>51.3 (37.8)</td><td>46.9 (32.9)</td></tr><tr><td colspan=\"5\">Codex</td></tr><tr><td>cushman</td><td>Question</td><td>11.3 (8.1)</td><td>8.5 (3.9)</td><td>8.3 (3.9)</td></tr><tr><td>cushman</td><td>Docs</td><td>83.8 (80.5)</td><td>53.2 (45.1)</td><td>43.5 (32.3)</td></tr><tr><td>cushman</td><td>1 Row</td><td>84.7 (80.9)</td><td>59.6 (49.2)</td><td>48.5 (32.5)</td></tr><tr><td>cushman</td><td>3 Rows</td><td>82.9 (79.1)</td><td>60.3 (49.2)</td><td>49.4 (33.7)</td></tr><tr><td>cushman</td><td>5 Rows</td><td>83.6 (78.3)</td><td>61.5 (49.6)</td><td>50.4 (33.9)</td></tr><tr><td>cushman</td><td>Schema</td><td>88.3 (83.1)</td><td>62.1 (49.6)</td><td>53.1 (36.2)</td></tr><tr><td>cushman</td><td>+ 1 Row</td><td>86.3 (85.0)</td><td>63.7 (54.9)</td><td>53.0 (39.6)</td></tr><tr><td>davinci</td><td>Question</td><td>14.0 (8.9)</td><td>8.3 (4.5)</td><td>8.2 (4.1)</td></tr><tr><td>davinci</td><td>Docs</td><td>83.8 (87.4)</td><td>56.8 (51.8)</td><td>47.5 (39.0)</td></tr><tr><td>davinci</td><td>1 Row</td><td>86.3 (83.5)</td><td>60.9 (54.7)</td><td>52.0 (41.3)</td></tr><tr><td>davinci</td><td>3 Rows</td><td>85.8 (82.7)</td><td>60.3 (53.3)</td><td>52.2 (40.0)</td></tr><tr><td>davinci</td><td>5 Rows</td><td>85.2 (80.9)</td><td>60.5 (51.4)</td><td>51.5 (38.4)</td></tr><tr><td>davinci</td><td>10 Rows</td><td>86.0 (80.7)</td><td>60.8 (53.3)</td><td>51.2 (39.2)</td></tr><tr><td>davinci</td><td>Schema</td><td>89.8 (87.8)</td><td>59.9 (52.2)</td><td>50.0 (38.4)</td></tr><tr><td>davinci</td><td>+ 1 Row</td><td>92.5 (90.7)</td><td>64.8 (58.7)</td><td>53.7 (41.7)</td></tr><tr><td>davinci</td><td>+ 3 Rows</td><td>91.6 (90.6)</td><td>67.0 (60.2)</td><td>55.1 (42.9)</td></tr><tr><td>davinci</td><td>+ 5 Rows</td><td>91.0 (90.2)</td><td>65.3 (60.0)</td><td>53.9 (42.1)</td></tr><tr><td>davinci</td><td>+ 10 Rows</td><td>91.2 (90.6)</td><td>63.3 (58.3)</td><td>52.4 (40.2)</td></tr></table>",
+        "bbox": [
+            255,
+            120,
+            744,
+            739
+        ],
+        "page_idx": 6
+    },
+    {
+        "type": "table",
+        "img_path": "images/21ac1a2524e08f651e36f20e6a584dee6338f674025073b871fb88c7abe5eecf.jpg",
+        "table_caption": [
+            "Figure 3: Additional examples of error types, as made by davinci-codex model with Create Table + Select 3 prompt. NL stands for natural language question. Percentage indicates the percentage of errors which are of the given type."
+        ],
+        "table_footnote": [],
+        "table_body": "<table><tr><td>14%</td><td>Shortcuts</td></tr><tr><td>Q</td><td>What are the template ids with template type description &quot;Presentation&quot;.</td></tr><tr><td>Gold</td><td>SELECT T2.template_id FROM Ref_template_types AS T1 JOIN Templates</td></tr><tr><td></td><td>AS T2 ON T1.template_type_code = T2.template_type_code WHERE T1.template_type_description = &quot;Presentation&quot;</td></tr><tr><td></td><td>SELECT Template_ID FROM Templates WHERE Template_Type_Code = &#x27;PPT&#x27;;</td></tr><tr><td>Pred 8%</td><td>SELECT Extra Columns</td></tr><tr><td>NL</td><td>Which city has the most frequent destination airport?</td></tr><tr><td>Gold</td><td>SELECT T1.City FROM AIRPORTS AS T1 JOIN FLIGHTS AS T2 ON T1.AirportCode = T2.DestAirport GROUP BY T1.City ORDER BY count(*) DESC LIMIT 1</td></tr><tr><td>Pred</td><td>SELECT City, COUNT(*) AS &#x27;Number of Destinations&#x27; FROM airports JOIN flights</td></tr><tr><td></td><td>ON airports.AirportCode = flights.DestAirport GROUP BY City ORDER BY COUNT(*) DESC LIMIT 1;</td></tr><tr><td>5%</td><td>SELECT Convention</td></tr><tr><td>NL Gold</td><td>Which airlines have a flight with source airport AHD? SELECT T1.Airline FROM AIRLINES AS T1 JOIN FLIGHTS AS T2 ON T1.uid =</td></tr><tr><td></td><td>T2.Airline WHERE T2.SourceAirport  $\\begin{array} { r l } { = } & { { } \" \\mathbb { A } \\mathbb { H } \\mathbb { D } ^ { \\prime \\prime } } \\end{array}$ </td></tr><tr><td>Pred</td><td>SELECT Airline FROM flights WHERE SourceAirport = &#x27;AHD&#x27;;</td></tr><tr><td>4%</td><td>GROUP BY Convention</td></tr><tr><td>NL Gold</td><td>Which makers designed more than 3 car models? List full name and the id. SELECT T1.Ful1Name , T1.Id FROM CAR_MAKERS AS T1 JOIN MODEL_LIST AS T2 ON</td></tr><tr><td></td><td>T1.Id = T2.Maker GROUP BY T1.Id HAVING count(*) &gt; 3;</td></tr><tr><td>Pred</td><td>SELECT car_makers.FullName, car_makers.Id FROM car_makers JOIN model_list</td></tr><tr><td></td><td>ON car_makers.Id = model_list.Maker GROUP BY car_makers.FullName HAVING</td></tr><tr><td>4%</td><td>COUNT(model_list.Model) &gt; 3; Argmax</td></tr><tr><td>NL</td><td>Give the name, year of independence, and surface area of the country that has the lowest population.</td></tr><tr><td>Gold</td><td>SELECT Name, SurfaceArea, IndepYear FROM country ORDER BY Population LIMIT 1</td></tr><tr><td>Pred</td><td>SELECT Name, IndepYear, SurfaceArea FROM country WHERE Population = (SELECT</td></tr><tr><td>51%</td><td>MIN(Population) FROM country); Other - Semantic Incorrect</td></tr><tr><td>NL</td><td>Which countries have either English or Dutch as an official language?</td></tr><tr><td>Gold</td><td>SELECT * FROM country AS T1 JOIN countrylanguage AS T2 ON T1.Code =</td></tr><tr><td></td><td>T2.CountryCode WHERE T2.Language = &quot;English&quot; AND IsOfficial = &quot;T&quot; UNION SELECT * FROM country AS T1 JOIN countrylanguage AS T2 ON T1.Code =</td></tr><tr><td></td><td>T2.CountryCode WHERE T2.Language = &quot;Dutch&quot; AND IsOfficial = &quot;T&quot;</td></tr><tr><td>Pred</td><td>SELECT * FROM countrylanguage WHERE IsOfficial = &#x27;T&#x27; OR IsOfficial = &#x27;F&#x27;;</td></tr><tr><td>NL Gold</td><td>Show the name and the release year of the song by the youngest singer. SELECT song_name , song_release_year FROM singer ORDER BY age LIMIT 1</td></tr><tr><td>Pred</td><td>SELECT Name, Song_release_year FROM singer WHERE Age = (SELECT MIN(Age) FROM</td></tr><tr><td>NL</td><td>singer); What is the maximum miles per gallon of the car with 8 cylinders or produced before 1980 ?</td></tr><tr><td>Gold</td><td>select max(mpg) from cars_data where cylinders = 8 or year &lt; 1980</td></tr><tr><td>Pred 14%</td><td>SSELECT MAX(MPG) FROM cars_data WHERE Cylinders = 8 AND Year &lt; 1980; Other - Ambiguous Correct</td></tr><tr><td>NL</td><td>Find the first name and age of students who have a pet.</td></tr><tr><td>Gold</td><td>SELECT DISTINCT T1.fname , T1.age FROM student AS T1 JOIN has_pet AS T2 ON T1.stuid = T2.stuid</td></tr><tr><td>Pred</td><td>SELECT Fname, Age FROM Student WHERE StuID IN (SELECT StuID FROM Has_Pet);</td></tr><tr><td>NL</td><td>How many countries speak both English and Dutch?</td></tr><tr><td>Gold</td><td>SELECT COUNT(*) FROM (SELECT T1.Name FROM country AS T1 JOIN countrylanguage AS T2 ON T1.Code = T2.CountryCode WHERE T2.Language = &quot;English&quot; INTERSECT</td></tr><tr><td></td><td>SELECT T1.Name FROM country AS T1 JOIN countrylanguage AS T2 ON T1.Code =</td></tr><tr><td></td><td>T2.CountryCode WHERE T2.Language  $\\begin{array} { r l } { = } & { { } \" \\operatorname { D u t c c h } \" ) } \\end{array}$ </td></tr><tr><td>Pred</td><td>SELECT COUNT(*) FROM countrylanguage WHERE Language = &#x27;Dutch&#x27; AND CountryCode</td></tr><tr><td></td><td></td></tr><tr><td></td><td>IN (SELECT CountryCode FROM countrylanguage WHERE Language = &#x27;English&#x27;);</td></tr><tr><td>NL</td><td>What are the Asian countries which have a population larger than that of any country in Africa?</td></tr><tr><td></td><td></td></tr><tr><td>Gold</td><td>SELECT Name FROM country WHERE Continent = &quot;Asia&quot; AND population &gt; (SELECT</td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td>min(population) FROM country WHERE Continent  $\\begin{array} { r l } { = } & { { } \\ \" \\mathtt { N A f r i c a } \\ \" \\mathtt { N i c a } \\ \" } \\end{array}$ </td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td>Pred</td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td>SELECT Name FROM country WHERE Continent = &#x27;Asia&#x27; AND Population &gt; (SELECT</td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr></table>",
+        "bbox": [
+            115,
+            112,
+            885,
+            845
+        ],
+        "page_idx": 7
+    },
+    {
+        "type": "table",
+        "img_path": "images/08a1aff1b2b46c412f79771874a9b232bafa8730dbcb5f006bb169305a444577.jpg",
+        "table_caption": [
+            "Figure 4: Cherry-picked examples of Codex improvements from 0-shot to 10-shot text-to-SQL on GeoQuery validation set. The style of the generated SQL changes a lot and is much closer to that of the gold SQL when few-shot examples are in the prompt. The few-shot examples were also useful to adapt the generated SQL to the conventions of the dataset, like the way argmax is done, or the selected columns."
+        ],
+        "table_footnote": [],
+        "table_body": "<table><tr><td>10-shot examples what states does the missouri river run through SELECT RIVERalias0.TRAVERSE FROM RIVER AS RIVERalias0 WHERE RIVERalias0.RIVER_NAME = &quot;missouri&quot; ; - what is the size of texas SELECT STATEaliasO.AREA FROM STATE AS STATEalias0 WHERE STATEaliasO.STATE NAME</td></tr><tr><td>= &quot;texas&quot; ; - what are the major cities in texas SELECT</td></tr><tr><td>CITYaliasO.CITY NAME FROM CITY AS CITYaliasO WHERE CITYaliasO.POPULATION &gt; 150000 AND CITYalias0.STATE_NAME = &quot;texas&quot; ; - what is the capital of pennsylvania SELECT STATEalias0.CAPITAL FROM STATE AS STATEalias0 WHERE STATEalias0.STATE_NAME = &quot;pennsylvania&quot; ; - what is the biggest</td></tr><tr><td>city in nebraska SELECT CITYalias0.CITY_NAME FROM CITY AS CITYalias0 WHERE CITYalias0.POPULATION = ( SELECT MAX( CITYalias1.POPULATION ) FROM CITY AS CITYalias1 WHERE CITYalias1.STATE_NAME = &quot;nebraska&quot; ) AND CITYalias0.STATE_NAME = &quot;nebraska&quot; ; - what is the population</td></tr><tr><td>of austin SELECT CITYalias0.POPULATION FROM CITY AS CITYalias0 WHERE CITYaliasO.CITY_NAME = &quot;austin&quot; ; - which state is kalamazoo in SELECT CITYaliasO.STATE NAME FROM CITY AS CITYaliasO WHERE</td></tr><tr><td>CITYalias0.CITY_NAME = &quot;kalamazoo&quot; ; - name all the rivers in colorado SELECT RIVERalias0.RIVER_NAME FROM RIVER AS RIVERalias0 WHERE RIVERalias0.TRAVERSE = &quot;colorado&quot; ; - what states border missouri SELECT</td></tr><tr><td></td></tr><tr><td></td></tr><tr><td>BORDER_INFOalias0.BORDER FROM BORDER_INFO AS BORDER_INFOalias0 WHERE</td></tr><tr><td>BORDER_INFOalias0.STATE_NAME = &quot;missouri&quot; ; - how many people live in new mexico SELECT STATEaliasO.POPULATION FROM STATE AS STATEaliasO WHERE STATEalias0.STATE_NAME = &quot;new mexico&quot;; Very similar query in the few-shot prompt fixes the example Question which states border iowa</td></tr><tr><td>Gold SELECT BORDER_INFOalias0.BORDER FROM BORDER_INFO AS BORDER_INFOalias0</td></tr><tr><td></td></tr><tr><td></td></tr><tr><td>Argmax convetion fixed</td></tr><tr><td>WHERE BORDER_INFOalias0.STATE_NAME = &quot;iowa&quot;; 0-shot pred SELECT state_name FROM border WHERE border = &#x27;iowa&#x27; 10-shot pred SELECT BORDER_INFOalias0.BORDER FROM BORDER_INFO AS BORDER_INFOalias0 WHERE BORDER_INFOaliasO.STATE_NAME = &quot;iowa&quot;</td></tr><tr><td></td></tr><tr><td></td></tr><tr><td>AS STATEalias1) SELECT extra columns fixed</td></tr><tr><td>Question what state has the smallest population Gold SELECT STATEaliasO.STATE NAME FROM STATE AS STATEaliasO WHERE STATEaliasO.POPULATION = (SELECT MIN(STATEalias1.POPULATION) FROM STATE</td></tr><tr><td>AS STATEalias1) ; 0-shot pred SELECT state_name FROM state ORDER BY population LIMIT 1 10-shot pred SELECT STATEaliasO.STATE_NAME FROM STATE AS STATEaliasO WHERE STATEaliasO.POPULATION = (SELECT MIN(STATEalias1.POPULATION) FROM STATE</td></tr></table>",
+        "bbox": [
+            117,
+            165,
+            880,
+            760
+        ],
+        "page_idx": 8
+    },
+    {
+        "type": "image",
+        "img_path": "images/6887d8b1958f50fcd0f142f79b407e0dc46fafb64957c5d9ef7d25ae650d5e13.jpg",
+        "image_caption": [
+            "Figure 7: Example prompt for API Docs."
+        ],
+        "image_footnote": [],
+        "bbox": [
+            110,
+            85,
+            872,
+            437
+        ],
+        "page_idx": 9
+    },
+    {
+        "type": "code",
+        "sub_type": "code",
+        "code_caption": [
+            "Figure 8: Example prompt for Select 3."
+        ],
+        "code_footnote": [],
+        "code_body": "```sql\n/\n3 example rows from table Highschooler:\nSELECT <sub>*</sub> FROM Highschooler LIMIT 3;\nTable: Highschooler\nID name grade\n1510 Jordan 9\n1689 Gabriel 9\n1381 Tiffany 9\n*/\n/\n3 example rows from table Friend:\nSELECT <sub>*</sub> FROM Friend LIMIT 3;\nTable: Friend\nstudent_id friend_id\n1510 1381\n1510 1689\n1689 1709\n*/\n/*\n3 example rows from table Likes:\nSELECT FROM Likes LIMIT 3;\nTable: Likes\nstudent_id liked_id\n1689 1709\n1709 1689\n1782 1709\n*/\n-- Using valid SQLite, answer the following questions for the tables provided above.\n-- What is Kyle’s id?\nSELECT\n```",
+        "bbox": [
+            110,
+            90,
+            878,
+            516
+        ],
+        "page_idx": 10
+    },
+    {
+        "type": "code",
+        "sub_type": "code",
+        "code_caption": [
+            "Figure 9: Example prompt for Create Table."
+        ],
+        "code_footnote": [],
+        "code_body": "```sql\nCREATE TABLE Highschooler(\nID int primary key,\nname text,\ngrade int)\nCREATE TABLE Friend(\nstudent_id int,\nfriend_id int,\nprimary key (student_id,friend_id),\nforeign key(student_id) references Highschooler(ID),\nforeign key (friend_id) references Highschooler(ID)\n)\nCREATE TABLE Likes(\nstudent_id int,\nliked_id int,\nprimary key (student_id, liked_id),\nforeign key (liked_id) references Highschooler(ID),\nforeign key (student_id) references Highschooler(ID)\n)\n-- Using valid SQLite, answer the following questions for the tables provided above.\n-- What is Kyle’s id?\nSELECT\n```",
+        "bbox": [
+            112,
+            560,
+            880,
+            883
+        ],
+        "page_idx": 10
+    },
+    {
+        "type": "code",
+        "sub_type": "code",
+        "code_caption": [
+            "Figure 10: Example prompt for Create Table + Select 3."
+        ],
+        "code_footnote": [],
+        "code_body": "```sql\nCREATE TABLE Highschooler(\nID int primary key,\nname text,\ngrade int)\n/*\n3 example rows:\nSELECT FROM Highschooler LIMIT 3;\nID name grade\n1510 Jordan 9\n1689 Gabriel 9\n1381 Tiffany 9\n*/\nCREATE TABLE Friend(\nstudent_id int,\nfriend_id int,\nprimary key (student_id,friend_id),\nforeign key(student_id) references Highschooler(ID),\nforeign key (friend_id) references Highschooler(ID)\n)\n/*\n3 example rows:\nSELECT <sub>*</sub> FROM Friend LIMIT 3;\nstudent_id friend_id\n1510 1381\n1510 1689\n1689 1709\n*/\nCREATE TABLE Likes(\nstudent_id int,\nliked_id int,\nprimary key (student_id, liked_id),\nforeign key (liked_id) references Highschooler(ID),\nforeign key (student_id) references Highschooler(ID)\n)\n/*\n3 example rows:\nSELECT FROM Likes LIMIT 3;\nstudent_id liked_id\n1689 1709\n1709 1689\n1782 1709\n*/\n-- Using valid SQLite, answer the following questions for the tables provided above.\n-- What is Kyle’s id?\nSELECT\n```",
+        "bbox": [
+            105,
+            181,
+            884,
+            788
+        ],
+        "page_idx": 11
+    },
+    {
+        "type": "image",
+        "img_path": "images/ae22dc0d492f5512708329cea92d0b6bc6d0f27907e92014a131b2bedfcefb72.jpg",
+        "image_caption": [
+            "Figure 11: Example prompt for 5-shot. It starts with the schema and 3 rows per database (exactly as in Figure 10), followed by 5 few-shot examples, and finally the target question."
+        ],
+        "image_footnote": [],
+        "bbox": [
+            109,
+            135,
+            882,
+            813
+        ],
+        "page_idx": 12
+    }
+]

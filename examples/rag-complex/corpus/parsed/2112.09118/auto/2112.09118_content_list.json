@@ -1,0 +1,2085 @@
+[
+    {
+        "type": "text",
+        "text": "Unsupervised Dense Information Retrieval with Contrastive Learning",
+        "text_level": 1,
+        "bbox": [
+            112,
+            98,
+            725,
+            150
+        ],
+        "page_idx": 0
+    },
+    {
+        "type": "text",
+        "text": "Gautier Izacard<sup>♦,♣,♥</sup> Mathilde Caron<sup>♦,♥,♠</sup> Lucas Hosseini<sup>♦</sup> Sebastian Riedel<sup>♦,4</sup> Piotr Bojanowski<sup>♦</sup> Armand Joulin<sup>♦</sup> Edouard Grave<sup>♦</sup> <sup>♦</sup> Meta AI Research, <sup>♣</sup> Ec <sup>♠</sup> Université Grenoble Alp",
+        "bbox": [
+            112,
+            184,
+            289,
+            305
+        ],
+        "page_idx": 0
+    },
+    {
+        "type": "text",
+        "text": "ole normale supérieure, PSL University, <sup>♥</sup> Inria, es, <sup>4</sup> University College London",
+        "bbox": [
+            112,
+            281,
+            617,
+            310
+        ],
+        "page_idx": 0
+    },
+    {
+        "type": "text",
+        "text": "gizacard@fb.com mathilde@fb.com hoss@fb.com sriedel@fb.com bojanowski@fb.com ajoulin@fb.com egrave@fb.com",
+        "bbox": [
+            754,
+            185,
+            887,
+            284
+        ],
+        "page_idx": 0
+    },
+    {
+        "type": "text",
+        "text": "Reviewed on OpenReview: https: // openreview. net/ forum? id= jKN1pXi7b0",
+        "bbox": [
+            112,
+            324,
+            669,
+            338
+        ],
+        "page_idx": 0
+    },
+    {
+        "type": "text",
+        "text": "Abstract",
+        "text_level": 2,
+        "bbox": [
+            457,
+            372,
+            539,
+            390
+        ],
+        "page_idx": 0
+    },
+    {
+        "type": "text",
+        "text": "Recently, information retrieval has seen the emergence of dense retrievers, using neural networks, as an alternative to classical sparse methods based on term-frequency. These models have obtained state-of-the-art results on datasets and tasks where large training sets are available. However, they do not transfer well to new applications with no training data, and are outperformed by unsupervised term-frequency methods such as BM25. In this work, we explore the limits of contrastive learning as a way to train unsupervised dense retrievers and show that it leads to strong performance in various retrieval settings. On the BEIR benchmark our unsupervised model outperforms BM25 on 11 out of 15 datasets for the Recall@100. When used as pre-training before fine-tuning, either on a few thousands in-domain examples or on the large MS MARCO dataset, our contrastive model leads to improvements on the BEIR benchmark. Finally, we evaluate our approach for multi-lingual retrieval, where training data is even scarcer than for English, and show that our approach leads to strong unsupervised performance. Our model also exhibits strong cross-lingual transfer when fine-tuned on supervised English data only and evaluated on low resources language such as Swahili. We show that our unsupervised models can perform cross-lingua retrieval between diferent scripts, such as retrieving English documents from Arabic queries, which would not be possible with term matching methods.",
+        "bbox": [
+            169,
+            411,
+            826,
+            671
+        ],
+        "page_idx": 0
+    },
+    {
+        "type": "text",
+        "text": "1 Introduction",
+        "text_level": 2,
+        "bbox": [
+            114,
+            702,
+            261,
+            718
+        ],
+        "page_idx": 0
+    },
+    {
+        "type": "text",
+        "text": "Document retrieval is the task of finding relevant documents in a large collection to answer specific queries. This is an important task by itself and a core component to solve many natural language processing (NLP) problems, such as open domain question answering (Chen et al., 2017a) or fact checking (Thorne et al., 2018). Traditionally, retrieval systems, or retrievers, leverage lexical similarities to match queries and documents, using, for instance, TF-IDF or BM25 weighting (Robertson & Zaragoza, 2009). These approaches, based on near-exact matches between tokens of the queries and documents, sufer from the lexical gap and do not generalize well (Berger et al., 2000). By contrast, approaches based on neural networks allow learning beyond lexical similarities, resulting in state-of-the-art performance on question answering benchmarks, such as MS MARCO (Nguyen et al., 2016) or NaturalQuestions (Kwiatkowski et al., 2019).",
+        "bbox": [
+            111,
+            734,
+            885,
+            872
+        ],
+        "page_idx": 0
+    },
+    {
+        "type": "text",
+        "text": "The strong retrieval results of neural networks have been possible for domains and applications where large training datasets are available. In the case of retrieval, creating these datasets requires manually matching queries to the relevant documents in the collection. This is hardly possible when the collection contains millions or billions of elements, resulting in many scenarios where only a few in-domain examples, if any, are available. A potential solution is to train a dense retriever on a large retrieval dataset such as MS MARCO, and then apply it to new domains, a setting referred to as zero-shot. Unfortunately, in this setting, dense retrievers are often outperformed by classical methods based on term-frequency, which do not require supervision (Thakur et al., 2021). Moreover large annotated datasets are generally not available in languages other than English. Thus, using large collections of supervised data is not suitable to train multilingual retrieval systems.",
+        "bbox": [
+            111,
+            878,
+            885,
+            925
+        ],
+        "page_idx": 0
+    },
+    {
+        "type": "aside_text",
+        "text": "arXiv:2112.09118v4 [cs.IR] 29 Aug 2022",
+        "bbox": [
+            22,
+            267,
+            58,
+            705
+        ],
+        "page_idx": 0
+    },
+    {
+        "type": "header",
+        "text": "Published in Transactions on Machine Learning Research (08/2022)",
+        "bbox": [
+            112,
+            31,
+            602,
+            47
+        ],
+        "page_idx": 0
+    },
+    {
+        "type": "page_number",
+        "text": "1",
+        "bbox": [
+            493,
+            948,
+            503,
+            959
+        ],
+        "page_idx": 0
+    },
+    {
+        "type": "text",
+        "text": "",
+        "bbox": [
+            111,
+            103,
+            885,
+            210
+        ],
+        "page_idx": 1
+    },
+    {
+        "type": "text",
+        "text": "A natural alternative to transfer learning is unsupervised learning, which raises the following question: is it possible to train dense retrievers without supervision, and match the performance of BM25? Training dense retrievers without supervision can be achieved by using an auxiliary task that approximates retrieval. Given a document, one can generate a synthetic query and then train the network to retrieve the original document, among many others, given the query. The inverse Cloze task (ICT), proposed by Lee et al. (2019) to pre-train retrievers, uses a given sentence as a query and predicts the context surrounding it. While showing promising results as pre-training (Chang et al., 2020; Sachan et al., 2021), this approach still lags behind BM25 when used as a zero-shot retriever. ICT is strongly related to contrastive learning (Wu et al., 2018), which has been widely applied in computer vision (Chen et al., 2020; He et al., 2020). In particular, computer vision models trained with the latest contrastive learning methods led to features well suited to retrieval (Caron et al., 2021). We thus propose to revisit how well contrastive learning performs to train dense retrievers without supervision.",
+        "bbox": [
+            111,
+            217,
+            885,
+            398
+        ],
+        "page_idx": 1
+    },
+    {
+        "type": "text",
+        "text": "In this paper, we make the following contributions. First, we show that contrastive learning can lead to strong unsupervised retrievers: our model achieves Recall@100 results competitive with BM25 on most of the BEIR benchmark. Second, in a few-shot setting, we show that our model benefits from few training examples, and obtains better results than transferring models from large datasets such as MS MARCO. Third, when used as a pre-training method before fine-tuning on MS MARCO, our technique leads to strong performance on the BEIR benchmark. We perform ablations to motivate our design choices, and show that cropping works better than the inverse Cloze task. Finally we train a multilingual dense retriever with contrastive learning and show that it achieves state-of-the-art performance.",
+        "bbox": [
+            111,
+            405,
+            885,
+            529
+        ],
+        "page_idx": 1
+    },
+    {
+        "type": "text",
+        "text": "Code and pre-trained models are available here: https://github.com/facebookresearch/contriever.",
+        "bbox": [
+            112,
+            534,
+            864,
+            550
+        ],
+        "page_idx": 1
+    },
+    {
+        "type": "text",
+        "text": "2 Related work",
+        "text_level": 2,
+        "bbox": [
+            112,
+            569,
+            267,
+            587
+        ],
+        "page_idx": 1
+    },
+    {
+        "type": "text",
+        "text": "In this section, we briefly review relevant work in information retrieval, and application of machine learning to this problem. This is not an exhaustive review, and we refer the reader to Manning et al. (2008), Mitra et al. (2018) and Lin et al. (2020) for a more complete introduction to the field.",
+        "bbox": [
+            111,
+            603,
+            883,
+            650
+        ],
+        "page_idx": 1
+    },
+    {
+        "type": "text",
+        "text": "Term-frequency based information retrieval. Historically, in information retrieval, documents and queries are represented as sparse vectors where each element of the vectors corresponds to a term of the vocabulary. Diferent weighing schemes have been proposed, to determine how important a particular term is to a document in a large dataset. One of the most used weighing scheme is known as TF-IDF, and is based on inverse document frequency, or term specificity (Jones, 1972). BM25, which is still widely used today, extends TF-IDF (Robertson et al., 1995). A well known limitation of these approaches is that they rely on near-exact match to retrieve documents. This led to the introduction of latent semantic analysis (Deerwester et al., 1990), in which documents are represented as low dimensional dense vectors.",
+        "bbox": [
+            111,
+            665,
+            885,
+            787
+        ],
+        "page_idx": 1
+    },
+    {
+        "type": "text",
+        "text": "Neural network based information retrieval. Following the successful application of deep learning methods to natural language processing, neural networks techniques were introduced for information retrieval. Huang et al. (2013) proposed a deep bag-of-words model, in which representations of queries and documents are computed independently. A relevance score is then obtained by taking the dot product between representations, and the model is trained end-to-end on click data from a search engine. This method was later refined by replacing the bag-of-words model by convolutional neural networks (Shen et al., 2014) or recurrent neura network (Palangi et al., 2016). A limitation of bi-encoders is that queries and documents are represented by a single vector, preventing the model to capture fine-grained interactions between terms. Nogueira & Cho (2019) introduced a cross-encoder model, based on the BERT model (Devlin et al., 2019), which jointly encodes queries and documents. The application of a strong pre-trained model, as well as the cross-encoder architecture, lead to important improvement on the MS MARCO benchmark (Bajaj et al., 2016).",
+        "bbox": [
+            111,
+            804,
+            887,
+            926
+        ],
+        "page_idx": 1
+    },
+    {
+        "type": "header",
+        "text": "Published in Transactions on Machine Learning Research (08/2022)",
+        "bbox": [
+            112,
+            32,
+            602,
+            47
+        ],
+        "page_idx": 1
+    },
+    {
+        "type": "page_number",
+        "text": "2",
+        "bbox": [
+            493,
+            948,
+            504,
+            959
+        ],
+        "page_idx": 1
+    },
+    {
+        "type": "text",
+        "text": "",
+        "bbox": [
+            111,
+            103,
+            885,
+            150
+        ],
+        "page_idx": 2
+    },
+    {
+        "type": "text",
+        "text": "The methods described in the previous paragraph were applied to re-rank documents, which were retrieved with a traditional IR system such as BM25. Gillick et al. (2018) first studied whether continuous retrievers, based on bi-encoder neural models, could be viable alternative to re-ranking. In the context of question answering, Karpukhin et al. (2020) introduced a dense passage retriever (DPR) based on the bi-encoder architecture. This model is initialized with a BERT network, and trained discriminatively using pairs of queries and relevant documents, with hard negatives from BM25. Xiong et al. (2020) further extended this work by mining hard negatives with the model itself during optimization, and trained on the MS MARCO dataset. Once a collection of documents, such as Wikipedia articles, is encoded, retrieval is performed with a fast k-nearest neighbors library such as FAISS Johnson et al. (2019). To alleviate the limitations of bi-encoders, Humeau et al. (2019) introduces the poly-encoder architecture, where documents are encoded by multiple vectors. Similarly, Khattab et al. (2020) proposes the ColBERT model, which keeps a vector representation for each term of the queries and documents. To make the retrieval tractable, the term-leve function is approximated to first retrieve an initial set of candidates, which are then re-ranked with the true score. In the context of question answering, knowledge distillation has been used to train retrievers, either using the attention scores of the reader of the downstream task as synthetic labels (Izacard & Grave, 2020a), or the relevance score from a cross encoder (Yang & Seo, 2020). Luan et al. (2020) compares, theoretically and empirically, the performance of sparse and dense retrievers, including bi-, cross- and poly-encoders. Dense retrievers, such as DPR, can lead to indices weighing nearly 100GB when encoding document collections such as Wikipedia. Izacard et al. (2020) shows how to compress such indices, with limited impact on performance, making them more practical to use.",
+        "bbox": [
+            111,
+            156,
+            887,
+            460
+        ],
+        "page_idx": 2
+    },
+    {
+        "type": "text",
+        "text": "Self-supervised learning for NLP. Following the success of word2vec (Mikolov et al., 2013), many self-supervised techniques have been proposed to learn representation of text. Here, we briefly review the ones that are most related to our approach: sentence level models and contrastive techniques. Jernite et al. (2017) introduced diferent objective functions to learn sentence representations, including next sentence prediction and sentence order prediction. These objectives were later used in pre-trained models based on transformers, such as BERT (Devlin et al., 2019) and AlBERT (Lan et al., 2019). In the context of retrieval, Lee et al. (2019) introduced the inverse cloze task (ICT), whose purpose is to predict the context surrounding a span of text. Guu et al. (2020) integrated a bi-encoder retriever model in a BERT pre-training scheme. The retrieved documents are used as additional context in the BERT task, and the whole system is trained end-to-end in an unsupervised way. Similarly, Lewis et al. (2020) proposed to jointly learn a retriever and a generative seq2seq model, using self-supervised training. Chang et al. (2020) compares diferent pre-training tasks for retrieval, including the inverse cloze task. In the context of natural language processing, Fang et al. (2020) proposed to apply MoCo where positive pairs of sentences are obtained using back-translation. Diferent works augmented the masked language modeling objective with a contrastive loss (Giorgi et al., 2020; Wu et al., 2020; Meng et al., 2021). SBERT (Reimers & Gurevych, 2019) uses a Siamese network similar to contrastive learning to learn a BERT-like model that is adapted to matching sentence embeddings. Their formulation is similar to our work but requires aligned pairs of sentences to form positive pairs while we propose to use data augmentation to leverage large unaligned textual corpora. Concurrent to this work, Gao & Callan (2021) have also shown the potential of contrastive learning for information retrieval; building on the same observation that both tasks share a similar structure. Spider (Ram et al., 2021), a contemporary work, uses spans appearing multiple times in a document to create pseudo examples for contrastive learning in order to train unsupervised retrievers. Finally, Chen et al. (2021) train a dense retriever to imitate unsupervised lexical-based methods. This improves performance on a range of tasks and achieves state-of-the-art results when combining the resulting dense retriever with Contriever, our model pre-trained with contrastive learning.",
+        "bbox": [
+            109,
+            476,
+            887,
+            842
+        ],
+        "page_idx": 2
+    },
+    {
+        "type": "text",
+        "text": "3 Method",
+        "text_level": 2,
+        "bbox": [
+            112,
+            859,
+            222,
+            876
+        ],
+        "page_idx": 2
+    },
+    {
+        "type": "text",
+        "text": "In this section, we describe how to train a dense retriever with no supervision. We review the model architecture and then describe contrastive learning — a key component of its training.",
+        "bbox": [
+            111,
+            893,
+            883,
+            925
+        ],
+        "page_idx": 2
+    },
+    {
+        "type": "header",
+        "text": "Published in Transactions on Machine Learning Research (08/2022)",
+        "bbox": [
+            112,
+            31,
+            602,
+            47
+        ],
+        "page_idx": 2
+    },
+    {
+        "type": "page_number",
+        "text": "3",
+        "bbox": [
+            491,
+            948,
+            504,
+            960
+        ],
+        "page_idx": 2
+    },
+    {
+        "type": "text",
+        "text": "The objective of a retriever is to find relevant documents in a large collection for a given query. Thus, the retriever takes as input the set of documents and the query and outputs a relevance score for each document. A standard approach is to encode each query-document pair with a neural network (Nogueira & Cho, 2019). This procedure requires re-encoding every document for any new query and hence does not scale to large collections of documents. Instead, we follow standard approaches (Huang et al., 2013; Karpukhin et al., 2020) in information retrieval and use a bi-encoder architecture where documents and queries are encoded independently. The relevance score between a query and a document is given by the dot product between their representations after applying the encoder. More precisely, given a query q and document d, we encode each of them independently using the same model, $f _ { \\theta } ,$ parameterized by θ. The relevance score $s ( q , d )$ between a query q and a document d is then the dot product of the resulting representations:",
+        "bbox": [
+            109,
+            103,
+            887,
+            256
+        ],
+        "page_idx": 3
+    },
+    {
+        "type": "equation",
+        "img_path": "images/0d2f2fb44d92735c23c195570c70732c7c8a58b75adda6ad609956d34c2159d4.jpg",
+        "text": "$$\ns ( q , d ) = \\langle f _ { \\theta } ( q ) , f _ { \\theta } ( d ) \\rangle .\n$$",
+        "text_format": "latex",
+        "bbox": [
+            413,
+            266,
+            583,
+            284
+        ],
+        "page_idx": 3
+    },
+    {
+        "type": "text",
+        "text": "In practice, we use a transformer network for $f _ { \\theta }$ to embed both queries and documents. Alternatively, two diferent encoders can be used to encode queries and documents respectively as in DPR (Karpukhin et al., 2020). Empirically, we observed that using the same encoder, such as in Xiong et al. (2020) and Reimers $\\&$ Gurevych (2019), generally improves robustness in the context of zero-shot transfer or few-shot learning, while having no impact on other settings. Finally, the representation $f _ { \\boldsymbol { \\theta } } ( \\boldsymbol { q } )$ (resp. $f _ { \\theta } ( d ) )$ for a query (resp. document) is obtained by averaging the hidden representations of the last layer. Following previous work on dense retrieval with neural networks, we use the BERT base uncased architecture and refer the reader to Devlin et al. (2019) for more details.",
+        "bbox": [
+            111,
+            294,
+            887,
+            416
+        ],
+        "page_idx": 3
+    },
+    {
+        "type": "text",
+        "text": "3.1 Unsupervised training on unaligned documents",
+        "text_level": 2,
+        "bbox": [
+            112,
+            431,
+            509,
+            446
+        ],
+        "page_idx": 3
+    },
+    {
+        "type": "text",
+        "text": "In this section, we describe our unsupervised training method. We briefly review the loss function traditionally used in contrastive learning and also used in ICT (Lee et al., 2019). We then discuss obtaining positive pairs from a single text document, a critical ingredient for this training paradigm.",
+        "bbox": [
+            111,
+            458,
+            883,
+            506
+        ],
+        "page_idx": 3
+    },
+    {
+        "type": "text",
+        "text": "3.1.1 Contrastive learning",
+        "text_level": 2,
+        "bbox": [
+            112,
+            518,
+            323,
+            535
+        ],
+        "page_idx": 3
+    },
+    {
+        "type": "text",
+        "text": "Contrastive learning is an approach that relies on the fact that every document is, in some way, unique. This signal is the only information available in the absence of manual supervision. A contrastive loss is used to learn by discriminating between documents. This loss compares either positive (from the same document) or negative (from diferent documents) pairs of document representations. Formally, given a query q with an associated positive document $k _ { + }$ , and a pool of negative documents $( k _ { i } ) _ { i = 1 \\dots K }$ , the contrastive InfoNCE loss is defined as:",
+        "bbox": [
+            111,
+            545,
+            885,
+            635
+        ],
+        "page_idx": 3
+    },
+    {
+        "type": "equation",
+        "img_path": "images/423062551a21d5b53251c59d38ce4b769538eab18777f2ff233e1e9a8b5c0f9f.jpg",
+        "text": "$$\n\\mathcal { L } ( q , k _ { + } ) = - \\frac { \\exp ( s ( q , k _ { + } ) / \\tau ) } { \\exp ( s ( q , k _ { + } ) / \\tau ) + \\sum _ { i = 1 } ^ { K } \\exp ( s ( q , k _ { i } ) / \\tau ) } ,\\tag{1}\n$$",
+        "text_format": "latex",
+        "bbox": [
+            305,
+            631,
+            691,
+            667
+        ],
+        "page_idx": 3
+    },
+    {
+        "type": "text",
+        "text": "where τ is a temperature parameter. This loss encourages positive pairs to have high scores and negative pairs to have low scores. Another interpretation of this loss function is the following: given the query representation $q ,$ the goal is to recover, or retrieve, the representation $k _ { + }$ corresponding to the positive document, among all the negatives $k _ { i }$ . In the following, we refer to the left-hand side representations in the score s as queries and the right-hand side representations as keys.",
+        "bbox": [
+            111,
+            671,
+            883,
+            748
+        ],
+        "page_idx": 3
+    },
+    {
+        "type": "text",
+        "text": "3.1.2 Building positive pairs from a single document",
+        "text_level": 2,
+        "bbox": [
+            112,
+            762,
+            521,
+            779
+        ],
+        "page_idx": 3
+    },
+    {
+        "type": "text",
+        "text": "A crucial element of contrastive learning is how to build positive pairs from a single input. In computer vision, this step relies on applying two independent data augmentations to the same image, resulting in two “views” that form a positive pair (Wu et al., 2018; Chen et al., 2020). While we consider similar independent text transformation, we also explore dependent transformations designed to reduce the correlation between views.",
+        "bbox": [
+            111,
+            787,
+            887,
+            849
+        ],
+        "page_idx": 3
+    },
+    {
+        "type": "text",
+        "text": "Inverse Cloze Task is a data augmentation that generates two mutually exclusive views of a document, introduced in the context of retrieval by Lee et al. (2019). The first view is obtained by randomly sampling a span of tokens from a segment of text, while the complement of the span forms the second view. Specifically, given a sequence of text $( w _ { 1 } , . . . , w _ { n } )$ , ICT samples a span $( w _ { a } , . . . , w _ { b } )$ , where $1 \\leq a \\leq b \\leq n$ , uses the tokens of the span as the query and the complement $( w _ { 1 } , . . . , w _ { a - 1 } , w _ { b + 1 } , . . . , w _ { n } )$ as the key. In the original implementation by Lee et al. (2019) the span corresponds to a sentence, and is kept in the document 10% of the time to encourage lexical matching. The Inverse Cloze Task is closely related to the Cloze task which uses the span complement $( w _ { 1 } , . . . , w _ { a - 1 } , w _ { b + 1 } , . . . , w _ { n } )$ as the query.",
+        "bbox": [
+            111,
+            864,
+            885,
+            926
+        ],
+        "page_idx": 3
+    },
+    {
+        "type": "header",
+        "text": "Published in Transactions on Machine Learning Research (08/2022)",
+        "bbox": [
+            112,
+            32,
+            602,
+            47
+        ],
+        "page_idx": 3
+    },
+    {
+        "type": "page_number",
+        "text": "4",
+        "bbox": [
+            493,
+            948,
+            504,
+            959
+        ],
+        "page_idx": 3
+    },
+    {
+        "type": "chart",
+        "img_path": "images/d4d317b1d1d728dc90fcfe6cc38a36e6a9fc56bc32be1d5181531c64cd86f93b.jpg",
+        "content": "",
+        "chart_caption": [
+            "Figure 1: Unsupervised retrieval. We compare our pre-training without using any annotated data to REALM (Guu et al., 2020), SimCSE (Gao et al., 2021) and BM25. For SimCSE we report results of the model using RoBERTa large. REALM uses annotated entity recognition data for training. We highlight that our unsupervised pre-training is on par with BM25 but on 2 datasets."
+        ],
+        "chart_footnote": [],
+        "bbox": [
+            120,
+            108,
+            875,
+            306
+        ],
+        "page_idx": 4
+    },
+    {
+        "type": "text",
+        "text": "",
+        "bbox": [
+            111,
+            420,
+            885,
+            481
+        ],
+        "page_idx": 4
+    },
+    {
+        "type": "text",
+        "text": "Independent cropping is a common independent data augmentation used for images where views are generated independently by cropping the input. In the context of text, cropping is equivalent to sampling a span of tokens. This strategy thus samples independently two spans from a document to form a positive pair. As opposed to the inverse Cloze task, in cropping both views of the example correspond to contiguous subsequence of the original data. A second diference between cropping and ICT is the fact that independent random cropping is symmetric: both the queries and documents follow the same distribution. Independent cropping also lead to overlap between the two views of the data, hence encouraging the network to learn exact matches between the query and document, in a way that is similar to lexical matching methods like BM25. In practice, we can either fix the length of the span for the query and the key, or sample them.",
+        "bbox": [
+            111,
+            497,
+            885,
+            636
+        ],
+        "page_idx": 4
+    },
+    {
+        "type": "text",
+        "text": "Additional data augmentation. Finally, we also consider additional data augmentations such as random word deletion, replacement or masking. We use these perturbations in addition to random cropping.",
+        "bbox": [
+            111,
+            651,
+            883,
+            683
+        ],
+        "page_idx": 4
+    },
+    {
+        "type": "text",
+        "text": "3.1.3 Building large set of negative pairs",
+        "text_level": 2,
+        "bbox": [
+            112,
+            699,
+            434,
+            715
+        ],
+        "page_idx": 4
+    },
+    {
+        "type": "text",
+        "text": "An important aspect of contrastive learning is to sample a large set of negatives. Most standard frameworks difer from each other in terms of how the negatives are handled, and we briefly describe two of them, in-batch negative sampling and MoCo, that we use in this work.",
+        "bbox": [
+            111,
+            724,
+            883,
+            772
+        ],
+        "page_idx": 4
+    },
+    {
+        "type": "text",
+        "text": "Negatives within a batch. A first solution is to generate the negatives by using the other examples from the same batch: each example in a batch is transformed twice to generate positive pairs, and we generate negatives by using the views from the other examples in the batch. We will refer to this technique as “in-batch negatives”. In that case, the gradient is back-propagated through the representations of both the queries and the keys. A downside of this approach is that it requires extremely large batch sizes to work well Chen et al. (2020), with Qu et al. (2021) reporting improvement in the context of information retrieval up to 8192 negatives. This method has been widely used to train information retrieval models with supervised data Chen et al. (2017b); Karpukhin et al. (2020) and was also considered when using ICT to pre-train retrievers by Lee et al. (2019).",
+        "bbox": [
+            109,
+            789,
+            885,
+            925
+        ],
+        "page_idx": 4
+    },
+    {
+        "type": "header",
+        "text": "Published in Transactions on Machine Learning Research (08/2022)",
+        "bbox": [
+            112,
+            32,
+            602,
+            47
+        ],
+        "page_idx": 4
+    },
+    {
+        "type": "page_number",
+        "text": "5",
+        "bbox": [
+            493,
+            948,
+            504,
+            960
+        ],
+        "page_idx": 4
+    },
+    {
+        "type": "text",
+        "text": "Negative pairs across batches. An alternative approach is to store representations from previous batches in a queue and use them as negative examples in the loss (Wu et al., 2018). This allows for smaller batch size but slightly changes the loss by making it asymmetric between “queries” (one of the view generated from the elements of the current batch), and “keys” (the elements stored in the queue). Gradient is only backpropagated through the “queries”, and the representation of the “keys” are considered as fixed. In practice, the features stored in the queue from previous batches comes form previous iterations of the network. This leads to a drop of performance when the network rapidly changes during training. Instead, He et al. (2020) proposed to generate representations of keys from a second network that is updated more slowly. This approach, called MoCo, considers two networks: one for the keys, parametrized by $\\theta _ { k } .$ , and one of the query, parametrized by $\\theta _ { q } .$ The parameters of the query network are updated with backpropagation and stochastic gradient descent, similarly to when using in-batch negatives, while the parameters of the key network, or Momentum encoder, is updated from the parameters of the query network by using a exponential moving average:",
+        "bbox": [
+            111,
+            103,
+            887,
+            301
+        ],
+        "page_idx": 5
+    },
+    {
+        "type": "equation",
+        "img_path": "images/8c53a70918f87387519b5e1f798a2601bc2c0e68ce0a1a6c505d4cba8d3ca083.jpg",
+        "text": "$$\n\\theta _ { k } \\gets m \\theta _ { k } + ( 1 - m ) \\theta _ { q } ,\\tag{2}\n$$",
+        "text_format": "latex",
+        "bbox": [
+            411,
+            313,
+            584,
+            329
+        ],
+        "page_idx": 5
+    },
+    {
+        "type": "text",
+        "text": "where m is the momentum parameter that takes its value in [0, 1].",
+        "bbox": [
+            111,
+            348,
+            589,
+            364
+        ],
+        "page_idx": 5
+    },
+    {
+        "type": "text",
+        "text": "4 Experiments",
+        "text_level": 2,
+        "bbox": [
+            112,
+            391,
+            261,
+            409
+        ],
+        "page_idx": 5
+    },
+    {
+        "type": "text",
+        "text": "In this section, we empirically evaluate our best retriever trained with contrastive learning, called Contriever (contrastive retriever), which uses MoCo with random cropping. We use a contrastive learning procedure that difers from ICT (Lee et al., 2019) mainly in three aspects. First, positive pairs are sampled using random cropping and tokens from each element of the pair are deleted with a probability of 10%. Second we use MoCo where negatives consists of elements from previous batches stored in a queue. This allows to scale to a large number of negatives. Third we use data from Wikipedia and CCNet (Wenzek et al., 2020) for training. Ablation studies motivating these technical choices are performed in Section 6. More technical details about our model are given in Appendix A.1.",
+        "bbox": [
+            109,
+            429,
+            887,
+            551
+        ],
+        "page_idx": 5
+    },
+    {
+        "type": "text",
+        "text": "4.1 Datasets",
+        "text_level": 2,
+        "bbox": [
+            112,
+            577,
+            225,
+            592
+        ],
+        "page_idx": 5
+    },
+    {
+        "type": "text",
+        "text": "Contriever is trained with contrastive learning on documents sampled from a mix between Wikipedia data and CCNet data (Wenzek et al., 2020), where half the batches are sampled from each source.",
+        "bbox": [
+            111,
+            607,
+            883,
+            638
+        ],
+        "page_idx": 5
+    },
+    {
+        "type": "text",
+        "text": "First, we evaluate our model on two question answering datasets: NaturalQuestions (Kwiatkowski et al., 2019) and TriviaQA (Joshi et al., 2017). For both datasets, we use the open domain versions as introduced by Lee et al. (2019), and the English Wikipedia dump from Dec. 20, 2018 as the collection of documents to retrieve from. We report the top-k retrieval accuracy, i.e. the number of questions for which at least one of the top-k passages contain the answer.",
+        "bbox": [
+            111,
+            645,
+            885,
+            722
+        ],
+        "page_idx": 5
+    },
+    {
+        "type": "text",
+        "text": "Second, we use the BEIR benchmark, introduced by Thakur et al. (2021), which contains 18 retrieval datasets, corresponding to nine tasks, such as fact checking or citation prediction, and covering diferent domains, such as Wikipedia or scientific publications. Most datasets from BEIR do not contain a training set, and the focus of the benchmark is zero-shot retrieval. However, most machine learning based retrievers are still trained on supervised data, such as the large scale retrieval dataset MS MARCO (Bajaj et al., 2016). Following standard practice, we report two metrics on this benchmark: nDCG@10 and Recall@100. The nDCG@10 focuses on the ranking of the top 10 retrieved documents, and is good at evaluating rankings returned to humans, for example in a search engine. On the other hand, Recall@100 is relevant to evaluate retrievers that are used in machine learning systems, such as question answering. Indeed, such models can process hundreds of documents, and ignore their ranking (Izacard & Grave, 2020b). While nDCG@10 is the main metric of BEIR, we are more interested in the Recall@100 to evaluate bi-encoders, as our goal is to develop retrievers that can be used in ML systems. Moreover, in many settings, retrieved documents can be re-ranked with a more powerful model such as a cross-encoder, thus improving the nDCG@10.",
+        "bbox": [
+            111,
+            727,
+            887,
+            926
+        ],
+        "page_idx": 5
+    },
+    {
+        "type": "header",
+        "text": "Published in Transactions on Machine Learning Research (08/2022)",
+        "bbox": [
+            112,
+            32,
+            602,
+            47
+        ],
+        "page_idx": 5
+    },
+    {
+        "type": "page_number",
+        "text": "6",
+        "bbox": [
+            493,
+            948,
+            504,
+            960
+        ],
+        "page_idx": 5
+    },
+    {
+        "type": "table",
+        "img_path": "images/489a56fe5e20a490626f9c46e95b0e4df7b2cae1ee971a0f2404deca637e3a80.jpg",
+        "table_caption": [
+            "Table 1: Unsupervised recall@k on the test sets of NaturalQuestions and TriviaQA. For Inverse Cloze Task and Masked Salient Spans we report the results of Sachan et al. (2021). The Masked Salient Spans model uses annotated named entity recognition data. For BM25 we report the results of Ma et al. (2021)"
+        ],
+        "table_footnote": [],
+        "table_body": "<table><tr><td rowspan=\"2\"></td><td colspan=\"3\">NaturalQuestions</td><td colspan=\"3\">TriviaQA</td></tr><tr><td>R@5</td><td>R@20</td><td>R@100</td><td>R@5</td><td>R@20</td><td>R@100</td></tr><tr><td>Inverse Cloze Task (Sachan et al., 2021)</td><td>32.3</td><td>50.9</td><td>66.8</td><td>40.2</td><td>57.5</td><td>73.6</td></tr><tr><td>Masked salient spans (Sachan et al., 2021)</td><td>41.7</td><td>59.8</td><td>74.9</td><td>53.3</td><td>68.2</td><td>79.4</td></tr><tr><td>BM25 (Ma et al., 2021)</td><td></td><td>62.9</td><td>78.3</td><td></td><td>76.4</td><td>83.2</td></tr><tr><td>Contriever</td><td>47.8</td><td>67.8</td><td>82.1</td><td>59.4</td><td>74.2</td><td>83.2</td></tr><tr><td>supervised model: DPR (Karpukhin et al., 2020)</td><td></td><td>78.4</td><td>85.4</td><td></td><td>79.4</td><td>85.0</td></tr><tr><td>supervised model: FiD-KD (Izacard &amp; Grave, 2020a)</td><td>73.8</td><td>84.3</td><td>89.3</td><td>77.0</td><td>83.6</td><td>87.7</td></tr></table>",
+        "bbox": [
+            119,
+            175,
+            882,
+            319
+        ],
+        "page_idx": 6
+    },
+    {
+        "type": "text",
+        "text": "4.2 Baselines",
+        "text_level": 2,
+        "bbox": [
+            112,
+            353,
+            228,
+            367
+        ],
+        "page_idx": 6
+    },
+    {
+        "type": "text",
+        "text": "First, we compare Contriever to BM25, which does not require supervision. On QA datasets, we compare to dense retrievers trained with ICT and the Masked Salient Spans from Sachan et al. (2021). On BEIR, we consider the retriever from REALM (Guu et al., 2020), and RoBERTa large fine-tuned with SimCSE (Gao et al., 2021), as unsupervised dense retrievers. We also compare to ML-based retrievers trained on MS MARCO, classified in three categories: sparse, dense and late-interaction. For sparse methods, we compare to Splade v2 (Formal et al., 2021), which computes sparse representations of documents with BERT pre-trained model. For dense methods, we use DPR (Karpukhin et al., 2020) and ANCE (Xiong et al., 2020), which are bi-encoders trained on supervised data such as NaturalQuestions or MS MARCO. We also compare to TAS-B (Hofstätter et al., 2021), which performs distillation from a cross-encoder to a bi-encoder, and GenQ, which creates synthetic query-document pairs with a generative model.<sup>1</sup> For late-interaction, we use ColBERT (Khattab et al., 2020), which computes pairwise scores between contextualized representations of queries and documents, as well as a cross-encoder used to re-rank documents retrieved with BM25.",
+        "bbox": [
+            111,
+            382,
+            887,
+            565
+        ],
+        "page_idx": 6
+    },
+    {
+        "type": "text",
+        "text": "4.3 Results",
+        "text_level": 2,
+        "bbox": [
+            112,
+            587,
+            215,
+            603
+        ],
+        "page_idx": 6
+    },
+    {
+        "type": "text",
+        "text": "First, we compare the performance of fully unsupervised models, i.e., without fine-tuning on MS MARCO or other annotated data. In Table 1, we report the retrieval performance on two question answering datasets: NaturalQuestions (Kwiatkowski et al., 2019) and TriviaQA (Joshi et al., 2017). Here, our model is competitive with a strong BM25 baseline (Ma et al., 2021), for example leading to 3 points improvement for the recall@100 on NaturalQuestions. It also outperforms previously proposed dense retrievers which were trained with ICT or salient span masking. In Figure 1 we report the recall@100 performance of unsupervised models on the BEIR benchmark. Interestingly, we observe that in this setting, Contriever is competitive compared to BM25 on all datasets, but TREC-COVID and Tóuche-2020. In particular, it obtains better performance than BM25 on 11 out of 15 datasets from the benchmark for the recall@100. Contriever also outperforms previously proposed unsupervised dense retrievers, which obtains lower performance than BM25 in general. For the nDCG@10, which puts more emphasis on the very first retrieved documents, while Contriever largely closes the gap between unsupervised retrievers and BM25, it is still outperformed by BM25 as reported in Table 11. The diference is mainly due to the fact that BM25 largely outperforms Contriever on two datasets with specific features: Trec-COVID and Tóuche-2020. Trec-COVID is an information retrieval dataset related to COVID. However data used to train Contriever were collected before the COVID outbreak, thus they may not be adapted. Tóuche-2020 contains long documents, which does not seem to be very well supported by dense neural retrievers: even after supervised training, models are still lagging behind BM25. Overall, these results show the potential of contrastive learning to train fully unsupervised dense retrievers.",
+        "bbox": [
+            111,
+            617,
+            887,
+            892
+        ],
+        "page_idx": 6
+    },
+    {
+        "type": "header",
+        "text": "Published in Transactions on Machine Learning Research (08/2022)",
+        "bbox": [
+            112,
+            31,
+            602,
+            47
+        ],
+        "page_idx": 6
+    },
+    {
+        "type": "page_footnote",
+        "text": "<sup>1</sup>GenQ thus leads to one diferent model for each dataset.",
+        "bbox": [
+            129,
+            910,
+            486,
+            924
+        ],
+        "page_idx": 6
+    },
+    {
+        "type": "page_number",
+        "text": "7",
+        "bbox": [
+            493,
+            948,
+            504,
+            960
+        ],
+        "page_idx": 6
+    },
+    {
+        "type": "table",
+        "img_path": "images/270728c024dacda2f33ab6098522dfd47ee18e1fccb63392792e6c57bbcd31b0.jpg",
+        "table_caption": [
+            "Table 2: BEIR Benchmark. We report nDCG@10 on the test sets from the BEIR benchmark for bi-encoder methods without re-ranker. We also report the average and number of datasets where a method is the best (“Best on”) over the entire BEIR benchmark (excluding three datasets because of their licence). Bold is the best overall. MS MARCO is excluded from the average. “CE” refers to cross-encoder."
+        ],
+        "table_footnote": [],
+        "table_body": "<table><tr><td></td><td>BM25</td><td>BM25+CE</td><td>DPR</td><td>ANCE</td><td>TAS-B</td><td>Gen-Q</td><td>ColBERT</td><td>Splade v2</td><td>Ours</td><td>Ours+CE</td></tr><tr><td>MS MARCO</td><td>22.8</td><td>41.3</td><td>17.7</td><td>38.8</td><td>40.8</td><td>40.8</td><td>40.1</td><td>43.3</td><td>40.7</td><td>47.0</td></tr><tr><td>Trec-COVID</td><td>65.6</td><td>75.7</td><td>33.2</td><td>65.4</td><td>48.1</td><td>61.9</td><td>67.7</td><td>71.0</td><td>59.6</td><td>70.1</td></tr><tr><td>NFCorpus</td><td>32.5</td><td>35.0</td><td>18.9</td><td>23.7</td><td>31.9</td><td>31.9</td><td>30.5</td><td>33.4</td><td>32.8</td><td>34.4</td></tr><tr><td>NQ</td><td>32.9</td><td>53.3</td><td>47.4</td><td>44.6</td><td>46.3</td><td>35.8</td><td>52.4</td><td>52.1</td><td>49.8</td><td>57.7</td></tr><tr><td>HotpotQA</td><td>60.3</td><td>70.7</td><td>39.1</td><td>45.6</td><td>58.4</td><td>53.4</td><td>59.3</td><td>68.4</td><td>63.8</td><td>71.5</td></tr><tr><td>FiQA</td><td>23.6</td><td>34.7</td><td>11.2</td><td>29.5</td><td>30.0</td><td>30.8</td><td>31.7</td><td>33.6</td><td>32.9</td><td>36.7</td></tr><tr><td>ArguAna</td><td>31.5</td><td>31.1</td><td>17.5</td><td>41.5</td><td>42.9</td><td>49.3</td><td>23.3</td><td>47.9</td><td>44.6</td><td>41.3</td></tr><tr><td>Touche-2020</td><td>36.7</td><td>27.1</td><td>13.1</td><td>24.0</td><td>16.2</td><td>18.2</td><td>20.2</td><td>36.4</td><td>23.0</td><td>29.8</td></tr><tr><td>CQADupStack</td><td>29.9</td><td>37.0.</td><td>15.3</td><td>29.6</td><td>31.4</td><td>34.7</td><td>35.0</td><td></td><td>34.5</td><td>37.7</td></tr><tr><td>Quora</td><td>78.9</td><td>82.5</td><td>24.8</td><td>85.2</td><td>83.5</td><td>83.0</td><td>85.4</td><td>83.8</td><td>86.5</td><td>82.4</td></tr><tr><td>DBPedia</td><td>31.3</td><td>40.9</td><td>26.3</td><td>28.1</td><td>38.4</td><td>32.8</td><td>39.2</td><td>43.5</td><td>41.3</td><td>47.1</td></tr><tr><td>Scidocs</td><td>15.8</td><td>16.6</td><td>7.7</td><td>12.2</td><td>14.9</td><td>14.3</td><td>14.5</td><td>15.8</td><td>16.5</td><td>17.1</td></tr><tr><td>FEVER</td><td>75.3</td><td>81.9</td><td>56.2</td><td>66.9</td><td>70.0</td><td>66.9</td><td>77.1</td><td>78.6</td><td>75.8</td><td>81.9</td></tr><tr><td>Climate-FEVER</td><td>21.3</td><td>25.3</td><td>14.8</td><td>19.8</td><td>22.8</td><td>17.5</td><td>18.4</td><td>23.5</td><td>23.7</td><td>25.8</td></tr><tr><td>Scifact</td><td>66.5</td><td>68.8</td><td>31.8</td><td>50.7</td><td>64.3</td><td>64.4</td><td>67.1</td><td>69.3</td><td>67.7</td><td>69.2</td></tr><tr><td>Avg. w/o CQA</td><td>44.0</td><td>49.5</td><td>26.3</td><td>41.3</td><td>43.7</td><td>43.1</td><td>45.1</td><td>50.6</td><td>47.5</td><td>51.2</td></tr><tr><td>Avg.</td><td>43.0</td><td>48.6</td><td>25.5</td><td>40.5</td><td>42.8</td><td>42.5</td><td>44.4</td><td></td><td>46.6</td><td>50.2</td></tr><tr><td>Best on</td><td>1</td><td>3</td><td>0</td><td>0</td><td>0</td><td>1</td><td>0</td><td>1</td><td>1</td><td>9</td></tr></table>",
+        "bbox": [
+            117,
+            172,
+            882,
+            446
+        ],
+        "page_idx": 7
+    },
+    {
+        "type": "table",
+        "img_path": "images/74ba84d9d25b6d9887d8f018b55e924dcfd62b714ede431e7b063095c30fb03d.jpg",
+        "table_caption": [
+            "Table 3: Few-shot retrieval. Test nDCG@10 after training on a small in-domain training set. We compare BERT and our model, with and without an intermediate fine-tuning step on MS MARCO. Note that our unsupervised pre-training alone outperforms BERT with intermediate MS MARCO fine-tuning."
+        ],
+        "table_footnote": [],
+        "table_body": "<table><tr><td></td><td>Additional data</td><td>SciFact</td><td>NFCorpus</td><td>FiQA</td></tr><tr><td># queries</td><td></td><td>729</td><td>2,590</td><td>5,500</td></tr><tr><td>BM25</td><td>1</td><td>66.5</td><td>32.5</td><td>23.6</td></tr><tr><td>BERT</td><td>=</td><td>75.2</td><td>29.9</td><td>26.1</td></tr><tr><td>Contriever</td><td>=</td><td>84.0</td><td>33.6</td><td>36.4</td></tr><tr><td>BERT</td><td>MS MARCO</td><td>80.9</td><td>33.2</td><td>30.9</td></tr><tr><td>Contriever</td><td>MS MARCO</td><td>84.8</td><td>35.8</td><td>38.1</td></tr></table>",
+        "bbox": [
+            299,
+            520,
+            702,
+            636
+        ],
+        "page_idx": 7
+    },
+    {
+        "type": "text",
+        "text": "Next, we report nDCG@10 on the BEIR benchmark for diferent retrievers trained on MS MARCO in Table 2 (recall@100 can be found in Table 10 of appendix). We individually report results on each dataset as well as the average over 14 datasets of the BEIR Benchmark (excluding 3 for license reasons). We observe that when used as pre-training, contrastive learning leads to strong performance: contriever obtains the best results among dense bi-encoder methods for the nDCG@10, and is state-of-the-art for the recall@100 (improving the average recall@100 from 65.0 to 67.1). This strong recall@100 performance can be further exploited by using a cross-encoder<sup>2</sup> to re-rank the retrieved documents: this leads to the state-of-the-art on 8 datasets of the BEIR benchmark for the nDCG@10, as well as on average. It should be noted that our fine-tuning procedure on MS MARCO is simpler than for other retrievers, as we use a simple strategy for negative mining and do not use distillation. Our model would probably also benefits from improvements proposed by these retrievers, but this is beyond the scope of this paper.",
+        "bbox": [
+            111,
+            665,
+            885,
+            832
+        ],
+        "page_idx": 7
+    },
+    {
+        "type": "text",
+        "text": "Finally, we illustrate the benefit of our retriever compared to BM25 in a few-shot setting, where we have access to a small number of in-domain retrieval examples. This setting is common in practice, and lexical based methods, like BM25, cannot leverage the small training sets to adapt its weights. In Table 3, we report nDCG@10 on three datasets from BEIR associated with the smallest training sets, ranging from 729 to",
+        "bbox": [
+            111,
+            838,
+            885,
+            900
+        ],
+        "page_idx": 7
+    },
+    {
+        "type": "header",
+        "text": "Published in Transactions on Machine Learning Research (08/2022)",
+        "bbox": [
+            112,
+            31,
+            602,
+            47
+        ],
+        "page_idx": 7
+    },
+    {
+        "type": "page_footnote",
+        "text": "<sup>2</sup>We use the existing ms-marco-MiniLM-L-6-v2 cross-encoder model to perform the re-ranking.",
+        "bbox": [
+            129,
+            910,
+            709,
+            924
+        ],
+        "page_idx": 7
+    },
+    {
+        "type": "page_number",
+        "text": "8",
+        "bbox": [
+            493,
+            948,
+            504,
+            960
+        ],
+        "page_idx": 7
+    },
+    {
+        "type": "text",
+        "text": "5,500 queries. We observe that on these small datasets, our pre-training leads to better results than BERT pre-training, even when BERT is fine-tuned on MS MARCO as an intermediate step. Our pre-trained model also outperforms BM25, showing the advantage of dense retriever over lexical methods in the few-shot setting. More details are given in Appendix A.3.",
+        "bbox": [
+            111,
+            103,
+            885,
+            165
+        ],
+        "page_idx": 8
+    },
+    {
+        "type": "text",
+        "text": "5 Multilingual retrieval",
+        "text_level": 2,
+        "bbox": [
+            112,
+            185,
+            338,
+            202
+        ],
+        "page_idx": 8
+    },
+    {
+        "type": "text",
+        "text": "In this section, we illustrate another advantage of learning unsupervised dense retrievers, when performing multi-lingual retrieval. While large labeled datasets are available in English, allowing to train strong dense retrievers (as shown in previous sections), this is unfortunately not the case for lower resources languages. Here, we show how unsupervised training is a promising direction. First, we show that our approach leads to strong performance, either in a full unsupervised setting, or by fine-tuning a multi-lingual model on English data such as MS MARCO. Second, we demonstrate that our model can also perform cross-lingual retrieval, by retrieving English documents from other languages queries. Unsupervised retrievers based on lexica matching, such as BM25, would obtain poor performance, especially for pairs of languages with diferent scripts such as English and Arabic.",
+        "bbox": [
+            111,
+            218,
+            885,
+            356
+        ],
+        "page_idx": 8
+    },
+    {
+        "type": "text",
+        "text": "5.1 Multilingual pre-training",
+        "text_level": 2,
+        "bbox": [
+            112,
+            372,
+            341,
+            388
+        ],
+        "page_idx": 8
+    },
+    {
+        "type": "text",
+        "text": "Our multilingual model, called mContriever, is jointly pre-trained on 29 languages. The multilingual pretraining largely follows the method discussed in previous sections, but it difers by few particularities related to the pre-training data and the hyperparameters used. The model is initialized with the multilingual version of BERT, mBERT, trained on 104 languages. For the pre-training data, we consider the languages contained in CCNet (Wenzek et al., 2020) that are also part of our evaluation datasets. This results in a training set containing the CCNet data for 29 languages detailed in Table 12. During pre-training, examples are uniformly sampled over languages, i.e. the probability that a training sample comes from a specific language is the same for all languages. We observed that increasing the number of languages considered for pre-training generally deteriorates performance as reported in Appendix B.3 similarly to what has been observed for multilingual masked language models (Conneau et al., 2019). We pre-trained our multilingual mContriever with a queue size of 32768. This generally improves stability, and is able to compensate for the additional instabilities observed in the multilingual setting. More detailed hyperparameters are given in Appendix B.1.",
+        "bbox": [
+            111,
+            401,
+            887,
+            584
+        ],
+        "page_idx": 8
+    },
+    {
+        "type": "text",
+        "text": "5.2 Fine-tuning",
+        "text_level": 2,
+        "bbox": [
+            112,
+            601,
+            245,
+            617
+        ],
+        "page_idx": 8
+    },
+    {
+        "type": "text",
+        "text": "Large labeled datasets for information retrieval are generally available only in English. It is therefore natural to investigate whether large monolingual datasets can be leveraged for multilingual retrieval. We consider fine-tuning our pre-trained mContriever model on MS MARCO. This generally improves performance in all languages. The model trained on MS MARCO can be further fine-tuned on Mr. TyDi achieving state-of-the-art performance on this dataset. Further details regarding fine-tuning are given in Appendix B.2.",
+        "bbox": [
+            111,
+            628,
+            885,
+            705
+        ],
+        "page_idx": 8
+    },
+    {
+        "type": "text",
+        "text": "5.3 Evaluation",
+        "text_level": 2,
+        "bbox": [
+            112,
+            723,
+            238,
+            738
+        ],
+        "page_idx": 8
+    },
+    {
+        "type": "text",
+        "text": "We evaluate the performance of our pre-trained model with and without fine-tuning on English data on two diferent benchmarks. First, we consider Mr. TyDi (Zhang et al., 2021), a multilingual information retrieval benchmark derived from TyDi QA (Clark et al., 2020). Given a question, the goal is to find relevant documents in a pool of Wikipedia documents in the same language.",
+        "bbox": [
+            111,
+            751,
+            883,
+            813
+        ],
+        "page_idx": 8
+    },
+    {
+        "type": "text",
+        "text": "In Mr. TyDi the pool of documents is restricted to the language of the query. Being able to retrieve relevant documents from another language is desirable to leverage large source of information that may no be available in all languages. In order to evaluate cross-lingual retrieval performance we derive an evaluation setting from MKQA (Longpre et al., 2020). Given a question in a specific language, we perform retrieval in English Wikipedia, and evaluate if the English answer is in the retrieved documents. The MKQA dataset makes this possible by providing the same questions and answers in 26 languages. We remove unanswerable questions, questions accepting a binary yes/no answer and questions with long answers from the original MKQA dataset.",
+        "bbox": [
+            111,
+            819,
+            887,
+            926
+        ],
+        "page_idx": 8
+    },
+    {
+        "type": "header",
+        "text": "Published in Transactions on Machine Learning Research (08/2022)",
+        "bbox": [
+            112,
+            32,
+            602,
+            47
+        ],
+        "page_idx": 8
+    },
+    {
+        "type": "page_number",
+        "text": "9",
+        "bbox": [
+            493,
+            948,
+            504,
+            960
+        ],
+        "page_idx": 8
+    },
+    {
+        "type": "table",
+        "img_path": "images/525c4d50edc07de53567709d9d935b403eec5fe0a96288105d07d92fe2173602.jpg",
+        "table_caption": [
+            "Table 4: Multilingual retrieval on Mr. TyDi. We report MRR@100 and Recall@100 on the test sets of Mr. TyDi. mContriever fine-tuned on MS MARCO is compared against its counterparts without contrastive pre-training using a similar fine-tuning recipe, referred to as mBERT + MS MARCO, as well as a model initialized with XLM-R referred to as XLM-R + MS MARCO. We also report the results after fine-tuning on Mr. TyDi for the model trained on MS MARCO."
+        ],
+        "table_footnote": [],
+        "table_body": "<table><tr><td></td><td>ar</td><td>bn</td><td>en</td><td>f</td><td>id</td><td>ja</td><td>ko</td><td>ru</td><td>SW</td><td>te</td><td>th</td><td>avg</td></tr><tr><td></td><td colspan=\"10\">MRR@100</td></tr><tr><td>BM25 (Zhang et al., 2021)</td><td>36.7</td><td>41.3</td><td>15.1</td><td>28.8</td><td>38.2</td><td>21.7</td><td>28.1</td><td>32.9</td><td>39.6</td><td>42.4</td><td>41.7</td><td>33.3</td></tr><tr><td>mDPR (Zhang et al., 2021)</td><td>26.0</td><td>25.8</td><td>16.2</td><td>11.3</td><td>14.6</td><td>18.1</td><td>21.9</td><td>18.5</td><td>7.3</td><td>10.6</td><td>13.5</td><td>16.7</td></tr><tr><td>Hybrid (Zhang et al., 2021)</td><td>49.1</td><td>53.5</td><td>28.4</td><td>36.5</td><td>45.5</td><td>35.5</td><td>36.2</td><td>42.7</td><td>40.5</td><td>42.0</td><td>49.2</td><td>41.7</td></tr><tr><td>mBERT + MS MARCO</td><td>34.8</td><td>35.1</td><td>25.7</td><td>29.6</td><td>36.3</td><td>27.1</td><td>28.1</td><td>30.0</td><td>37.4</td><td>39.6</td><td>20.3</td><td>31.3</td></tr><tr><td>XLM-R + MS MARCO</td><td>36.5</td><td>41.7</td><td>23.0</td><td>32.7</td><td>39.2</td><td>24.8</td><td>32.2</td><td>29.3</td><td>35.1</td><td>54.7</td><td>38.5</td><td>35.2</td></tr><tr><td>mContriever</td><td>27.3</td><td>36.3</td><td>9.2</td><td>21.1</td><td>23.5</td><td>19.5</td><td>22.3</td><td>17.5</td><td>38.3</td><td>22.5</td><td>37.2</td><td>25.0</td></tr><tr><td>+ MS MARCO</td><td>43.4</td><td>42.3</td><td>27.1</td><td>35.1</td><td>42.6</td><td>32.4</td><td>34.2</td><td>36.1</td><td>51.2</td><td>37.4</td><td>40.2</td><td>38.4</td></tr><tr><td>+ Mr. Tydi</td><td>72.4</td><td>67.2</td><td>56.6</td><td>60.2</td><td>63.0</td><td>54.9</td><td>55.3</td><td>59.7</td><td>70.7</td><td>90.3</td><td>67.3</td><td>65.2</td></tr><tr><td></td><td colspan=\"10\">Recall@100</td><td></td></tr><tr><td>BM25 (Zhang et al., 2021)</td><td>80.0</td><td>87.4</td><td>55.1</td><td>72.5</td><td>84.6</td><td>65.6</td><td>79.7</td><td>66.0</td><td>76.4</td><td>81.3</td><td>85.3</td><td>74.3</td></tr><tr><td>mDPR (Zhang et al., 2021)</td><td>62.0</td><td>67.1</td><td>47.5</td><td>37.5</td><td>46.6</td><td>53.5</td><td>49.0</td><td>49.8</td><td>26.4</td><td>35.2</td><td>45.5</td><td>47.3</td></tr><tr><td>Hybrid (Zhang et al., 2021)</td><td>86.3</td><td>93.7</td><td>69.6</td><td>78.8</td><td>88.7</td><td>77.8</td><td>70.6</td><td>76.0</td><td>78.6</td><td>82.7</td><td>87.5</td><td>80.9</td></tr><tr><td>mBERT + MS MARCO</td><td>81.1</td><td>88.7</td><td>77.8</td><td>74.2</td><td>81.0</td><td>76.1</td><td>66.7</td><td>77.6</td><td>74.1</td><td>89.5</td><td>57.8</td><td>76.8</td></tr><tr><td>XLM-R + MS MARCO</td><td>79.9</td><td>84.2</td><td>73.1</td><td>81.6</td><td>87.4</td><td>70.9</td><td>71.1</td><td>74.1</td><td>73.9</td><td>91.2</td><td>89.5</td><td>79.7</td></tr><tr><td>mContriever</td><td>82.0</td><td>89.6</td><td>48.8</td><td>79.6</td><td>81.4</td><td>72.8</td><td>66.2</td><td>68.5</td><td>88.7</td><td>80.8</td><td>90.3</td><td>77.2</td></tr><tr><td>+ MS MARCO</td><td>88.7</td><td>91.4</td><td>77.2</td><td>88.1</td><td>89.8</td><td>81.7</td><td>78.2</td><td>83.8</td><td>91.4</td><td>96.6</td><td>90.5</td><td>87.0</td></tr><tr><td>+ Mr. Tydi</td><td>94.0</td><td>98.6</td><td>92.2</td><td>92.7</td><td>94.5</td><td>88.8</td><td>88.9</td><td>92.4</td><td>93.7</td><td>98.9</td><td>95.2</td><td>93.6</td></tr></table>",
+        "bbox": [
+            119,
+            203,
+            882,
+            483
+        ],
+        "page_idx": 9
+    },
+    {
+        "type": "text",
+        "text": "This results in an evaluation set of 6619 queries. It should be noted that methods based on term matching such as BM25 are intrinsically limited in this cross-lingual retrieval setting because similar terms in diferent languages may not match.",
+        "bbox": [
+            111,
+            516,
+            883,
+            563
+        ],
+        "page_idx": 9
+    },
+    {
+        "type": "text",
+        "text": "5.4 Baselines",
+        "text_level": 2,
+        "bbox": [
+            112,
+            584,
+            228,
+            599
+        ],
+        "page_idx": 9
+    },
+    {
+        "type": "text",
+        "text": "On Mr. TyDi (Zhang et al., 2021) we report results from the original paper. This includes a BM25 baseline, a model fine-tuned on NaturalQuestions using the DPR pipeline, and an hybrid model combining the two.",
+        "bbox": [
+            111,
+            614,
+            885,
+            646
+        ],
+        "page_idx": 9
+    },
+    {
+        "type": "text",
+        "text": "On our cross-lingual evaluation benchmark derived from MKQA, we consider the retriever of the CORA question answering pipeline (Asai et al., 2021), trained on a combination of datasets containing the English NaturalQuestions and the cross-lingual XOR-TyDi QA, with data augmentation based on translation.",
+        "bbox": [
+            111,
+            652,
+            883,
+            699
+        ],
+        "page_idx": 9
+    },
+    {
+        "type": "text",
+        "text": "Additionally, to isolate the efect of contrastive pre-training, we also compare mContriever fine-tuned on MS MARCO to its counterparts without contrastive pre-training, initialized from mBERT. This model is referred as mBERT + MSMARCO in tables. We also report results obtained by fine-tuning XLM-R (Conneau et al., 2019) on MS-MARCO. For both models we use the same hyper-parameters used to fine-tune mContriever on MS MARCO except for the temperature, additional details are reported in Appendix B.2.",
+        "bbox": [
+            111,
+            705,
+            885,
+            782
+        ],
+        "page_idx": 9
+    },
+    {
+        "type": "text",
+        "text": "5.5 Results",
+        "text_level": 2,
+        "bbox": [
+            112,
+            804,
+            215,
+            819
+        ],
+        "page_idx": 9
+    },
+    {
+        "type": "text",
+        "text": "We report results on Mr. TyDi in Table 4. The efectiveness of the multilingual pre-training appears clearly as the pre-trained model fine-tuned on MS MARCO achieve significantly better performance than its counterparts without pre-training when fine-tuned using the same pipeline. Interestingly fine-tuning on these English-only datasets improves performance on all languages. Moreover our unsupervised mContriever outperforms BM25 for the Recall@100, and after fine-tuning on MS MARCO it achieves state-of-the-art performance for this metric. Performance can be further improved by fine-tuning on the train set of Mr. TyDi. This appears to be particularly important for the MRR@100 metric which put emphasis on the quality of the first documents retrieved. For this metric our unsupervised model is still lagging behind BM25.",
+        "bbox": [
+            111,
+            833,
+            885,
+            926
+        ],
+        "page_idx": 9
+    },
+    {
+        "type": "header",
+        "text": "Published in Transactions on Machine Learning Research (08/2022)",
+        "bbox": [
+            112,
+            31,
+            602,
+            47
+        ],
+        "page_idx": 9
+    },
+    {
+        "type": "page_number",
+        "text": "10",
+        "bbox": [
+            488,
+            948,
+            509,
+            960
+        ],
+        "page_idx": 9
+    },
+    {
+        "type": "table",
+        "img_path": "images/6edd3cedc52957a52c198c798c2c160e1633229b878e1e736a7223ac91816027.jpg",
+        "table_caption": [
+            "Table 5: Cross-lingual retrieval on MKQA. We report the average on all languages included in MKQA for the Recall@100 and the Recall@20, and report the Recall@100 for a subset of languages. Complete results are reported in Table 13 and Table 14 of appendix."
+        ],
+        "table_footnote": [],
+        "table_body": "<table><tr><td></td><td>Avg. R@20</td><td>Avg. R@100</td><td>en</td><td>ar</td><td>ja</td><td>ko</td><td>es</td><td>he</td><td>de</td></tr><tr><td>CORA (Asai et al., 2021)</td><td>49.0</td><td>59.8</td><td>75.6</td><td>44.5</td><td>47.0</td><td>45.5</td><td>69.2</td><td>48.3</td><td>68.1</td></tr><tr><td>mBERT + MS MARCO</td><td>45.3</td><td>57.9</td><td>74.2</td><td>44.0</td><td>51.7</td><td>48.2</td><td>63.9</td><td>46.8</td><td>59.6</td></tr><tr><td>XLM-R + MS MARCO</td><td>46.9</td><td>59.6</td><td>73.4</td><td>42.5</td><td>53.2</td><td>49.6</td><td>63.4</td><td>46.9</td><td>61.1</td></tr><tr><td>mContriever</td><td>31.4</td><td>49.2</td><td>65.3</td><td>43.0</td><td>47.1</td><td>44.8</td><td>37.2</td><td>44.7</td><td>49.0</td></tr><tr><td>+ MS MARCO</td><td>53.9</td><td>65.6</td><td>75.6</td><td>53.3</td><td>60.4</td><td>55.4</td><td>70.0</td><td>59.6</td><td>66.6</td></tr></table>",
+        "bbox": [
+            132,
+            162,
+            870,
+            261
+        ],
+        "page_idx": 10
+    },
+    {
+        "type": "table",
+        "img_path": "images/d6b09ed4a69ccf7c531664761294457deeae1e688bc3cb6de80ab552d5520ef4.jpg",
+        "table_caption": [
+            "Table 6: MoCo vs. in-batch negatives. In this table, we report nDCG@10 on the BEIR benchmark for in-batch negatives and MoCo, without fine-tuning on the MS MARCO dataset."
+        ],
+        "table_footnote": [],
+        "table_body": "<table><tr><td></td><td>NFCorpus</td><td>NQ</td><td>FiQA</td><td>ArguAna</td><td>Quora</td><td>DBPedia</td><td>SciDocs</td><td>FEVER</td><td>AVG</td></tr><tr><td>MoCo</td><td>26.2</td><td>13.1</td><td>13.7</td><td>33.0</td><td>69.5</td><td>20.0</td><td>11.9</td><td>57.6</td><td>30.1</td></tr><tr><td>In-batch negatives</td><td>24.2</td><td>21.6</td><td>13.0</td><td>33.7</td><td>74.9</td><td>17.9</td><td>13.6</td><td>56.1</td><td>31.9</td></tr></table>",
+        "bbox": [
+            122,
+            323,
+            872,
+            378
+        ],
+        "page_idx": 10
+    },
+    {
+        "type": "text",
+        "text": "",
+        "bbox": [
+            111,
+            406,
+            883,
+            438
+        ],
+        "page_idx": 10
+    },
+    {
+        "type": "text",
+        "text": "Results on the cross-lingual retrieval benchmark derived from MKQA are reported in Table 5, with per language details for the Recall@100 and Recall@20 reported in Table 13 and Table 14 of appendix. Interestingly using only supervised training data in English, our mContriever fine-tuned on MS MARCO outperforms the CORA retriever. Also, similarly to the results reported on Mr. TyDi, adding multilingual contrastive pre-training before fine-tuning on MS MARCO improves performance over its counterpart without pre-training. On MKQA, evaluation is performed by lowercasing both queries and documents, we observed that this improves performance. This does not impact the CORA retriever which is based on an uncased version of mBERT.",
+        "bbox": [
+            111,
+            444,
+            887,
+            565
+        ],
+        "page_idx": 10
+    },
+    {
+        "type": "text",
+        "text": "6 Ablation studies",
+        "text_level": 2,
+        "bbox": [
+            112,
+            585,
+            295,
+            603
+        ],
+        "page_idx": 10
+    },
+    {
+        "type": "text",
+        "text": "In this section, we investigate the influence of diferent design choices on our method. In these ablations, all the models are pre-trained on English Wikipedia for 200k gradient steps, with a batch size of 2,048 (on 32 GPUs). Each fine-tuning on MS MARCO takes 20k gradient steps with a batch size of 512 (on 8 GPUs), using AdamW and no hard negatives.",
+        "bbox": [
+            111,
+            618,
+            885,
+            681
+        ],
+        "page_idx": 10
+    },
+    {
+        "type": "text",
+        "text": "MoCo vs. in-batch negatives. First, we compare the two contrastive pre-training methods: MoCo and in-batch negatives. As in in-batch negatives, the number of negative examples is equal to the batch size, we train models with a batch size of 4,096 and restrict the queue in MoCo to the same number of elements. This experiment measures the efect of using of momentum encoder for the keys instead of the same network as for the queries. Using a momentum also prevents from backpropagating the gradient through the keys. We report results, without fine-tuning on MS MARCO in Table 6. We observe that the diference of performance between the two methods is small, especially after fine-tuning on MS MARCO. We thus propose to use MoCo as our contrastive learning framework, since it scales to a larger number of negative examples without the need to increase the batch size",
+        "bbox": [
+            111,
+            695,
+            885,
+            833
+        ],
+        "page_idx": 10
+    },
+    {
+        "type": "text",
+        "text": "Number of negative examples. Next, we study the influence of the number of negatives used in the contrastive loss, by varying the queue size of the MoCo algorithm. We consider values ranging from 2,048 to 131,072, and report results in Figure 2. We see that on average over the BEIR benchmark, increasing the number of negatives leads to better retrieval performance, especially in the unsupervised setting. However, we note that this efect is not equally strong for all datasets.",
+        "bbox": [
+            111,
+            848,
+            887,
+            925
+        ],
+        "page_idx": 10
+    },
+    {
+        "type": "header",
+        "text": "Published in Transactions on Machine Learning Research (08/2022)",
+        "bbox": [
+            112,
+            31,
+            602,
+            47
+        ],
+        "page_idx": 10
+    },
+    {
+        "type": "page_number",
+        "text": "11",
+        "bbox": [
+            488,
+            948,
+            508,
+            960
+        ],
+        "page_idx": 10
+    },
+    {
+        "type": "chart",
+        "img_path": "images/943b3ffb2c8897549b644ef4c25a2a1117e666b9ccfaccb7df660c87e9090a5f.jpg",
+        "content": "",
+        "chart_caption": [
+            "Figure 2: Impact of the number of negatives. We report nDCG@10 as a function of the queue size, with and without fine-tuning on MS MARCO. We report numbers using the MoCo framework where the keys for the negatives are computed with the momentum encoder and stored in a queue."
+        ],
+        "chart_footnote": [],
+        "bbox": [
+            151,
+            104,
+            841,
+            431
+        ],
+        "page_idx": 11
+    },
+    {
+        "type": "text",
+        "text": "Data augmentations. Third, we compare diferent ways to generate pairs of positive examples from a single document or chunk of text. In particular, we compare random cropping, which leads to pairs with overlap, and the inverse cloze task, which was previously considered to pre-train retrievers. Interestingly, as shown in Table 7, the random cropping strategy outperforms the inverse cloze task in our setting. We believe that random cropping, leading to the identical distributions of keys and queries, leads to more stable training with MoCo compared to ICT. This might explains part of the diference of performance between the two methods. We also investigate whether additional data perturbations, such as random word deletion or replacement, are beneficial for retrieval.",
+        "bbox": [
+            111,
+            532,
+            885,
+            655
+        ],
+        "page_idx": 11
+    },
+    {
+        "type": "text",
+        "text": "Training data. Finally, we study the impact of the pre-training data on the performance of our retriever, by training on Wikipedia, CCNet or a mix of both sources of data. We report results in Table 8, and observe that there is no clear winner between the two data sources. Unsurprisingly, training on the more diverse CCNet data leads to strong improvements on datasets from diferent domains than Wikipedia, such as FiQA or Quora. On the other hand, on a dataset like FEVER, training on Wikipedia leads to better results. To get the best of both worlds, we consider two strategies to mix the two data sources. In the “50/50%” strategy, examples are sampled uniformly across domain, meaning that half the batches are from Wikipedia and the other half from CCNet. In the “uniform” strategy, examples are sampled uniformly over the union of the dataset. Since CCNet is significantly larger than Wikipedia, this means that most of the batches are from CCNet.",
+        "bbox": [
+            109,
+            675,
+            887,
+            828
+        ],
+        "page_idx": 11
+    },
+    {
+        "type": "text",
+        "text": "Impact of fine-tuning on MS MARCO. To isolate the impact of pre-training from the impact of fine-tuning on MS MARCO, we apply the same fine-tuning to the BERT base uncased model. We report results in Table 9, and observe that when applied to BERT, our fine-tuning leads to results that are lower than the state-of-the-art. Hence, we believe that most of the improvement compared to the state-of-the-art retrievers can be attributed to our contrastive pre-training strategy.",
+        "bbox": [
+            109,
+            848,
+            887,
+            926
+        ],
+        "page_idx": 11
+    },
+    {
+        "type": "header",
+        "text": "Published in Transactions on Machine Learning Research (08/2022)",
+        "bbox": [
+            112,
+            32,
+            602,
+            47
+        ],
+        "page_idx": 11
+    },
+    {
+        "type": "page_number",
+        "text": "12",
+        "bbox": [
+            488,
+            948,
+            509,
+            960
+        ],
+        "page_idx": 11
+    },
+    {
+        "type": "table",
+        "img_path": "images/0e8523fba946bdcfd92b3d157e7848c4dbd25a64652d30b6b543c8d730798836.jpg",
+        "table_caption": [
+            "Table 7: Impact of data augmentions. We report nDCG@10 without fine-tuning on MS MARCO."
+        ],
+        "table_footnote": [],
+        "table_body": "<table><tr><td></td><td>NFCorpus</td><td>NQ</td><td>ArguAna</td><td>Quora</td><td>DBPedia</td><td>SciDocs</td><td>FEVER</td><td>Overall</td></tr><tr><td>ICT</td><td>23.2</td><td>19.4</td><td>31.6</td><td>27.6</td><td>21.3</td><td>10.6</td><td>55.6</td><td>25.9</td></tr><tr><td>Crop</td><td>27.6</td><td>17.7</td><td>35.6</td><td>75.4</td><td>21.0</td><td>13.3</td><td>64.5</td><td>32.2</td></tr><tr><td> $\\mathrm { C r o p + d e l e t e }$ </td><td>26.8</td><td>20.8</td><td>35.8</td><td>77.3</td><td>21.5</td><td>14.0</td><td>67.9</td><td>33.8</td></tr><tr><td> $\\mathrm { C r o p + r e p l a c e }$ </td><td>27.7</td><td>18.7</td><td>36.2</td><td>75.6</td><td>22.0</td><td>13.0</td><td>66.8</td><td>32.9</td></tr></table>",
+        "bbox": [
+            158,
+            132,
+            843,
+            215
+        ],
+        "page_idx": 12
+    },
+    {
+        "type": "table",
+        "img_path": "images/098998f78b315f30a9d30baceeb062fb8f3666b2c00b2fafa1e5737f96101899.jpg",
+        "table_caption": [
+            "Table 8: Training data. We report nDCG@10 without fine-tuning on MS MARCO."
+        ],
+        "table_footnote": [],
+        "table_body": "<table><tr><td></td><td>NFCorpus</td><td>NQ</td><td>FiQA</td><td>ArguAna</td><td>Quora</td><td>DBPedia</td><td>SciDocs</td><td>FEVER</td><td>Overall</td></tr><tr><td>Wiki</td><td>27.6</td><td>17.7</td><td>16.3</td><td>35.6</td><td>75.4</td><td>21.0</td><td>13.3</td><td>64.5</td><td>33.0</td></tr><tr><td>CCNet</td><td>29.5</td><td>25.8</td><td>26.2</td><td>35.2</td><td>80.6</td><td>20.5</td><td>14.9</td><td>60.9</td><td>34.9</td></tr><tr><td>Uniform</td><td>31.0</td><td>19.4</td><td>25.1</td><td>37.8</td><td>80.4</td><td>21.5</td><td>14.7</td><td>59.8</td><td>33.9</td></tr><tr><td>50/50%</td><td>31.5</td><td>18.6</td><td>23.3</td><td>36.2</td><td>79.1</td><td>22.1</td><td>13.7</td><td>64.1</td><td>34.7</td></tr></table>",
+        "bbox": [
+            153,
+            261,
+            848,
+            344
+        ],
+        "page_idx": 12
+    },
+    {
+        "type": "table",
+        "img_path": "images/2acb61e42a9573f2b7390f4a3cbebd9af7debba9acfcfe361f03aa655e79c193.jpg",
+        "table_caption": [
+            "Table 9: Fine-tuning. We report nDCG@10 after fine-tuning BERT and our model on MS MARCO."
+        ],
+        "table_footnote": [],
+        "table_body": "<table><tr><td></td><td>NFCorpus</td><td>NQ</td><td>FiQA</td><td>ArguAna</td><td>Quora</td><td>DBPedia</td><td>SciDocs</td><td>FEVER</td><td>Overall</td></tr><tr><td>BERT</td><td>28.2</td><td>44.6</td><td>25.9</td><td>35.0</td><td>84.0</td><td>34.4</td><td>13.0</td><td>69.8</td><td>42.0</td></tr><tr><td>Contriever</td><td>33.2</td><td>50.2</td><td>28.8</td><td>46.0</td><td>85.4</td><td>38.8</td><td>16.0</td><td>77.7</td><td>46.5</td></tr></table>",
+        "bbox": [
+            145,
+            388,
+            856,
+            445
+        ],
+        "page_idx": 12
+    },
+    {
+        "type": "text",
+        "text": "7 Discussion",
+        "text_level": 2,
+        "bbox": [
+            112,
+            467,
+            245,
+            484
+        ],
+        "page_idx": 12
+    },
+    {
+        "type": "text",
+        "text": "In this work, we propose to explore the limits of contrastive pre-training to learn dense text retrievers. We use the MoCo technique, which allows to train models with a large number of negative examples. We make several interesting observations: first, we show that neural networks trained without supervision using contrastive learning exhibit good retrieval performance, which are competitive with BM25 (albeit not state-of-the-art). These results can be further improved by fine-tuning on the supervised MS MARCO dataset, leading to strong results, in particular for recall@100. Based on that observation, we use a cross-encoder to re-rank documents retrieved with our model, leading to new state-of-the-art on the competitive BEIR benchmark. We also performed extensive ablation experiments, and observed that independent random cropping seems to be a strong alternative to the inverse Cloze task for training retrievers.",
+        "bbox": [
+            111,
+            500,
+            885,
+            637
+        ],
+        "page_idx": 12
+    },
+    {
+        "type": "text",
+        "text": "References",
+        "text_level": 2,
+        "bbox": [
+            112,
+            654,
+            217,
+            670
+        ],
+        "page_idx": 12
+    },
+    {
+        "type": "list",
+        "sub_type": "ref_text",
+        "list_items": [
+            "Akari Asai, Xinyan Yu, Jungo Kasai, and Hannaneh Hajishirzi. One question answering model for many languages with cross-lingual dense passage retrieval. CoRR, abs/2107.11976, 2021. URL https://arxiv. org/abs/2107.11976. 10, 11",
+            "Payal Bajaj, Daniel Campos, Nick Craswell, Li Deng, Jianfeng Gao, Xiaodong Liu, Rangan Majumder, Andrew McNamara, Bhaskar Mitra, Tri Nguyen, et al. Ms marco: A human generated machine reading comprehension dataset. arXiv preprint arXiv:1611.09268, 2016. 3, 6",
+            "Adam Berger, Rich Caruana, David Cohn, Dayne Freitag, and Vibhu Mittal. Bridging the lexical chasm: statistical approaches to answer-finding. In Proceedings of the 23rd annual international ACM SIGIR conference on Research and development in information retrieval, pp. 192–199, 2000. 1",
+            "Mathilde Caron, Hugo Touvron, Ishan Misra, Hervé Jégou, Julien Mairal, Piotr Bojanowski, and Armand Joulin. Emerging properties in self-supervised vision transformers. arXiv preprint arXiv:2104.14294, 2021. 2",
+            "Wei-Cheng Chang, Felix X Yu, Yin-Wen Chang, Yiming Yang, and Sanjiv Kumar. Pre-training tasks for embedding-based large-scale retrieval. arXiv preprint arXiv:2002.03932, 2020. 2, 3"
+        ],
+        "bbox": [
+            116,
+            678,
+            885,
+            723
+        ],
+        "page_idx": 12
+    },
+    {
+        "type": "header",
+        "text": "Published in Transactions on Machine Learning Research (08/2022)",
+        "bbox": [
+            112,
+            32,
+            602,
+            47
+        ],
+        "page_idx": 12
+    },
+    {
+        "type": "page_number",
+        "text": "13",
+        "bbox": [
+            488,
+            948,
+            509,
+            960
+        ],
+        "page_idx": 12
+    },
+    {
+        "type": "list",
+        "sub_type": "ref_text",
+        "list_items": [
+            "Danqi Chen, Adam Fisch, Jason Weston, and Antoine Bordes. Reading Wikipedia to answer open-domain questions. In Proc. ACL, 2017a. 1",
+            "Ting Chen, Yizhou Sun, Yue Shi, and Liangjie Hong. On sampling strategies for neural network-based collaborative filtering. arXiv preprint arXiv:1706.07881, 2017b. 5",
+            "Ting Chen, Simon Kornblith, Mohammad Norouzi, and Geofrey Hinton. A simple framework for contrastive learning of visual representations. In International conference on machine learning, pp. 1597–1607. PMLR, 2020. 2, 4, 5",
+            "Xilun Chen, Kushal Lakhotia, Barlas Oğuz, Anchit Gupta, Patrick Lewis, Stan Peshterliev, Yashar Mehdad, Sonal Gupta, and Wen-tau Yih. Salient phrase aware dense retrieval: Can a dense retriever imitate a sparse one?, 2021. URL https://arxiv.org/abs/2110.06918. 3",
+            "Jonathan H. Clark, Eunsol Choi, Michael Collins, Dan Garrette, Tom Kwiatkowski, Vitaly Nikolaev, and Jennimaria Palomaki. Tydi QA: A benchmark for information-seeking question answering in typologically diverse languages. CoRR, abs/2003.05002, 2020. URL https://arxiv.org/abs/2003.05002. 9",
+            "Alexis Conneau, Kartikay Khandelwal, Naman Goyal, Vishrav Chaudhary, Guillaume Wenzek, Francisco Guzmán, Edouard Grave, Myle Ott, Luke Zettlemoyer, and Veselin Stoyanov. Unsupervised cross-lingual representation learning at scale. CoRR, abs/1911.02116, 2019. URL http://arxiv.org/abs/1911.02116. 9, 10, 19",
+            "Scott Deerwester, Susan T Dumais, George W Furnas, Thomas K Landauer, and Richard Harshman. Indexing by latent semantic analysis. Journal of the American society for information science, 41(6):391–407, 1990. 2",
+            "Jacob Devlin, Ming-Wei Chang, Kenton Lee, and Kristina Toutanova. BERT: Pre-training of deep bidirectional transformers for language understanding. In Proc. NAACL, 2019. 3, 4",
+            "Hongchao Fang, Sicheng Wang, Meng Zhou, Jiayuan Ding, and Pengtao Xie. Cert: Contrastive self-supervised learning for language understanding. arXiv preprint arXiv:2005.12766, 2020. 3",
+            "Thibault Formal, Carlos Lassance, Benjamin Piwowarski, and Stéphane Clinchant. Splade v2: Sparse lexical and expansion model for information retrieval. arXiv preprint arXiv:2109.10086, 2021. 7",
+            "Luyu Gao and Jamie Callan. Unsupervised corpus aware language model pre-training for dense passage retrieval. arXiv preprint arXiv:2108.05540, 2021. 3",
+            "Tianyu Gao, Xingcheng Yao, and Danqi Chen. Simcse: Simple contrastive learning of sentence embeddings. arXiv preprint arXiv:2104.08821, 2021. 5, 7",
+            "Daniel Gillick, Alessandro Presta, and Gaurav Singh Tomar. End-to-end retrieval in continuous space. arXiv preprint arXiv:1811.08008, 2018. 3",
+            "John M Giorgi, Osvald Nitski, Gary D Bader, and Bo Wang. Declutr: Deep contrastive learning for unsupervised textual representations. arXiv preprint arXiv:2006.03659, 2020. 3",
+            "Kelvin Guu, Kenton Lee, Zora Tung, Panupong Pasupat, and Ming-Wei Chang. Realm: Retrieval-augmented language model pre-training. arXiv preprint arXiv:2002.08909, 2020. 3, 5, 7",
+            "Kaiming He, Haoqi Fan, Yuxin Wu, Saining Xie, and Ross Girshick. Momentum contrast for unsupervised visual representation learning. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition, pp. 9729–9738, 2020. 2, 6, 17",
+            "Sebastian Hofstätter, Sheng-Chieh Lin, Jheng-Hong Yang, Jimmy Lin, and Allan Hanbury. Eficiently teaching an efective dense retriever with balanced topic aware sampling. arXiv preprint arXiv:2104.06967, 2021. 7",
+            "Po-Sen Huang, Xiaodong He, Jianfeng Gao, Li Deng, Alex Acero, and Larry Heck. Learning deep structured semantic models for web search using clickthrough data. In Proceedings of the 22nd ACM international conference on Information & Knowledge Management, pp. 2333–2338, 2013. 2, 4"
+        ],
+        "bbox": [
+            112,
+            103,
+            883,
+            135
+        ],
+        "page_idx": 13
+    },
+    {
+        "type": "header",
+        "text": "Published in Transactions on Machine Learning Research (08/2022)",
+        "bbox": [
+            112,
+            32,
+            602,
+            47
+        ],
+        "page_idx": 13
+    },
+    {
+        "type": "page_number",
+        "text": "14",
+        "bbox": [
+            488,
+            948,
+            509,
+            959
+        ],
+        "page_idx": 13
+    },
+    {
+        "type": "list",
+        "sub_type": "ref_text",
+        "list_items": [
+            "Samuel Humeau, Kurt Shuster, Marie-Anne Lachaux, and Jason Weston. Poly-encoders: Transformer architectures and pre-training strategies for fast and accurate multi-sentence scoring. arXiv preprint arXiv:1905.01969, 2019. 3",
+            "Gautier Izacard and Edouard Grave. Distilling knowledge from reader to retriever for question answering, 2020a. URL https://arxiv.org/abs/2012.04584. 3, 7",
+            "Gautier Izacard and Edouard Grave. Leveraging passage retrieval with generative models for open domain question answering. arXiv preprint arXiv:2007.01282, 2020b. 6",
+            "Gautier Izacard, Fabio Petroni, Lucas Hosseini, Nicola De Cao, Sebastian Riedel, and Edouard Grave. A memory eficient baseline for open domain question answering. arXiv preprint arXiv:2012.15156, 2020. 3",
+            "Yacine Jernite, Samuel R Bowman, and David Sontag. Discourse-based objectives for fast unsupervised sentence representation learning. arXiv preprint arXiv:1705.00557, 2017. 3",
+            "Jef Johnson, Matthijs Douze, and Hervé Jégou. Billion-scale similarity search with gpus. IEEE Transactions on Big Data, 2019. 3",
+            "Karen Sparck Jones. A statistical interpretation of term specificity and its application in retrieval. Journal of documentation, 1972. 2",
+            "Mandar Joshi, Eunsol Choi, Daniel S. Weld, and Luke Zettlemoyer. Triviaqa: A large scale distantly supervised challenge dataset for reading comprehension. In Proc. ACL, 2017. 6, 7",
+            "Vladimir Karpukhin, Barlas Oğuz, Sewon Min, Ledell Wu, Sergey Edunov, Danqi Chen, and Wen-tau Yih. Dense passage retrieval for open-domain question answering. arXiv preprint arXiv:2004.04906, 2020. 3, 4, 5, 7",
+            "Omar Khattab, Christopher Potts, and Matei Zaharia. Relevance-guided supervision for openqa with colbert, 2020. 3, 7",
+            "Tom Kwiatkowski, Jennimaria Palomaki, Olivia Redfield, Michael Collins, Ankur Parikh, Chris Alberti, Danielle Epstein, Illia Polosukhin, Jacob Devlin, Kenton Lee, et al. Natural questions: a benchmark for question answering research. Transactions of the Association for Computational Linguistics, 7:453–466, 2019. 1, 6, 7",
+            "Jungmin Kwon, Jeongseop Kim, Hyunseo Park, and In Kwon Choi. ASAM: adaptive sharpness-aware minimization for scale-invariant learning of deep neural networks. arXiv preprint arXiv:2102.11600, 2021. 17",
+            "Zhenzhong Lan, Mingda Chen, Sebastian Goodman, Kevin Gimpel, Piyush Sharma, and Radu Soricut. Albert: A lite bert for self-supervised learning of language representations. arXiv preprint arXiv:1909.11942, 2019. 3",
+            "Kenton Lee, Ming-Wei Chang, and Kristina Toutanova. Latent retrieval for weakly supervised open domain question answering. In Proc. ACL, 2019. 2, 3, 4, 5, 6",
+            "Mike Lewis, Marjan Ghazvininejad, Gargi Ghosh, Armen Aghajanyan, Sida Wang, and Luke Zettlemoyer. Pre-training via paraphrasing. arXiv preprint arXiv:2006.15020, 2020. 3",
+            "Jimmy Lin, Rodrigo Nogueira, and Andrew Yates. Pretrained transformers for text ranking: Bert and beyond. arXiv preprint arXiv:2010.06467, 2020. 2",
+            "Shayne Longpre, Yi Lu, and Joachim Daiber. MKQA: A linguistically diverse benchmark for multilingual open domain question answering. CoRR, abs/2007.15207, 2020. URL https://arxiv.org/abs/2007.15207. 9",
+            "Ilya Loshchilov and Frank Hutter. Decoupled weight decay regularization, 2019. 17, 18",
+            "Yi Luan, Jacob Eisenstein, Kristina Toutanova, and Michael Collins. Sparse, dense, and attentional representations for text retrieval. arXiv preprint arXiv:2005.00181, 2020. 3"
+        ],
+        "bbox": [
+            112,
+            103,
+            885,
+            148
+        ],
+        "page_idx": 14
+    },
+    {
+        "type": "header",
+        "text": "Published in Transactions on Machine Learning Research (08/2022)",
+        "bbox": [
+            112,
+            32,
+            602,
+            47
+        ],
+        "page_idx": 14
+    },
+    {
+        "type": "page_number",
+        "text": "15",
+        "bbox": [
+            488,
+            948,
+            509,
+            960
+        ],
+        "page_idx": 14
+    },
+    {
+        "type": "list",
+        "sub_type": "ref_text",
+        "list_items": [
+            "Xueguang Ma, Kai Sun, Ronak Pradeep, and Jimmy Lin. A replication study of dense passage retriever, 2021. 7",
+            "Christopher D Manning, Hinrich Schütze, and Prabhakar Raghavan. Introduction to information retrieval. Cambridge university press, 2008. 2",
+            "Yu Meng, Chenyan Xiong, Payal Bajaj, Saurabh Tiwary, Paul Bennett, Jiawei Han, and Xia Song. Coco-lm: Correcting and contrasting text sequences for language model pretraining. arXiv preprint arXiv:2102.08473, 2021. 3",
+            "Tomas Mikolov, Ilya Sutskever, Kai Chen, Greg S Corrado, and Jef Dean. Distributed representations of words and phrases and their compositionality. In Advances in neural information processing systems, pp. 3111–3119, 2013. 3",
+            "Bhaskar Mitra, Nick Craswell, et al. An introduction to neural information retrieval. Foundations and Trends® in Information Retrieval, 13(1):1–126, 2018. 2",
+            "Tri Nguyen, Mir Rosenberg, Xia Song, Jianfeng Gao, Saurabh Tiwary, Rangan Majumder, and Li Deng. Ms marco: A human generated machine reading comprehension dataset. In CoCo@ NIPS, 2016. 1",
+            "Rodrigo Nogueira and Kyunghyun Cho. Passage re-ranking with bert. arXiv preprint arXiv:1901.04085, 2019. 2, 4",
+            "Hamid Palangi, Li Deng, Yelong Shen, Jianfeng Gao, Xiaodong He, Jianshu Chen, Xinying Song, and Rabab Ward. Deep sentence embedding using long short-term memory networks: Analysis and application to information retrieval. IEEE/ACM Transactions on Audio, Speech, and Language Processing, 24(4):694–707, 2016. 2",
+            "Yingqi Qu, Yuchen Ding, Jing Liu, Kai Liu, Ruiyang Ren, Wayne Xin Zhao, Daxiang Dong, Hua Wu, and Haifeng Wang. RocketQA: An optimized training approach to dense passage retrieval for opendomain question answering. In Proceedings of the 2021 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies, pp. 5835–5847, Online, June 2021. Association for Computational Linguistics. doi: 10.18653/v1/2021.naacl-main.466. URL https://aclanthology.org/2021.naacl-main.466. 5",
+            "Ori Ram, Gal Shachaf, Omer Levy, Jonathan Berant, and Amir Globerson. Learning to retrieve passages without supervision, 2021. URL https://arxiv.org/abs/2112.07708. 3",
+            "Nils Reimers and Iryna Gurevych. Sentence-bert: Sentence embeddings using siamese bert-networks. arXiv preprint arXiv:1908.10084, 2019. 3, 4",
+            "Stephen Robertson and Hugo Zaragoza. The probabilistic relevance framework: BM25 and beyond. Now Publishers Inc, 2009. 1",
+            "Stephen E Robertson, Steve Walker, Susan Jones, Micheline M Hancock-Beaulieu, Mike Gatford, et al. Okapi at TREC-3. NIST Special Publication Sp, 1995. 2",
+            "Devendra Singh Sachan, Siva Reddy, William Hamilton, Chris Dyer, and Dani Yogatama. End-to-end training of multi-document reader and retriever for open-domain question answering, 2021. 2, 7",
+            "Yelong Shen, Xiaodong He, Jianfeng Gao, Li Deng, and Grégoire Mesnil. Learning semantic representations using convolutional neural networks for web search. In Proceedings of the 23rd international conference on world wide web, pp. 373–374, 2014. 2",
+            "Nandan Thakur, Nils Reimers, Andreas Rücklé, Abhishek Srivastava, and Iryna Gurevych. Beir: A heterogenous benchmark for zero-shot evaluation of information retrieval models. arXiv preprint arXiv:2104.08663, 2021. 2, 6, 18, 19",
+            "James Thorne, Andreas Vlachos, Christos Christodoulopoulos, and Arpit Mittal. Fever: a large-scale dataset for fact extraction and verification. arXiv preprint arXiv:1803.05355, 2018. 1"
+        ],
+        "bbox": [
+            112,
+            103,
+            885,
+            133
+        ],
+        "page_idx": 15
+    },
+    {
+        "type": "header",
+        "text": "Published in Transactions on Machine Learning Research (08/2022)",
+        "bbox": [
+            112,
+            32,
+            602,
+            47
+        ],
+        "page_idx": 15
+    },
+    {
+        "type": "page_number",
+        "text": "16",
+        "bbox": [
+            488,
+            948,
+            509,
+            960
+        ],
+        "page_idx": 15
+    },
+    {
+        "type": "list",
+        "sub_type": "ref_text",
+        "list_items": [
+            "Guillaume Wenzek, Marie-Anne Lachaux, Alexis Conneau, Vishrav Chaudhary, Francisco Guzmán, Armand Joulin, and Edouard Grave. CCNet: Extracting high quality monolingual datasets from web crawl data. In Proceedings of the 12th Language Resources and Evaluation Conference, 2020. 6, 9, 17"
+        ],
+        "bbox": [
+            112,
+            103,
+            885,
+            150
+        ],
+        "page_idx": 16
+    },
+    {
+        "type": "text",
+        "text": "Zhirong Wu, Yuanjun Xiong, Stella X Yu, and Dahua Lin. Unsupervised feature learning via non-parametric instance discrimination. In Proceedings of the IEEE conference on computer vision and pattern recognition, pp. 3733–3742, 2018. 2, 4, 6",
+        "bbox": [
+            112,
+            167,
+            885,
+            214
+        ],
+        "page_idx": 16
+    },
+    {
+        "type": "text",
+        "text": "Zhuofeng Wu, Sinong Wang, Jiatao Gu, Madian Khabsa, Fei Sun, and Hao Ma. Clear: Contrastive learning for sentence representation. arXiv preprint arXiv:2012.15466, 2020. 3",
+        "bbox": [
+            112,
+            233,
+            883,
+            265
+        ],
+        "page_idx": 16
+    },
+    {
+        "type": "text",
+        "text": "Lee Xiong, Chenyan Xiong, Ye Li, Kwok-Fung Tang, Jialin Liu, Paul Bennett, Junaid Ahmed, and Arnold Overwijk. Approximate nearest neighbor negative contrastive learning for dense text retrieval. arXiv preprint arXiv:2007.00808, 2020. 3, 4, 7",
+        "bbox": [
+            112,
+            282,
+            885,
+            329
+        ],
+        "page_idx": 16
+    },
+    {
+        "type": "text",
+        "text": "Sohee Yang and Minjoon Seo. Is retriever merely an approximator of reader? arXiv preprint arXiv:2010.10999, 2020. 3",
+        "bbox": [
+            112,
+            347,
+            885,
+            377
+        ],
+        "page_idx": 16
+    },
+    {
+        "type": "text",
+        "text": "Xinyu Zhang, Xueguang Ma, Peng Shi, and Jimmy Lin. Mr. tydi: A multi-lingual benchmark for dense retrieval. CoRR, abs/2108.08787, 2021. URL https://arxiv.org/abs/2108.08787. 9, 10",
+        "bbox": [
+            112,
+            397,
+            883,
+            429
+        ],
+        "page_idx": 16
+    },
+    {
+        "type": "text",
+        "text": "A Technical details for Contriever",
+        "text_level": 2,
+        "bbox": [
+            112,
+            469,
+            434,
+            486
+        ],
+        "page_idx": 16
+    },
+    {
+        "type": "text",
+        "text": "A.1 Contrastive pre-training",
+        "text_level": 2,
+        "bbox": [
+            112,
+            505,
+            339,
+            521
+        ],
+        "page_idx": 16
+    },
+    {
+        "type": "text",
+        "text": "For the model with fine-tuning on MS MARCO, we use the MoCo algorithm He et al. (2020) with a queue of size 131,072, a momentum value of 0.9995 and a temperature of 0.05. We use the random cropping data augmentation, with documents of 256 tokens and span sizes sampled between 5% and 50% of the document length. Documents are simply random piece of text sampled from a mix between Wikipedia and CCNet data (Wenzek et al., 2020), where half the batches are sampled from each source. We also apply token deletion with a probability of 10%. We optimize the model with the AdamW (Loshchilov & Hutter, 2019) optimizer, with learning rate of $5 \\cdot 1 0 ^ { - 5 }$ , batch size of 2,048 and 500,000 steps. We initialize the network with the publicly available BERT base uncased model.",
+        "bbox": [
+            111,
+            534,
+            885,
+            656
+        ],
+        "page_idx": 16
+    },
+    {
+        "type": "text",
+        "text": "A.2 Fine-tuning on MS MARCO",
+        "text_level": 2,
+        "bbox": [
+            112,
+            676,
+            372,
+            693
+        ],
+        "page_idx": 16
+    },
+    {
+        "type": "text",
+        "text": "For the fine-tuning on MS MARCO we do not use the MoCo algorithm and simply use in-batch negatives. We use the ASAM optimizer (Kwon et al., 2021), with a learning rate of $1 0 ^ { - 5 }$ and a batch size of 1024 with a temperature of 0.05, also used during pre-training. We train an initial model with random negative examples for 20000 steps, mine hard negatives with this first model, and re-train a second model with those. Each query is associated with a gold document and a negative document, which is a random document in the first phase and a hard negative 10% of the time in the second phase. For each query, all documents from the current batch aside of the gold document are used as negatives.",
+        "bbox": [
+            111,
+            705,
+            885,
+            814
+        ],
+        "page_idx": 16
+    },
+    {
+        "type": "text",
+        "text": "A.3 Few-shot training",
+        "text_level": 2,
+        "bbox": [
+            112,
+            835,
+            294,
+            851
+        ],
+        "page_idx": 16
+    },
+    {
+        "type": "text",
+        "text": "For the few-shot evaluation presented in Table 3, we train for 500 epochs on each dataset with a batch size of 256 with in-batch random negatives. We evaluate performance performance on the development set every 100 gradient updates and perform early stopping based on this metric. For SciFact, we hold out randomly 10% of the training data and use them as development set, leading to a train set containing 729 samples.",
+        "bbox": [
+            111,
+            863,
+            885,
+            925
+        ],
+        "page_idx": 16
+    },
+    {
+        "type": "header",
+        "text": "Published in Transactions on Machine Learning Research (08/2022)",
+        "bbox": [
+            112,
+            31,
+            602,
+            47
+        ],
+        "page_idx": 16
+    },
+    {
+        "type": "page_number",
+        "text": "17",
+        "bbox": [
+            488,
+            948,
+            508,
+            960
+        ],
+        "page_idx": 16
+    },
+    {
+        "type": "table",
+        "img_path": "images/89ec19170f6c4141321c65fcc8a518dfef0b242888128b151bbe560140b2d45a.jpg",
+        "table_caption": [
+            "Table 10: BEIR Benchmark. We report the recall@100 on the test sets from the BEIR benchmark for bi-encoder methods. We report the capped recall@100 on Trec-COVID following the original BEIR setup. Note that using a cross-encoder to re-rank the top-100 documents do not change the recall@100, hence, we do not include these methods in this table. We also report the average and number of datasets where a method is the best (“Best on”) over the entire BEIR benchmark (excluding three datasets because of their licence). Bold is the best overall. On Trec-COVID we report the capped Recall@100, see Thakur et al. (2021) for more details. MS MARCO is excluded from the average."
+        ],
+        "table_footnote": [],
+        "table_body": "<table><tr><td></td><td>BM25</td><td>DPR</td><td>ANCE</td><td>TAS-B</td><td>Gen-Q</td><td>ColBERT</td><td>Splade v2</td><td>Ours</td></tr><tr><td>MS MARCO</td><td>65.8</td><td>55.2</td><td>85.2</td><td>88.4</td><td>88.4</td><td>86.5</td><td></td><td>89.1</td></tr><tr><td>Trec-COVID</td><td>49.8</td><td>21.2</td><td>45.7</td><td>38.7</td><td>45.6</td><td>46.4</td><td>12.3</td><td>40.7</td></tr><tr><td>NFCorpus</td><td>25.0</td><td>20.8</td><td>23.2</td><td>28.0</td><td>28.0</td><td>25.4</td><td>27.7</td><td>30.0</td></tr><tr><td>NQ</td><td>76.0</td><td>88.0</td><td>83.6</td><td>90.3</td><td>86.2</td><td>91.2</td><td>93.0</td><td>92.5</td></tr><tr><td>HotpotQA</td><td>74.0</td><td>59.1</td><td>57.8</td><td>72.8</td><td>67.3</td><td>74.8</td><td>82.0</td><td>77.7</td></tr><tr><td>FiQA</td><td>53.9</td><td>34.2</td><td>58.1</td><td>59.3</td><td>61.8</td><td>60.3</td><td>62.1</td><td>65.6</td></tr><tr><td>ArguAna</td><td>94.2</td><td>75.1</td><td>93.7</td><td>94.2</td><td>97.8</td><td>91.4</td><td>97.2</td><td>97.7</td></tr><tr><td>Touche-2020</td><td>53.8</td><td>30.1</td><td>45.8</td><td>43.1</td><td>45.1</td><td>43.9</td><td>35.4</td><td>29.4</td></tr><tr><td>CQADupStack</td><td>60.6</td><td>40.3</td><td>57.9</td><td>62.2</td><td>65.4</td><td>62.4</td><td>一</td><td>66.3</td></tr><tr><td>Quora</td><td>97.3</td><td>47.0</td><td>98.7</td><td>98.6</td><td>98.8</td><td>98.9</td><td>98.7</td><td>99.3</td></tr><tr><td>DBPedia</td><td>39.8</td><td>34.9</td><td>31.9</td><td>49.9</td><td>43.3</td><td>46.1</td><td>57.5</td><td>54.1</td></tr><tr><td>Scidocs</td><td>35.6</td><td>21.9</td><td>26.9</td><td>33.5</td><td>33.2</td><td>34.4</td><td>36.4</td><td>37.8</td></tr><tr><td>Fever</td><td>93.1</td><td>84.0</td><td>90.0</td><td>93.7</td><td>92.8</td><td>93.4</td><td>95.1</td><td>94.9</td></tr><tr><td>Climate-fever</td><td>43.6</td><td>39.0</td><td>44.5</td><td>53.4</td><td>45.0</td><td>44.4</td><td>52.4</td><td>57.4</td></tr><tr><td>Scifact</td><td>90.8</td><td>72.7</td><td>81.6</td><td>89.1</td><td>89.3</td><td>87.8</td><td>92.0</td><td>94.7</td></tr><tr><td>Avg. w/o CQA</td><td>63.6</td><td>48.3</td><td>60.1</td><td>65.0</td><td>64.2</td><td>64.5</td><td>64.8</td><td>67.1</td></tr><tr><td>Avg.</td><td>63.4</td><td>47.7</td><td>60.0</td><td>64.8</td><td>64.2</td><td>64.3</td><td>-</td><td>67.0</td></tr><tr><td>Best on</td><td>2</td><td>0</td><td>0</td><td>0</td><td>1</td><td>0</td><td>4</td><td>7</td></tr></table>",
+        "bbox": [
+            178,
+            218,
+            815,
+            501
+        ],
+        "page_idx": 17
+    },
+    {
+        "type": "text",
+        "text": "B Multilingual retrieval with mContriever",
+        "text_level": 2,
+        "bbox": [
+            112,
+            539,
+            503,
+            556
+        ],
+        "page_idx": 17
+    },
+    {
+        "type": "text",
+        "text": "B.1 Hyperparameters for multilingual contrastive pre-training",
+        "text_level": 2,
+        "bbox": [
+            112,
+            579,
+            588,
+            595
+        ],
+        "page_idx": 17
+    },
+    {
+        "type": "text",
+        "text": "The pre-trained mContriever model is pre-trained for 500,000 steps with a queue of size 32768, and temperature of 0.05 and a momentum value of 0.999. We optimize the model with the AdamW (Loshchilov & Hutter, 2019) optimizer, with learning rate of $5 \\cdot 1 0 ^ { - 5 }$ . The learning rate follows a linear warmup for 20,000 steps followed by linear decay until the end of training. Languages used for pre-training are detailed in Table 12.",
+        "bbox": [
+            111,
+            611,
+            885,
+            674
+        ],
+        "page_idx": 17
+    },
+    {
+        "type": "text",
+        "text": "B.2 Hyperparameters for multilingual fine-tuning",
+        "text_level": 2,
+        "bbox": [
+            112,
+            703,
+            495,
+            719
+        ],
+        "page_idx": 17
+    },
+    {
+        "type": "text",
+        "text": "We fine-tune mContriever using in-batch negatives, AdamW optimizer (Loshchilov & Hutter, 2019), a learning rate of $1 0 ^ { - 5 }$ , and a batch size of 1024 samples with a temperature τ of 0.05. On MS MARCO and Mr. TyDi the model is trained for 20k gradient steps. We notice overfitting on NaturalQuestions, and thus reduced the training to 1k gradient steps. We use a warmup of 1000 gradient steps with linear decay afterwards in all cases. Hard negatives are mined on Mr. TyDi with the model trained on MS MARCO. We did not observe significant improvements using hard negatives on MS MARCO and NaturalQuestions.",
+        "bbox": [
+            111,
+            734,
+            885,
+            828
+        ],
+        "page_idx": 17
+    },
+    {
+        "type": "text",
+        "text": "For the fine-tuning on MS MARCO of the models initiliazed from mBERT (resp. XLM-R) without contrastive pre-training, we use a temperature τ of 1 (resp. 5). We tried temperatures in {10, 5, 2, 1, 0.1, 0.05} and chose the one leading to the best performance. We observed a decrease in performance for lower temperatures. We fine-tuned mContriever with $\\tau = 0 . 0 5$ following the temperature used during pre-training. We followed the temperature $\\tau = 0 . 0 5$ used for the training of Contriever, and did not test other temperatures for the contrastive pre-training of the multilingual model, mContriever.",
+        "bbox": [
+            111,
+            833,
+            885,
+            925
+        ],
+        "page_idx": 17
+    },
+    {
+        "type": "header",
+        "text": "Published in Transactions on Machine Learning Research (08/2022)",
+        "bbox": [
+            112,
+            31,
+            602,
+            47
+        ],
+        "page_idx": 17
+    },
+    {
+        "type": "page_number",
+        "text": "18",
+        "bbox": [
+            488,
+            948,
+            509,
+            960
+        ],
+        "page_idx": 17
+    },
+    {
+        "type": "table",
+        "img_path": "images/aaf3d6457bf6a743796d4fa22d906c58c6287b8b6e3aced1fab01f1dbe816f0e.jpg",
+        "table_caption": [
+            "Table 11: Unsupervised retrieval. Performance of unsupervised methods on the BEIR datasets. We report the capped recall@100 on Trec-COVID following the original BEIR setup. For SimCSE we report results of the model using RoBERTa large. REALM uses annotated entity recognition data for training. On Trec-COVID we report the capped Recall@100, see Thakur et al. (2021) for more details."
+        ],
+        "table_footnote": [],
+        "table_body": "<table><tr><td>Model (→)</td><td>BM25</td><td>BERT</td><td>SimCSE</td><td>REALM</td><td>Contriever</td></tr><tr><td colspan=\"6\">Dataset (↓)</td></tr><tr><td>MS MARCO</td><td>65.8</td><td>3.5</td><td>33.6</td><td>52.6</td><td>67.2</td></tr><tr><td>Trec-COVID</td><td>49.8</td><td>10.6</td><td>26.8</td><td>8.1</td><td>17.2</td></tr><tr><td>NFCorpus</td><td>25.0</td><td>6.7</td><td>18.2</td><td>23.0</td><td>29.4</td></tr><tr><td>NQ</td><td>76.0</td><td>14.3</td><td>42.9</td><td>58.1</td><td>77.1</td></tr><tr><td>HotpotQA</td><td>74.0</td><td>15.8</td><td>42.7</td><td>56.1</td><td>70.4</td></tr><tr><td>FiQA-2018</td><td>53.9</td><td>6.9</td><td>41.0</td><td>28.0</td><td>56.2</td></tr><tr><td>ArguAna</td><td>94.2</td><td>59.1</td><td>95.2</td><td>73.1</td><td>90.1</td></tr><tr><td>Tóuche-2020</td><td>53.8</td><td>3.0</td><td>18.6</td><td>11.5</td><td>22.5</td></tr><tr><td>CQADupStack</td><td>60.6</td><td>11.0</td><td>48.9</td><td>35.5</td><td>61.4</td></tr><tr><td>Quora</td><td>97.3</td><td>74.6</td><td>97.9</td><td>92.7</td><td>98.7</td></tr><tr><td>DBPedia</td><td>39.8</td><td>7.1</td><td>21.5</td><td>33.0</td><td>45.3</td></tr><tr><td>SCIDOCS Fever</td><td>35.6</td><td>11.3</td><td>23.0</td><td>23.1</td><td>36.0</td></tr><tr><td>Climate-fever</td><td>93.1</td><td>13.6</td><td>50.8</td><td>82.6</td><td>93.6</td></tr><tr><td>SciFact</td><td>43.6</td><td>12.8</td><td>44.8</td><td>42.3</td><td>44.1</td></tr><tr><td></td><td>90.8</td><td>35.2</td><td>75.3</td><td>83.8</td><td>92.6</td></tr><tr><td>Avg.</td><td>63.6</td><td>19.0</td><td>45.4</td><td>46.9</td><td>60.1</td></tr><tr><td>Best on</td><td>3</td><td>0</td><td>2</td><td>0</td><td>10</td></tr><tr><td colspan=\"6\">NDCG@10</td></tr><tr><td>MS MARCO</td><td>22.8</td><td>0.6</td><td>8.8</td><td>15.2</td><td>20.6</td></tr><tr><td>Trec-COVID</td><td>65.6</td><td>16.6</td><td>38.6</td><td>20.1</td><td>27.4</td></tr><tr><td>NFCorpus</td><td>32.5</td><td>2.5</td><td>14.0</td><td>24.1</td><td>31.7</td></tr><tr><td>NQ</td><td>32.9</td><td>2.7</td><td>12.6</td><td>15.2</td><td>25.4</td></tr><tr><td>HotpotQA</td><td>60.3</td><td>4.9</td><td>23.3</td><td>40.5</td><td>48.1</td></tr><tr><td>FiQA-2018</td><td>23.6</td><td>1.4</td><td>14.8</td><td>9.7</td><td>24.5</td></tr><tr><td>ArguAna</td><td>31.5</td><td>23.1</td><td>45.6</td><td>22.8</td><td>37.9</td></tr><tr><td>Tóuche-2020</td><td>36.7</td><td>3.4</td><td>11.6</td><td>7.3</td><td>19.3</td></tr><tr><td>CQADupStack</td><td>29.9</td><td>2.5</td><td>20.2</td><td>13.5</td><td>28.4</td></tr><tr><td>Quora</td><td>78.9</td><td>3.9</td><td>81.5</td><td>71.6</td><td>83.5</td></tr><tr><td>DBPedia</td><td>31.3</td><td>3.9</td><td>13.7</td><td>22.7</td><td>29.2</td></tr><tr><td>SCIDOCS</td><td>15.8</td><td>2.7</td><td>7.4</td><td>9.0</td><td>14.9</td></tr><tr><td>FEVER</td><td>75.3</td><td>4.9</td><td>20.1</td><td>42.9</td><td>68.2</td></tr><tr><td>Climate-fever</td><td>21.3</td><td>4.1</td><td>17.6</td><td>14.3</td><td>15.5</td></tr><tr><td>SciFact</td><td>66.5</td><td>9.8</td><td>38.5</td><td>47.1</td><td>64.9</td></tr><tr><td>Avg.</td><td>41.7</td><td>8.7</td><td>24.6</td><td>25.1</td><td>36.0</td></tr><tr><td>Best on</td><td>12</td><td>0</td><td>1</td><td>0</td><td>2</td></tr></table>",
+        "bbox": [
+            261,
+            175,
+            733,
+            729
+        ],
+        "page_idx": 18
+    },
+    {
+        "type": "text",
+        "text": "B.3 Curse of multilinguality",
+        "text_level": 2,
+        "bbox": [
+            112,
+            757,
+            336,
+            773
+        ],
+        "page_idx": 18
+    },
+    {
+        "type": "text",
+        "text": "We tried to pre-train models on diferent sets of languages. We generally observed performance deterioration when scaling to more languages similarly to what has been observed for general multilingual masked language models Conneau et al. (2019). In Table 15 we report results on Mr. TyDi with a model pre-trained on the 11 languages of Mr. TyDi versus the model used in the rest of the paper which has been pre-trained on 29 languages including the 11 languages of Mr. TyDi as detailed in Table 12. We also report performance of these models after training on MS MARCO, eventually followed by further fine-tuning on Mr. TyDi. It appears that the performance of the unsupervised model and the performance after fine-tuning on MS MARCO are better for the model pre-trained only on 11 languages. The diference is mitigated after fine-tuning on Mr. TyDi.",
+        "bbox": [
+            109,
+            784,
+            885,
+            907
+        ],
+        "page_idx": 18
+    },
+    {
+        "type": "header",
+        "text": "Published in Transactions on Machine Learning Research (08/2022)",
+        "bbox": [
+            112,
+            31,
+            602,
+            47
+        ],
+        "page_idx": 18
+    },
+    {
+        "type": "page_number",
+        "text": "19",
+        "bbox": [
+            488,
+            948,
+            509,
+            960
+        ],
+        "page_idx": 18
+    },
+    {
+        "type": "table",
+        "img_path": "images/134e4b4e2201fa3226dfb9d2782d058b9cc973f74d00b0daaed577dab8cfd4ef.jpg",
+        "table_caption": [
+            "Table 12: List of languages used for multilingual retrieval."
+        ],
+        "table_footnote": [],
+        "table_body": "<table><tr><td></td><td>ar</td><td>bn</td><td>da</td><td>de</td><td>en</td><td>es</td></tr><tr><td>Language Pre-training</td><td>Arabic</td><td>Bengali</td><td>Danish</td><td>German</td><td> $\\mathrm { E n g l i s h }$ </td><td> $\\operatorname { S p a n i s h }$ </td></tr><tr><td></td><td>√</td><td>√</td><td>√</td><td>√</td><td>√</td><td>√</td></tr><tr><td>Mr. TyDi</td><td>√</td><td>√</td><td>x</td><td>x</td><td>x</td><td>√</td></tr><tr><td>MKQA</td><td>√</td><td>x</td><td>√</td><td>√</td><td>√</td><td>√</td></tr><tr><td></td><td>f</td><td> $\\mathrm { f r }$ </td><td>he</td><td>hu</td><td> $\\mathrm { i t }$ </td><td>id</td></tr><tr><td>Language</td><td>Finnish</td><td>French</td><td>Hebrew</td><td>Hungarian</td><td>Italian</td><td>Indonesian</td></tr><tr><td>Pre-training</td><td> $\\checkmark$ </td><td>√</td><td>√</td><td>√</td><td> $\\checkmark$ </td><td> $\\checkmark$ </td></tr><tr><td>Mr. TyDi</td><td>√</td><td>x</td><td>x</td><td>x</td><td>x</td><td>√</td></tr><tr><td>MKQA</td><td> $\\checkmark$ </td><td>√</td><td>√</td><td>√</td><td> $\\checkmark$ </td><td>x</td></tr><tr><td></td><td> $\\mathrm { j a }$ </td><td>km</td><td>ko</td><td>ms</td><td> $\\mathrm { n l }$ </td><td>no</td></tr><tr><td>Language</td><td>Japanese</td><td>Khmer</td><td>Korean</td><td> $\\mathrm { M a l a y }$ </td><td> $\\mathrm { D u t c h }$ </td><td>Norwegian</td></tr><tr><td>Pre-training</td><td>√</td><td>√</td><td>√</td><td>√</td><td>√</td><td>√</td></tr><tr><td>Mr. TyDi</td><td>√</td><td>x</td><td>√</td><td>x</td><td>x</td><td>x</td></tr><tr><td>MKQA</td><td>√</td><td>√</td><td>√</td><td>√</td><td>√</td><td>√</td></tr><tr><td></td><td>pl</td><td>pt</td><td>ru</td><td>SV</td><td>SW</td><td>te</td></tr><tr><td>Language</td><td>Polish</td><td>Portugese</td><td>Russian</td><td>Swedish</td><td>Swahili</td><td>Telugu</td></tr><tr><td>Pre-training</td><td>√</td><td>√</td><td>√</td><td>√</td><td>√</td><td>√</td></tr><tr><td>Mr. TyDi</td><td>x</td><td>x</td><td>√</td><td>x</td><td>√</td><td>√</td></tr><tr><td>MKQA</td><td>√</td><td>√</td><td>√</td><td>√</td><td>x</td><td>x</td></tr><tr><td></td><td>th</td><td>tr</td><td>vi</td><td>zh-cn</td><td>zh-hk</td><td>zh-tw</td></tr><tr><td>Language</td><td>Thai</td><td>Turkish</td><td>Vietnamese</td><td>Chinese (Simplified)</td><td>Chinese (Hong Kong)</td><td>Chinese (Traditional)</td></tr><tr><td>Pre-training</td><td>√</td><td>√</td><td>√</td><td>√</td><td>x</td><td></td></tr><tr><td>Mr. TyDi</td><td>√</td><td>x</td><td>x</td><td>X</td><td>x</td><td>√ x</td></tr><tr><td>MKQA</td><td>√</td><td>√</td><td>√</td><td>√</td><td>√</td><td>√</td></tr></table>",
+        "bbox": [
+            120,
+            147,
+            883,
+            493
+        ],
+        "page_idx": 19
+    },
+    {
+        "type": "table",
+        "img_path": "images/aa082ba097374807168711ddb47d2b6e6eefcaebff6f26db897ee3cf861878a2.jpg",
+        "table_caption": [
+            "Table 13: Recall@100 on MKQA for cross-lingual retrieval in the setting described in Section 5.3."
+        ],
+        "table_footnote": [],
+        "table_body": "<table><tr><td></td><td>avg</td><td>en</td><td>ar</td><td>fi</td><td>ja</td><td>ko</td><td>ru</td><td>es</td><td>SV</td><td>he</td><td>th</td><td>da</td><td>de</td><td>fr</td></tr><tr><td>CORA</td><td>59.8</td><td>75.6</td><td>44.5</td><td>61.3</td><td>47.0</td><td>45.5</td><td>58.6</td><td>69.2</td><td>68.0</td><td>48.3</td><td>44.4</td><td>68.9</td><td>68.1</td><td>70.2</td></tr><tr><td>mBERT + MS MARCO</td><td>57.9</td><td>74.2</td><td>44.0</td><td>51.7</td><td>55.7</td><td>48.2</td><td>57.4</td><td>63.9</td><td>62.7</td><td>46.8</td><td>51.7</td><td>63.7</td><td>59.6</td><td>65.2</td></tr><tr><td>XLM-R + MS MARCO</td><td>59.2</td><td>73.4</td><td>42.4</td><td>57.7</td><td>53.1</td><td>48.6</td><td>58.5</td><td>62.9</td><td>67.5</td><td>46.9</td><td>61.5</td><td>66.9</td><td>60.9</td><td>62.4</td></tr><tr><td>Contriever</td><td>49.2</td><td>65.3</td><td>43.0</td><td>43.1</td><td>47.1</td><td>44.8</td><td>51.8</td><td>37.2</td><td>54.5</td><td>44.7</td><td>51.4</td><td>49.3</td><td>49.0</td><td>50.2</td></tr><tr><td>+ MS MARCO</td><td>65.6</td><td>75.6</td><td>53.3</td><td>66.6</td><td>60.4</td><td>55.4</td><td>64.7</td><td>70.0</td><td>70.8</td><td>59.6</td><td>63.5</td><td>72.0</td><td>66.6</td><td>70.1</td></tr><tr><td></td><td></td><td>it</td><td>nl</td><td>pl</td><td>pt</td><td>hu</td><td>vi</td><td>ms</td><td>km</td><td>no</td><td>tr</td><td>zh-cn</td><td>zh-hk</td><td>zh-tw</td></tr><tr><td>CORA</td><td></td><td>68.3</td><td>72.0</td><td>65.6</td><td>67.9</td><td>59.5</td><td>61.2</td><td>67.9</td><td>35.6</td><td>68.3</td><td>61.5</td><td>52.0</td><td>52.8</td><td>52.8</td></tr><tr><td>mBERT + MS MARCO</td><td></td><td>64.1</td><td>66.7</td><td>59.0</td><td>61.9</td><td>57.5</td><td>58.6</td><td>62.8</td><td>32.9</td><td>63.2</td><td>56.0</td><td>58.4</td><td>59.3</td><td>59.3</td></tr><tr><td>XLM-R + MS MARCO</td><td></td><td>58.1</td><td>66.4</td><td>61.0</td><td>62.0</td><td>60.1</td><td>62.4</td><td>66.1</td><td>46.6</td><td>65.9</td><td>60.6</td><td>55.8</td><td>55.5</td><td>55.7</td></tr><tr><td>Contriever</td><td></td><td>56.7</td><td>61.7</td><td>44.4</td><td>54.5</td><td>47.7</td><td>45.1</td><td>56.7</td><td>27.8</td><td>50.2</td><td>44.3</td><td>54.3</td><td>51.9</td><td>52.5</td></tr><tr><td>+ MS MARCO</td><td></td><td>70.3</td><td>71.4</td><td>68.8</td><td>68.5</td><td>66.7</td><td>67.8</td><td>71.6</td><td>37.8</td><td>71.5</td><td>68.7</td><td>64.1</td><td>64.5</td><td>64.3</td></tr></table>",
+        "bbox": [
+            119,
+            539,
+            882,
+            705
+        ],
+        "page_idx": 19
+    },
+    {
+        "type": "table",
+        "img_path": "images/e8c3e7a0937d54c5832b98de9fe8dc41884af1f92c48371305868c0e92ad9ba3.jpg",
+        "table_caption": [
+            "Table 14: Recall@20 on MKQA for cross-lingual retrieval in the setting described in Section 5.3."
+        ],
+        "table_footnote": [],
+        "table_body": "<table><tr><td></td><td>avg</td><td>en</td><td>ar</td><td>f</td><td>ja</td><td>ko</td><td>ru</td><td>es</td><td>SV</td><td>he</td><td>th</td><td>da</td><td>de</td><td>fr</td></tr><tr><td>CORA</td><td>49.0</td><td>68.5</td><td>31.7</td><td>49.7</td><td>34.1</td><td>33.1</td><td>46.5</td><td>60.3</td><td>58.1</td><td>36.8</td><td>33.6</td><td>59.4</td><td>58.5</td><td>61.6</td></tr><tr><td>mBERT + MS MARCO</td><td>45.3</td><td>65.5</td><td>30.2</td><td>38.9</td><td>41.7</td><td>34.5</td><td>44.3</td><td>52.4</td><td>50.5</td><td>32.6</td><td>38.5</td><td>52.5</td><td>46.6</td><td>53.8</td></tr><tr><td>XLM-R + MS MARCO</td><td>46.7</td><td>64.5</td><td>29.0</td><td>45.1</td><td>39.7</td><td>34.9</td><td>45.9</td><td>51.4</td><td>56.1</td><td>32.5</td><td>49.4</td><td>55.8</td><td>48.3</td><td>50.5</td></tr><tr><td>Contriever</td><td>31.4</td><td>50.2</td><td>26.6</td><td>26.7</td><td>29.4</td><td>27.9</td><td>32.7</td><td>20.7</td><td>37.6</td><td>22.2</td><td>31.1</td><td>31.2</td><td>31.2</td><td>30.7</td></tr><tr><td>+ MS MARCO</td><td>53.9</td><td>67.2</td><td>40.1</td><td>55.1</td><td>46.2</td><td>41.7</td><td>52.3</td><td>59.3</td><td>60.0</td><td>45.6</td><td>52.0</td><td>62.0</td><td>54.8</td><td>59.3</td></tr><tr><td></td><td></td><td>it</td><td>nl</td><td>pl</td><td>pt</td><td>hu</td><td>vi</td><td>ms</td><td>km</td><td>no</td><td>tr</td><td>zh-cn</td><td>zh-hk</td><td>zh-tw</td></tr><tr><td>CORA</td><td></td><td>58.2</td><td>63.5</td><td>54.3</td><td>58.4</td><td>47.6</td><td>49.8</td><td>57.6</td><td>24.8</td><td>58.8</td><td>49.1</td><td>38.6</td><td>40.5</td><td>39.6</td></tr><tr><td>mBERT + MS MARCO</td><td></td><td>52.1</td><td>55.3</td><td>45.6</td><td>49.5</td><td>44.6</td><td>46.9</td><td>49.9</td><td>21.5</td><td>51.3</td><td>42.7</td><td>44.6</td><td>45.3</td><td>45.5</td></tr><tr><td>XLM-R + MS MARCO</td><td></td><td>45.4</td><td>54.5</td><td>48.5</td><td>49.6</td><td>47.3</td><td>49.7</td><td>54.0</td><td>33.4</td><td>53.7</td><td>48.7</td><td>42.4</td><td>42.4</td><td>42.0</td></tr><tr><td>Contriever</td><td></td><td>38.6</td><td>45.1</td><td>25.1</td><td>37.6</td><td>28.3</td><td>27.3</td><td>39.6</td><td>15.7</td><td>33.2</td><td>26.5</td><td>35.0</td><td>32.7</td><td>32.5</td></tr><tr><td>+ MS MARCO</td><td></td><td>59.4</td><td>60.9</td><td>58.1</td><td>56.9</td><td>55.2</td><td>55.9</td><td>60.9</td><td>26.2</td><td>61.0</td><td>56.7</td><td>50.9</td><td>51.9</td><td>51.2</td></tr></table>",
+        "bbox": [
+            119,
+            751,
+            882,
+            917
+        ],
+        "page_idx": 19
+    },
+    {
+        "type": "header",
+        "text": "Published in Transactions on Machine Learning Research (08/2022)",
+        "bbox": [
+            114,
+            31,
+            602,
+            47
+        ],
+        "page_idx": 19
+    },
+    {
+        "type": "page_number",
+        "text": "20",
+        "bbox": [
+            488,
+            948,
+            509,
+            960
+        ],
+        "page_idx": 19
+    },
+    {
+        "type": "table",
+        "img_path": "images/196067de44fef730f8ca9cd790805403e46a588da37143825b81b9e32bd37e06.jpg",
+        "table_caption": [
+            "Table 15: Performance dilution for multilingual retrievers. We report MRR@100 and R@100 on the test set of Mr. TyDi after pre-training on two diferent sets of languages, one containing the 11 languages of Mr. TyDi which is included in the set of 29 languages used to train mContriever used in the rest of the paper. We also report results of these models after fine-tuning on MS MARCO, potentially followed by a final fine-tuning stage on Mr. TyDi."
+        ],
+        "table_footnote": [],
+        "table_body": "<table><tr><td></td><td>ar</td><td>bn</td><td>en</td><td>f</td><td>id</td><td>ja</td><td>ko</td><td>ru</td><td>SW</td><td>te</td><td>th</td><td>avg</td></tr><tr><td></td><td colspan=\"14\">MRR@100</td></tr><tr><td>11 languages</td><td>28.9</td><td>38.6</td><td>10.2</td><td>22.9</td><td>26.2</td><td>21.7</td><td>26.3</td><td>20.5</td><td>39.0</td><td>20.2</td><td>40.6</td><td>26.8</td></tr><tr><td>29 languages</td><td>27.3</td><td>36.3</td><td>9.2</td><td>21.1</td><td>23.5</td><td>19.5</td><td>22.3</td><td>17.5</td><td>38.3</td><td>22.5</td><td>37.2</td><td>25.0</td></tr><tr><td>+ MS MARCO</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td>11 languages</td><td>44.0</td><td>41.1</td><td>26.8</td><td>38.3</td><td>43.4</td><td>34.7</td><td>37.1</td><td>37.6</td><td>55.3</td><td>32.1</td><td>45.8</td><td>39.7</td></tr><tr><td>29 languages</td><td>43.4</td><td>42.3</td><td>27.1</td><td>35.1</td><td>42.6</td><td>32.4</td><td>34.2</td><td>36.1</td><td>51.2</td><td>37.4</td><td>40.2</td><td>38.4</td></tr><tr><td>+ Mr. TyDi</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td>11 languages</td><td>73.5</td><td>66.8</td><td>55.9</td><td>60.4</td><td>62.7</td><td>53.8</td><td>55.8</td><td>60.6</td><td>69.5</td><td>89.8</td><td>68.7</td><td>65.2</td></tr><tr><td>29 languages</td><td>72.4</td><td>67.2</td><td>56.6</td><td>60.2</td><td>63.0</td><td>54.9</td><td>55.3</td><td>59.7</td><td>70.7</td><td>90.3</td><td>67.3</td><td>65.2</td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td><td>R@100</td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td>11 languages</td><td>83.4</td><td>89.2</td><td>55.2</td><td>81.5</td><td>83.6</td><td>75.6</td><td>72.4</td><td>75.7</td><td>88.9</td><td>70.0</td><td>91.9</td><td>78.9</td></tr><tr><td>29 languages</td><td>82.0</td><td>89.6</td><td>48.8</td><td>79.6</td><td>81.4</td><td>72.8</td><td>66.2</td><td>68.5</td><td>88.7</td><td>80.8</td><td>90.3</td><td>77.2</td></tr><tr><td>+ MS MARCO</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td>11 languages</td><td>89.6</td><td>91.9</td><td>78.7</td><td>89.0</td><td>91.2</td><td>83.4</td><td>80.2</td><td>86.0</td><td>92.6</td><td>95.9</td><td>92.8</td><td>88.3</td></tr><tr><td>29 languages</td><td>88.7</td><td>91.4</td><td>77.2</td><td>88.1</td><td>89.8</td><td>81.7</td><td>78.2</td><td>83.8</td><td>91.4</td><td>96.6</td><td>90.5</td><td>87.0</td></tr><tr><td>+ Mr. TyDi</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td>11 languages</td><td>94.2</td><td>98.2</td><td>93.3</td><td>93.6</td><td>94.7</td><td>89.1</td><td>87.1</td><td>92.3</td><td>94.5</td><td>98.9</td><td>96.9</td><td>93.9</td></tr><tr><td>29 languages</td><td>94.0</td><td>98.6</td><td>92.2</td><td>92.7</td><td>94.5</td><td>88.8</td><td>88.9</td><td>92.4</td><td>93.7</td><td>98.9</td><td>95.2</td><td>93.6</td></tr></table>",
+        "bbox": [
+            119,
+            371,
+            883,
+            737
+        ],
+        "page_idx": 20
+    },
+    {
+        "type": "header",
+        "text": "Published in Transactions on Machine Learning Research (08/2022)",
+        "bbox": [
+            112,
+            31,
+            602,
+            47
+        ],
+        "page_idx": 20
+    },
+    {
+        "type": "page_number",
+        "text": "21",
+        "bbox": [
+            488,
+            946,
+            508,
+            959
+        ],
+        "page_idx": 20
+    }
+]

@@ -1,0 +1,3057 @@
+[
+    {
+        "type": "text",
+        "text": "Are Transformers Effective for Time Series Forecasting?",
+        "text_level": 1,
+        "bbox": [
+            246,
+            127,
+            723,
+            146
+        ],
+        "page_idx": 0
+    },
+    {
+        "type": "text",
+        "text": "Ailing Zeng1 \\*, Muxi Chen1\\*, Lei Zhang2, Qiang Xu1",
+        "bbox": [
+            276,
+            175,
+            692,
+            194
+        ],
+        "page_idx": 0
+    },
+    {
+        "type": "text",
+        "text": "1The Chinese University of Hong Kong",
+        "bbox": [
+            328,
+            194,
+            645,
+            212
+        ],
+        "page_idx": 0
+    },
+    {
+        "type": "text",
+        "text": "2International Digital Economy Academy (IDEA)",
+        "bbox": [
+            285,
+            212,
+            683,
+            228
+        ],
+        "page_idx": 0
+    },
+    {
+        "type": "text",
+        "text": "{alzeng, mxchen21, qxu}@cse.cuhk.edu.hk",
+        "bbox": [
+            312,
+            232,
+            660,
+            246
+        ],
+        "page_idx": 0
+    },
+    {
+        "type": "text",
+        "text": "{leizhang}@idea.edu.cn",
+        "bbox": [
+            385,
+            250,
+            583,
+            263
+        ],
+        "page_idx": 0
+    },
+    {
+        "type": "text",
+        "text": "Abstract",
+        "text_level": 2,
+        "bbox": [
+            235,
+            299,
+            313,
+            315
+        ],
+        "page_idx": 0
+    },
+    {
+        "type": "text",
+        "text": "Recently, there has been a surge of Transformer-based solutions for the long-term time series forecasting (LTSF) task. Despite the growing performance over the past few years, we question the validity of this line of research in this work. Specifically, Transformers is arguably the most successful solution to extract the semantic correlations among the elements in a long sequence. However, in time series modeling, we are to extract the temporal relations in an ordered set of continuous points. While employing positional encoding and using tokens to embed sub-series in Transformers facilitate preserving some ordering information, the nature of the permutation-invariant self-attention mechanism inevitably results in temporal information loss.",
+        "bbox": [
+            76,
+            330,
+            470,
+            527
+        ],
+        "page_idx": 0
+    },
+    {
+        "type": "text",
+        "text": "To validate our claim, we introduce a set of embarrassingly simple one-layer linear models named LTSF-Linear for comparison. Experimental results on nine real-life datasets show that LTSF-Linear surprisingly outperforms existing sophisticated Transformer-based LTSF models in all cases, and often by a large margin. Moreover, we conduct comprehensive empirical studies to explore the impacts of various design elements of LTSF models on their temporal relation extraction capability. We hope this surprising finding opens up new research directions for the LTSF task. We also advocate revisiting the validity of Transformer-based solutions for other time series analysis tasks (e.g., anomaly detection) in the future. Code is available at: https://github.com/cure-lab/LTSF-Linear.",
+        "bbox": [
+            75,
+            529,
+            472,
+            756
+        ],
+        "page_idx": 0
+    },
+    {
+        "type": "text",
+        "text": "1. Introduction",
+        "text_level": 2,
+        "bbox": [
+            76,
+            786,
+            209,
+            804
+        ],
+        "page_idx": 0
+    },
+    {
+        "type": "text",
+        "text": "Time series are ubiquitous in today's data-driven world. Given historical data, time series forecasting (TSF) is a long-standing task that has a wide range of applications, including but not limited to traffic flow estimation, energy management, and financial investment. Over the past several decades, TSF solutions have undergone a progression from traditional statistical methods (e.g., ARIMA [1]) and machine learning techniques (e.g., GBRT [11]) to deep learning-based solutions, e.g., Recurrent Neural Networks [15] and Temporal Convolutional Networks [3, 17].",
+        "bbox": [
+            75,
+            814,
+            470,
+            875
+        ],
+        "page_idx": 0
+    },
+    {
+        "type": "text",
+        "text": "",
+        "bbox": [
+            498,
+            300,
+            893,
+            392
+        ],
+        "page_idx": 0
+    },
+    {
+        "type": "text",
+        "text": "Transformer [26] is arguably the most successful sequence modeling architecture, demonstrating unparalleled performances in various applications, such as natural language processing (NLP) [7], speech recognition [8], and computer vision [19, 29]. Recently, there has also been a surge of Transformer-based solutions for time series analysis, as surveyed in [27]. Most notable models, which focus on the less explored and challenging long-term time series forecasting (LTSF) problem, include LogTrans [16] (NeurIPS 2019), Informer [30] (AAAI 2021 Best paper), Autoformer [28] (NeurIPS 2021), Pyraformer [18] (ICLR 2022 Oral), Triformer [5] (IJCAI 2022) and the recent FEDformer [31] (ICML 2022).",
+        "bbox": [
+            498,
+            395,
+            893,
+            592
+        ],
+        "page_idx": 0
+    },
+    {
+        "type": "text",
+        "text": "The main working power of Transformers is from its multi-head self-attention mechanism, which has a remarkable capability of extracting semantic correlations among elements in a long sequence (e.g., words in texts or 2D patches in images). However, self-attention is permutationinvariant and “anti-order\" to some extent. While using various types of positional encoding techniques can preserve some ordering information, it is still inevitable to have temporal information loss after applying self-attention on top of them. This is usually not a serious concern for semanticrich applications such as NLP, e.g., the semantic meaning of a sentence is largely preserved even if we reorder some words in it. However, when analyzing time series data, there is usually a lack of semantics in the numerical data itself, and we are mainly interested in modeling the temporal changes among a continuous set of points. That is, the order itself plays the most crucial role. Consequently, we pose the following intriguing question: Are Transformers really effective for long-term time series forecasting?",
+        "bbox": [
+            496,
+            594,
+            893,
+            882
+        ],
+        "page_idx": 0
+    },
+    {
+        "type": "text",
+        "text": "Moreover, while existing Transformer-based LTSF solutions have demonstrated considerable prediction accuracy improvements over traditional methods, in their experiments, all the compared (non-Transformer) baselines perform autoregressive or iterated multi-step (IMS) forecasting [1,2,22,24], which are known to suffer from significant error accumulation effects for the LTSF problem. Therefore, in this work, we challenge Transformer-based LTSF solutions with direct multi-step (DMS) forecasting strategies to validate their real performance.",
+        "bbox": [
+            517,
+            885,
+            892,
+            900
+        ],
+        "page_idx": 0
+    },
+    {
+        "type": "aside_text",
+        "text": "ar 2 10 1X] :02",
+        "bbox": [
+            22,
+            266,
+            58,
+            705
+        ],
+        "page_idx": 0
+    },
+    {
+        "type": "page_footnote",
+        "text": "\\*Equal contribution",
+        "bbox": [
+            94,
+            887,
+            204,
+            900
+        ],
+        "page_idx": 0
+    },
+    {
+        "type": "page_number",
+        "text": "1",
+        "bbox": [
+            480,
+            924,
+            490,
+            936
+        ],
+        "page_idx": 0
+    },
+    {
+        "type": "text",
+        "text": "",
+        "bbox": [
+            75,
+            92,
+            470,
+            227
+        ],
+        "page_idx": 1
+    },
+    {
+        "type": "text",
+        "text": "Not all time series are predictable, let alone long-term forecasting (e.g., for chaotic systems). We hypothesize that long-term forecasting is only feasible for those time series with a relatively clear trend and periodicity. As linear models can already extract such information, we introduce a set of embarrassingly simple models named LTSF-Linear as a new baseline for comparison. LTSF-Linear regresses historical time series with a one-layer linear model to forecast future time series directly. We conduct extensive experiments on nine widely-used benchmark datasets that cover various real-life applications: traffic, energy, economics, weather, and disease predictions. Surprisingly, our results show that LTSF-Linear outperforms existing complex Transformerbased models in all cases, and often by a large margin (20% \\~ 50%). Moreover, we find that, in contrast to the claims in existing Transformers, most of them fail to extract temporal relations from long sequences, i.e., the forecasting errors are not reduced (sometimes even increased) with the increase of look-back window sizes. Finally, we conduct various ablation studies on existing Transformer-based TSF solutions to study the impact of various design elements in them.",
+        "bbox": [
+            75,
+            228,
+            472,
+            544
+        ],
+        "page_idx": 1
+    },
+    {
+        "type": "text",
+        "text": "To sum up, the contributions of this work include:",
+        "bbox": [
+            96,
+            544,
+            428,
+            559
+        ],
+        "page_idx": 1
+    },
+    {
+        "type": "text",
+        "text": "• To the best of our knowledge, this is the first work to challenge the effectiveness of the booming Transformers for the long-term time series forecasting task.",
+        "bbox": [
+            96,
+            569,
+            470,
+            616
+        ],
+        "page_idx": 1
+    },
+    {
+        "type": "text",
+        "text": "• To validate our claims, we introduce a set of embarrassingly simple one-layer linear models, named LTSF-Linear, and compare them with existing Transformer-based LTSF solutions on nine benchmarks. LTSF-Linear can be a new baseline for the LTSF problem.",
+        "bbox": [
+            96,
+            625,
+            470,
+            715
+        ],
+        "page_idx": 1
+    },
+    {
+        "type": "text",
+        "text": "• We conduct comprehensive empirical studies on various aspects of existing Transformer-based solutions, including the capability of modeling long inputs, the sensitivity to time series order, the impact of positional encoding and sub-series embedding, and efficiency comparisons. Our findings would benefit future research in this area.",
+        "bbox": [
+            96,
+            724,
+            470,
+            830
+        ],
+        "page_idx": 1
+    },
+    {
+        "type": "text",
+        "text": "With the above, we conclude that the temporal modeling capabilities of Transformers for time series are exaggerated, at least for the existing LTSF benchmarks. At the same time, while LTSF-Linear achieves a better prediction accuracy compared to existing works, it merely serves as a simple baseline for future research on the challenging longterm TSF problem. With our findings, we also advocate revisiting the validity of Transformer-based solutions for other time series analysis tasks in the future.",
+        "bbox": [
+            75,
+            840,
+            470,
+            901
+        ],
+        "page_idx": 1
+    },
+    {
+        "type": "text",
+        "text": "",
+        "bbox": [
+            496,
+            92,
+            893,
+            167
+        ],
+        "page_idx": 1
+    },
+    {
+        "type": "text",
+        "text": "2. Preliminaries: TSF Problem Formulation",
+        "text_level": 2,
+        "bbox": [
+            498,
+            180,
+            872,
+            196
+        ],
+        "page_idx": 1
+    },
+    {
+        "type": "text",
+        "text": "For time series containing C variates, given historical data $\\mathcal { X } \\ = \\ \\{ X _ { 1 } ^ { t } , . . . , X _ { C } ^ { t } \\} _ { t = 1 } ^ { L } ,$ wherein L is the look-back window size and $X _ { i } ^ { t }$ is the value of the $i _ { t h }$ variate at the $t _ { t h }$ time step. The time series forecasting task is to predict the values $\\dot { \\hat { \\mathcal { X } } } = \\{ \\hat { X } _ { 1 } ^ { t } , . . . , \\hat { X } _ { C } ^ { t } \\} _ { t = L + 1 } ^ { L + T }$ at the T future time steps. When $T > 1$ , iterated multi-step (IMS) forecasting [23] learns a single-step forecaster and iteratively applies it to obtain multi-step predictions. Alternatively, direct multistep (DMS) forecasting [4] directly optimizes the multi-step forecasting objective at once.",
+        "bbox": [
+            498,
+            207,
+            893,
+            357
+        ],
+        "page_idx": 1
+    },
+    {
+        "type": "text",
+        "text": "Compared to DMS forecasting results, IMS predictions have smaller variance thanks to the autoregressive estimation procedure, but they inevitably suffer from error accumulation effects. Consequently, IMS forecasting is preferable when there is a highly-accurate single-step forecaster, and T is relatively small. In contrast, DMS forecasting generates more accurate predictions when it is hard to obtain an unbiased single-step forecasting model, or T is large.",
+        "bbox": [
+            496,
+            357,
+            893,
+            479
+        ],
+        "page_idx": 1
+    },
+    {
+        "type": "text",
+        "text": "3. Transformer-Based LTSF Solutions",
+        "text_level": 2,
+        "bbox": [
+            500,
+            492,
+            823,
+            508
+        ],
+        "page_idx": 1
+    },
+    {
+        "type": "text",
+        "text": "Transformer-based models [26] have achieved unparalleled performances in many long-standing AI tasks in natural language processing and computer vision fields, thanks to the effectiveness of the multi-head self-attention mechanism. This has also triggered lots of research interest in Transformer-based time series modeling techniques [20, 27]. In particular, a large amount of research works are dedicated to the LTSF task (e.g., [16, 18, 28, 30, 31]). Considering the ability to capture long-range dependencies with Transformer models, most of them focus on the lessexplored long-term forecasting problem $( T \\gg 1 ) ^ { 1 }$",
+        "bbox": [
+            496,
+            517,
+            893,
+            684
+        ],
+        "page_idx": 1
+    },
+    {
+        "type": "text",
+        "text": "When applying the vanilla Transformer model to the LTSF problem, it has some limitations, including the quadratic time/memory complexity with the original selfattention scheme and error accumulation caused by the autoregressive decoder design. Informer [30] addresses these issues and proposes a novel Transformer architecture with reduced complexity and a DMS forecasting strategy. Later, more Transformer variants introduce various time series features into their models for performance or efficiency improvements [18,28,31]. We summarize the design elements of existing Transformer-based LTSF solutions as follows (see Figure 1).",
+        "bbox": [
+            496,
+            684,
+            893,
+            866
+        ],
+        "page_idx": 1
+    },
+    {
+        "type": "page_footnote",
+        "text": "1Due to page limit, we leave the discussion of non-Transformer forecasting solutions in the Appendix.",
+        "bbox": [
+            498,
+            875,
+            892,
+            901
+        ],
+        "page_idx": 1
+    },
+    {
+        "type": "page_number",
+        "text": "2",
+        "bbox": [
+            478,
+            924,
+            491,
+            935
+        ],
+        "page_idx": 1
+    },
+    {
+        "type": "image",
+        "img_path": "images/63e2edcaa3458eb31096a64b4d251cc252a4cd4af37450a8be605cbca2f9b4f1.jpg",
+        "image_caption": [
+            "Figure 1. The pipeline of existing Transformer-based TSF solutions. In (a) and (b), the solid boxes are essential operations, and the dotted boxes are applied optionally. (c) and (d) are distinct for different methods [16, 18,28, 30,31]."
+        ],
+        "image_footnote": [],
+        "bbox": [
+            81,
+            85,
+            888,
+            234
+        ],
+        "page_idx": 2
+    },
+    {
+        "type": "text",
+        "text": "Time series decomposition: For data preprocessing, normalization with zero-mean is common in TSF. Besides, Autoformer [28] first applies seasonal-trend decomposition behind each neural block, which is a standard method in time series analysis to make raw data more predictable [6, 13]. Specifically, they use a moving average kernel on the input sequence to extract the trend-cyclical component of the time series. The difference between the original sequence and the trend component is regarded as the seasonal component. On top of the decomposition scheme of Autoformer, FEDformer [31] further proposes the mixture of experts’ strategies to mix the trend components extracted by moving average kernels with various kernel sizes.",
+        "bbox": [
+            75,
+            276,
+            472,
+            473
+        ],
+        "page_idx": 2
+    },
+    {
+        "type": "text",
+        "text": "Input embedding strategies: The self-attention layer in the Transformer architecture cannot preserve the positional information of the time series. However, local positional information, i.e. the ordering of time series, is important. Besides, global temporal information, such as hierarchical timestamps (week, month, year) and agnostic timestamps (holidays and events), is also informative [30]. To enhance the temporal context of time-series inputs, a practical design in the SOTA Transformer-based methods is injecting several embeddings, like a fixed positional encoding, a channel projection embedding, and learnable temporal embeddings into the input sequence. Moreover, temporal embeddings with a temporal convolution layer [16] or learnable timestamps [28] are introduced.",
+        "bbox": [
+            75,
+            476,
+            470,
+            688
+        ],
+        "page_idx": 2
+    },
+    {
+        "type": "text",
+        "text": "Self-attention schemes: Transformers rely on the selfattention mechanism to extract the semantic dependencies between paired elements. Motivated by reducing the O (L2) time and memory complexity of the vanilla Transformer, recent works propose two strategies for efficiency. On the one hand, LogTrans and Pyraformer explicitly introduce a sparsity bias into the self-attention scheme. Specifically, LogTrans uses a Logsparse mask to reduce the computational complexity to O (LlogL) while Pyraformer adopts pyramidal attention that captures hierarchically multi-scale temporal dependencies with an O (L) time and memory complexity. On the other hand, Informer and FEDformer use the low-rank property in the self-attention matrix. Informer proposes a ProbSparse selfattention mechanism and a self-attention distilling operation to decrease the complexity to O (LlogL), and FEDformer designs a Fourier enhanced block and a wavelet enhanced block with random selection to obtain O (L) complexity. Lastly, Autoformer designs a series-wise auto-correlation mechanism to replace the original self-attention layer.",
+        "bbox": [
+            75,
+            689,
+            472,
+            901
+        ],
+        "page_idx": 2
+    },
+    {
+        "type": "text",
+        "text": "",
+        "bbox": [
+            496,
+            276,
+            893,
+            367
+        ],
+        "page_idx": 2
+    },
+    {
+        "type": "text",
+        "text": "Decoders: The vanilla Transformer decoder outputs sequences in an autoregressive manner, resulting in a slow inference speed and error accumulation effects, especially for long-term predictions. Informer designs a generative-style decoder for DMS forecasting. Other Transformer variants employ similar DMS strategies. For instance, Pyraformer uses a fully-connected layer concatenating Spatio-temporal axes as the decoder. Autoformer sums up two refined decomposed features from trend-cyclical components and the stacked auto-correlation mechanism for seasonal components to get the final prediction. FEDformer also uses a decomposition scheme with the proposed frequency attention block to decode the final results.",
+        "bbox": [
+            496,
+            369,
+            893,
+            565
+        ],
+        "page_idx": 2
+    },
+    {
+        "type": "text",
+        "text": "The premise of Transformer models is the semantic correlations between paired elements, while the self-attention mechanism itself is permutation-invariant, and its capability of modeling temporal relations largely depends on positional encodings associated with input tokens. Considering the raw numerical data in time series (e.g., stock prices or electricity values), there are hardly any point-wise semantic correlations between them. In time series modeling, we are mainly interested in the temporal relations among a continuous set of points, and the order of these elements instead of the paired relationship plays the most crucial role. While employing positional encoding and using tokens to embed sub-series facilitate preserving some ordering information, the nature of the permutation-invariant self-attention mechanism inevitably results in temporal information loss. Due to the above observations, we are interested in revisiting the effectiveness of Transformer-based LTSF solutions.",
+        "bbox": [
+            496,
+            568,
+            895,
+            825
+        ],
+        "page_idx": 2
+    },
+    {
+        "type": "text",
+        "text": "4. An Embarrassingly Simple Baseline",
+        "text_level": 2,
+        "bbox": [
+            500,
+            843,
+            826,
+            859
+        ],
+        "page_idx": 2
+    },
+    {
+        "type": "text",
+        "text": "In the experiments of existing Transformer-based LTSF solutions $( T \\ \\gg \\ 1 )$ , all the compared (non-Transformer)",
+        "bbox": [
+            498,
+            869,
+            893,
+            901
+        ],
+        "page_idx": 2
+    },
+    {
+        "type": "page_number",
+        "text": "3",
+        "bbox": [
+            478,
+            924,
+            491,
+            936
+        ],
+        "page_idx": 2
+    },
+    {
+        "type": "text",
+        "text": "baselines are IMS forecasting techniques, which are known to suffer from significant error accumulation effects. We hypothesize that the performance improvements in these works are largely due to the DMS strategy used in them.",
+        "bbox": [
+            75,
+            90,
+            470,
+            152
+        ],
+        "page_idx": 3
+    },
+    {
+        "type": "image",
+        "img_path": "images/e1c0394092ceee173f1e4854c9e8db0f8c65618bdb059b83cb72d2e3e437adc5.jpg",
+        "image_caption": [
+            "Figure 2. Illustration of the basic linear model."
+        ],
+        "image_footnote": [],
+        "bbox": [
+            147,
+            172,
+            400,
+            292
+        ],
+        "page_idx": 3
+    },
+    {
+        "type": "text",
+        "text": "To validate this hypothesis, we present the simplest DMS model via a temporal linear layer, named LTSF-Linear, as a baseline for comparison. The basic formulation of LTSF-Linear directly regresses historical time series for future prediction via a weighted sum operation (as illustrated in Figure 2). The mathematical expression is ${ \\hat { X } } _ { i } ~ = ~ W X _ { i } ,$ where $W \\in \\mathbb { R } ^ { T \\times L }$ is a linear layer along the temporal axis. ${ \\hat { X } } _ { i }$ and $X _ { i }$ are the prediction and input for each $i _ { t h }$ variate. Note that LTSF-Linear shares weights across different variates and does not model any spatial correlations.",
+        "bbox": [
+            76,
+            337,
+            470,
+            489
+        ],
+        "page_idx": 3
+    },
+    {
+        "type": "text",
+        "text": "LTSF-Linear is a set of linear models. Vanilla Linear is a one-layer linear model. To handle time series across different domains (e.g., finance, traffic, and energy domains), we further introduce two variants with two preprocessing methods, named DLinear and NLinear.",
+        "bbox": [
+            75,
+            493,
+            470,
+            569
+        ],
+        "page_idx": 3
+    },
+    {
+        "type": "text",
+        "text": "• Specifically, DLinear is a combination of a Decomposition scheme used in Autoformer and FEDformer with linear layers. It first decomposes a raw data input into a trend component by a moving average kernel and a remainder (seasonal) component. Then, two one-layer linear layers are applied to each component, and we sum up the two features to get the final prediction. By explicitly handling trend, DLinear enhances the performance of a vanilla linear when there is a clear trend in the data.",
+        "bbox": [
+            94,
+            599,
+            470,
+            752
+        ],
+        "page_idx": 3
+    },
+    {
+        "type": "text",
+        "text": "• Meanwhile, to boost the performance of LTSF-Linear when there is a distribution shift in the dataset, NLinear first subtracts the input by the last value of the sequence. Then, the input goes through a linear layer, and the subtracted part is added back before making the final prediction. The subtraction and addition in NLinear are a simple normalization for the input sequence.",
+        "bbox": [
+            96,
+            780,
+            470,
+            901
+        ],
+        "page_idx": 3
+    },
+    {
+        "type": "text",
+        "text": "5. Experiments",
+        "text_level": 2,
+        "bbox": [
+            500,
+            89,
+            633,
+            107
+        ],
+        "page_idx": 3
+    },
+    {
+        "type": "text",
+        "text": "5.1. Experimental Settings",
+        "text_level": 2,
+        "bbox": [
+            500,
+            114,
+            709,
+            131
+        ],
+        "page_idx": 3
+    },
+    {
+        "type": "text",
+        "text": "Dataset. We conduct extensive experiments on nine widely-used real-world datasets, including ETT (Electricity Transformer Temperature) [30] (ETTh1, ETTh2, ETTm1, ETTm2), Traffic, Electricity, Weather, ILI, Exchange-Rate [15]. All of them are multivariate time series. We leave data descriptions in the Appendix.",
+        "bbox": [
+            498,
+            138,
+            893,
+            229
+        ],
+        "page_idx": 3
+    },
+    {
+        "type": "text",
+        "text": "Evaluation metric. Following previous works [28, 30, 31], we use Mean Squared Error (MSE) and Mean Absolute Error (MAE) as the core metrics to compare performance.",
+        "bbox": [
+            498,
+            229,
+            892,
+            275
+        ],
+        "page_idx": 3
+    },
+    {
+        "type": "text",
+        "text": "Compared methods. We include five recent Transformer-based methods: FEDformer [31], Autoformer [28], Informer [30], Pyraformer [18], and LogTrans [16]. Besides, we include a naive DMS method: Closest Repeat (Repeat), which repeats the last value in the look-back window, as another simple baseline. Since there are two variants of FEDformer, we compare the one with better accuracy (FEDformer-f via Fourier transform).",
+        "bbox": [
+            496,
+            275,
+            893,
+            397
+        ],
+        "page_idx": 3
+    },
+    {
+        "type": "text",
+        "text": "5.2. Comparison with Transformers",
+        "text_level": 2,
+        "bbox": [
+            500,
+            407,
+            781,
+            422
+        ],
+        "page_idx": 3
+    },
+    {
+        "type": "text",
+        "text": "Quantitative results. In Table 2, we extensively evaluate all mentioned Transformers on nine benchmarks, following the experimental setting of previous work [28, 30, 31]. Surprisingly, the performance of LTSF-Linear surpasses the SOTA FEDformer in most cases by 20% ～ 50% improvements on the multivariate forecasting, where LTSF-Linear even does not model correlations among variates. For different time series benchmarks, NLinear and DLinear show the superiority to handle the distribution shift and trend-seasonality features. We also provide results for univariate forecasting of ETT datasets in the Appendix, where LTSF-Linear still consistently outperforms Transformerbased LTSF solutions by a large margin.",
+        "bbox": [
+            496,
+            431,
+            893,
+            627
+        ],
+        "page_idx": 3
+    },
+    {
+        "type": "text",
+        "text": "FEDformer achieves competitive forecasting accuracy on ETTh1. This because FEDformer employs classical time series analysis techniques such as frequency processing, which brings in time series inductive bias and benefits the ability of temporal feature extraction. In summary, these results reveal that existing complex Transformer-based LTSF solutions are not seemingly effective on the existing nine benchmarks while LTSF-Linear can be a powerful baseline.",
+        "bbox": [
+            496,
+            628,
+            893,
+            748
+        ],
+        "page_idx": 3
+    },
+    {
+        "type": "text",
+        "text": "Another interesting observation is that even though the naive Repeat method shows worse results when predicting long-term seasonal data (e.g., Electricity and Traffic), it surprisingly outperforms all Transformer-based methods on Exchange-Rate (around 45%). This is mainly caused by the wrong prediction of trends in Transformer-based solutions, which may overfit toward sudden change noises in the training data, resulting in significant accuracy degradation (see Figure 3(b)). Instead, Repeat does not have the bias.",
+        "bbox": [
+            498,
+            750,
+            893,
+            885
+        ],
+        "page_idx": 3
+    },
+    {
+        "type": "text",
+        "text": "Qualitative results. As shown in Figure 3, we plot",
+        "bbox": [
+            517,
+            886,
+            893,
+            901
+        ],
+        "page_idx": 3
+    },
+    {
+        "type": "page_number",
+        "text": "4",
+        "bbox": [
+            478,
+            924,
+            491,
+            935
+        ],
+        "page_idx": 3
+    },
+    {
+        "type": "table",
+        "img_path": "images/e089113e4547837a42a1e507d077d1b8464cbdde65955f3341277bba98865490.jpg",
+        "table_caption": [],
+        "table_footnote": [],
+        "table_body": "<table><tr><td>Datasets</td><td>ETTh1&amp;ETTh2</td><td>ETTm1 &amp;ETTm2</td><td>Traffic</td><td>Electricity</td><td>Exchange-Rate</td><td>Weather</td><td>ILI</td></tr><tr><td>Variates</td><td>7</td><td>7</td><td>862</td><td>321</td><td>8</td><td>21</td><td>7</td></tr><tr><td>Timesteps</td><td>17,420</td><td>69,680</td><td>17,544</td><td>26,304</td><td>7,588</td><td>52,696</td><td>966</td></tr><tr><td>Granularity</td><td>1hour</td><td>5min</td><td>1hour</td><td>1hour</td><td>1day</td><td>10min</td><td>1week</td></tr></table>",
+        "bbox": [
+            179,
+            74,
+            794,
+            125
+        ],
+        "page_idx": 4
+    },
+    {
+        "type": "table",
+        "img_path": "images/ce041dd164e0be03adc4f420d24ceb62f6a6bc0e8b7cb1ca291b6c1fba41bc8d.jpg",
+        "table_caption": [
+            "Table 1. The statistics of the nine popular datasets for the LTSF problem."
+        ],
+        "table_footnote": [
+            "- Methods\\* are implemented by us; Other results are from FEDformer [31]."
+        ],
+        "table_body": "<table><tr><td colspan=\"2\">Methods</td><td colspan=\"2\">IMP.</td><td colspan=\"2\">Linear*</td><td colspan=\"2\">NLinear*</td><td colspan=\"2\">DLinear*</td><td colspan=\"2\">FEDformer</td><td colspan=\"2\">Autoformer Informer</td><td colspan=\"2\">Pyraformer*</td><td colspan=\"2\">LogTrans</td><td colspan=\"2\">Repeat*</td></tr><tr><td>Metric</td><td>96</td><td>MSE</td><td>MSE</td><td>MAE</td><td>MSE MAE</td><td>MSE</td><td>MAE</td><td>MSE</td><td>MAE</td><td>MSE</td><td>MAE</td><td>MSE</td><td>MAE</td><td>MSE</td><td>MAE</td><td>MSE</td><td>MAE</td><td>MSE</td><td>MAE</td></tr><tr><td colspan=\"2\"></td><td>27.40%</td><td>0.140</td><td>0.237</td><td>0.141</td><td>0.237</td><td>0.140</td><td>0.237</td><td>0.193</td><td>0.308</td><td>0.201</td><td>0.317</td><td>0.274</td><td>0.368 0.386</td><td>0.449</td><td>0.258</td><td></td><td>0.357 1.588</td><td>0.946</td></tr><tr><td>BEeiiy</td><td>192 23.88%</td><td>0.153</td><td>0.250</td><td>0.154</td><td>0.248</td><td>0.153</td><td>0.249</td><td>0.201</td><td>0.315</td><td>0.222</td><td>0.334</td><td>0.296</td><td>0.386</td><td>0.386</td><td>0.443</td><td>0.266</td><td>0.368</td><td>1.595</td><td>0.950</td></tr><tr><td></td><td>336 21.02%</td><td>0.169</td><td>0.268</td><td>0.171</td><td>0.265</td><td>0.169</td><td>0.267</td><td>0.214</td><td>0.329</td><td>0.231</td><td>0.338</td><td>0.300</td><td>0.394</td><td>0.378</td><td>0.443</td><td>0.280</td><td>0.380</td><td>1.617</td><td>0.961</td></tr><tr><td></td><td>720 17.47%</td><td>0.203</td><td>0.301</td><td>0.210</td><td>0.297</td><td>0.203</td><td>0.301</td><td>0.246</td><td>0.355</td><td>0.254</td><td>0.361</td><td>0.373</td><td>0.439</td><td>0.376</td><td>0.445</td><td>0.283</td><td>0.376</td><td>1.647</td><td>0.975</td></tr><tr><td>xange</td><td>96 45.27%</td><td>0.082</td><td>0.207</td><td>0.089</td><td>0.208</td><td>0.081</td><td>0.203</td><td>0.148</td><td>0.278</td><td>0.197</td><td>0.323</td><td>0.847</td><td>0.752</td><td>0.376</td><td>1.105</td><td>0.968</td><td>0.812</td><td>0.081</td><td>0.196</td></tr><tr><td></td><td>192 42.06%</td><td>0.167</td><td>0.304</td><td></td><td>0.180 0.300</td><td>0.157</td><td>0.293</td><td>0.271</td><td>0.380</td><td>0.300</td><td>0.369</td><td>1.204</td><td>0.895</td><td>1.748</td><td>1.151</td><td>1.040</td><td>0.851</td><td>0.167</td><td>0.289</td></tr><tr><td></td><td>336 33.69%</td><td>0.328</td><td>0.432</td><td></td><td>0.331 0.415</td><td>0.305</td><td>0.414</td><td>0.460</td><td>0.500</td><td>0.509</td><td>0.524</td><td>1.672</td><td>1.036</td><td>1.874</td><td>1.172</td><td>1.659</td><td>1.081</td><td>0.305</td><td>0.396</td></tr><tr><td></td><td>720 46.19%</td><td>0.964</td><td>0.750</td><td></td><td>1.033 0.780</td><td>0.643</td><td>0.601</td><td>1.195</td><td>0.841</td><td>1.447</td><td>0.941</td><td>2.478</td><td>1.310</td><td>1.943</td><td>1.206</td><td>1.941</td><td>1.127</td><td>0.823</td><td>0.681</td></tr><tr><td>Traatihc</td><td>96 30.15%</td><td>0.410</td><td>0.282</td><td></td><td>0.410 0.279</td><td>0.410</td><td>0.282</td><td>0.587</td><td>0.366</td><td>0.613</td><td>0.388</td><td>0.719</td><td>0.391</td><td>2.085</td><td>0.468</td><td>0.684</td><td>0.384</td><td>2.723</td><td>1.079</td></tr><tr><td>192</td><td>29.96%</td><td>0.423</td><td>0.287</td><td>0.423</td><td>0.284</td><td>0.423</td><td>0.287</td><td>0.604</td><td>0.373</td><td>0.616</td><td>0.382</td><td>0.696</td><td>0.379</td><td>0.867</td><td>0.467</td><td>0.685</td><td>0.390</td><td>2.756</td><td>1.087</td></tr><tr><td>336 720</td><td>29.95%</td><td>0.436</td><td>0.295</td><td></td><td>0.435 0.290</td><td>0.436</td><td>0.296</td><td>0.621</td><td>0.383</td><td>0.622</td><td>0.337</td><td>0.777</td><td>0.420</td><td>0.869</td><td>0.469</td><td>0.734</td><td>0.408</td><td>2.791</td><td>1.095</td></tr><tr><td></td><td>25.87%</td><td>0.466</td><td>0.315</td><td></td><td>0.464 0.307</td><td>0.466</td><td>0.315</td><td>0.626</td><td>0.382</td><td>0.660</td><td>0.408</td><td>0.864</td><td>0.472</td><td>0.881</td><td>0.473</td><td>0.717</td><td>0.396</td><td>2.811</td><td>1.097</td></tr><tr><td>Weather</td><td>96 18.89%</td><td>0.176</td><td>0.236</td><td></td><td>0.182 0.232</td><td>0.176</td><td>0.237</td><td>0.217</td><td>0.296</td><td>0.266</td><td>0.336</td><td>0.300</td><td>0.384</td><td>0.896</td><td>0.556</td><td>0.458</td><td>0.490</td><td>0.259</td><td>0.254</td></tr><tr><td>192 336</td><td>21.01%</td><td>0.218</td><td>0.276</td><td></td><td>0.225 0.269</td><td>0.220 0.265</td><td>0.282</td><td>0.276</td><td>0.336</td><td>0.307</td><td>0.367</td><td>0.598</td><td>0.544</td><td>0.622</td><td>0.624</td><td>0.658</td><td>0.589</td><td>0.309</td><td>0.292</td></tr><tr><td>720</td><td>22.71%</td><td>0.262</td><td>0.312</td><td></td><td>0.271</td><td>0.301 0.323</td><td>0.319</td><td>0.339</td><td>0.380</td><td>0.359</td><td>0.395</td><td>0.578</td><td>0.523</td><td>0.739</td><td>0.753</td><td>0.797</td><td>0.652</td><td>0.377</td><td>0.338</td></tr><tr><td>24</td><td>19.85%</td><td>0.326</td><td>0.365</td><td></td><td>0.338</td><td>0.348</td><td>0.362</td><td>0.403</td><td>0.428</td><td>0.419</td><td>0.428</td><td>1.059</td><td>0.741</td><td>1.004</td><td>0.934</td><td>0.869</td><td>0.675</td><td>0.465</td><td>0.394</td></tr><tr><td></td><td>47.86%</td><td>1.947</td><td>0.985</td><td></td><td>1.683 1.703</td><td>0.858 2.215 0.859</td><td>1.081</td><td>3.228</td><td>1.260</td><td>3.483</td><td>1.287</td><td>5.764</td><td>1.677</td><td>1.420</td><td>2.012</td><td>4.480</td><td>1.444</td><td>6.587</td><td>1.701</td></tr><tr><td>m 48</td><td>36 36.43%</td><td>2.182</td><td>1.036 1.060</td><td></td><td>1.719</td><td>1.963 0.884 2.130</td><td>0.963 1.024</td><td>2.679</td><td>1.080</td><td>3.103</td><td>1.148</td><td>4.755</td><td>1.467</td><td>7.394</td><td>2.031</td><td>4.799</td><td>1.467</td><td>7.130</td><td>1.884</td></tr><tr><td>60</td><td>34.43%</td><td>2.256</td><td>1.104</td><td></td><td>1.819</td><td>0.917 2.368</td><td>1.096</td><td>2.622</td><td>1.078</td><td>2.669</td><td>1.085</td><td>4.763</td><td>1.469 1.564</td><td>7.551 7.662</td><td>2.057 2.100</td><td>4.800 5.278</td><td>1.468 1.560</td><td>6.575 5.893</td><td>1.798 1.677</td></tr><tr><td>96 ET541 192</td><td>34.33% 0.80%</td><td>2.390 0.375</td><td>0.397</td><td></td><td>0.374</td><td>0.394 0.375</td><td>0.399</td><td>2.857 0.376</td><td>1.157 0.419</td><td>2.770 0.449</td><td>1.125 0.459</td><td>5.264 0.865</td></table>",
+        "bbox": [
+            81,
+            151,
+            928,
+            560
+        ],
+        "page_idx": 4
+    },
+    {
+        "type": "text",
+        "text": "Table 2. Multivariate long-term forecasting errors in terms of MSE and MAE, the lower the better. Among them, ILI dataset is with forecasting horizon $T \\in \\{ 2 4 , 3 6 , 4 8 , 6 0 \\}$ . For the others, T ∈ {96, 192, 336, 720}. Repeat repeats the last value in the look-back window. The best results are highlighted in bold and the best results of Transformers are highlighted with a underline. Accordingly, IMP. is the best result of linear models compared to the results of Transformer-based solutions.",
+        "bbox": [
+            75,
+            574,
+            893,
+            630
+        ],
+        "page_idx": 4
+    },
+    {
+        "type": "text",
+        "text": "the prediction results on three selected time series datasets with Transformer-based solutions and LTSF-Linear: Electricity (Sequence 1951, Variate 36), Exchange-Rate (Sequence 676, Variate 3), and ETTh2 (Sequence 1241, Variate 2), where these datasets have different temporal patterns. When the input length is 96 steps, and the output horizon is 336 steps, Transformers [28, 30, 31] fail to capture the scale and bias of the future data on Electricity and ETTh2. Moreover, they can hardly predict a proper trend on aperiodic data such as Exchange-Rate. These phenomena further indicate the inadequacy of existing Transformer-based solutions for the LTSF task.",
+        "bbox": [
+            75,
+            638,
+            472,
+            819
+        ],
+        "page_idx": 4
+    },
+    {
+        "type": "text",
+        "text": "5.3. More Analyses on LTSF-Transformers",
+        "text_level": 2,
+        "bbox": [
+            76,
+            830,
+            411,
+            847
+        ],
+        "page_idx": 4
+    },
+    {
+        "type": "text",
+        "text": "Can existing LTSF-Transformers extract temporal relations well from longer input sequences? The size of the look-back window greatly impacts forecasting accuracy as it determines how much we can learn from historical data. Generally speaking, a powerful TSF model with a strong temporal relation extraction capability should be able to achieve better results with larger look-back window sizes.",
+        "bbox": [
+            75,
+            854,
+            472,
+            901
+        ],
+        "page_idx": 4
+    },
+    {
+        "type": "text",
+        "text": "",
+        "bbox": [
+            496,
+            638,
+            893,
+            699
+        ],
+        "page_idx": 4
+    },
+    {
+        "type": "text",
+        "text": "To study the impact of input look-back window sizes, we conduct experiments with $L \\in$ {24, 48, 72, 96, 120, 144, 168, 192, 336, 504, 672, 720} for long-term forecasting (T=720). Figure 4 demonstrates the MSE results on two datasets. Similar to the observations from previous studies [27, 30], existing Transformer-based models' performance deteriorates or stays stable when the look-back window size increases. In contrast, the performances of all LTSF-Linear are significantly boosted with the increase of look-back window size. Thus, existing solutions tend to overfit temporal noises instead of extracting temporal information if given a longer sequence, and the input size 96 is exactly suitable for most Transformers.",
+        "bbox": [
+            496,
+            704,
+            895,
+            901
+        ],
+        "page_idx": 4
+    },
+    {
+        "type": "page_number",
+        "text": "5",
+        "bbox": [
+            478,
+            924,
+            491,
+            936
+        ],
+        "page_idx": 4
+    },
+    {
+        "type": "chart",
+        "img_path": "images/b4fbc1ccb7a0d06ebd3dad6249b7f7b68179cd50cf2bc5889213c44c9fba4baa.jpg",
+        "content": "",
+        "chart_caption": [
+            "(a) Electricity"
+        ],
+        "chart_footnote": [],
+        "bbox": [
+            84,
+            97,
+            356,
+            241
+        ],
+        "page_idx": 5
+    },
+    {
+        "type": "chart",
+        "img_path": "images/58c96f30026357ab80e95674396e798e2d661bc132b5cf1fd7f40222f46078bc.jpg",
+        "content": "",
+        "chart_caption": [
+            "(b) Exchange-Rate"
+        ],
+        "chart_footnote": [],
+        "bbox": [
+            359,
+            97,
+            625,
+            241
+        ],
+        "page_idx": 5
+    },
+    {
+        "type": "chart",
+        "img_path": "images/b9009a896b5d5767cf2d394237ed4bd7a76c0d36448ca3b9b8e5fffba57d15d5.jpg",
+        "content": "",
+        "chart_caption": [
+            "(c) ETTh2",
+            "Figure 3. Illustration of the long-term forecasting output (Y-axis) of five models with an input length L=96 and output length T=192 (X-axis) on Electricity, Exchange-Rate, and ETTh2, respectively."
+        ],
+        "chart_footnote": [],
+        "bbox": [
+            627,
+            97,
+            900,
+            241
+        ],
+        "page_idx": 5
+    },
+    {
+        "type": "text",
+        "text": "Additionally, we provide more quantitative results in the Appendix, and our conclusion holds in almost all cases.",
+        "bbox": [
+            76,
+            308,
+            470,
+            338
+        ],
+        "page_idx": 5
+    },
+    {
+        "type": "chart",
+        "img_path": "images/51331912709067f6b428a85f618c380a1d0b91b8ce8f66ec6d15d0344b4c3186.jpg",
+        "content": "",
+        "chart_caption": [],
+        "chart_footnote": [],
+        "bbox": [
+            73,
+            361,
+            267,
+            486
+        ],
+        "page_idx": 5
+    },
+    {
+        "type": "chart",
+        "img_path": "images/6195515c02b66c9e29bc1cf60d58631b4ca5f22339b556c4579faac2590036ab.jpg",
+        "content": "",
+        "chart_caption": [
+            "(a) 720 steps-Traffic",
+            "(b) 720 steps-Electricity",
+            "Figure 4. The MSE results (Y-axis) of models with different lookback window sizes (X-axis) of long-term forecasting (T=720) on the Traffic and Electricity datasets."
+        ],
+        "chart_footnote": [],
+        "bbox": [
+            276,
+            361,
+            472,
+            486
+        ],
+        "page_idx": 5
+    },
+    {
+        "type": "text",
+        "text": "What can be learned for long-term forecasting? While the temporal dynamics in the look-back window significantly impact the forecasting accuracy of short-term time series forecasting, we hypothesize that long-term forecasting depends on whether models can capture the trend and periodicity well only. That is, the farther the forecasting horizon, the less impact the look-back window itself has.",
+        "bbox": [
+            75,
+            566,
+            472,
+            672
+        ],
+        "page_idx": 5
+    },
+    {
+        "type": "table",
+        "img_path": "images/9e6058e711daa534728a0bde06c6f4aab5c54194de7860f32c91346c8537905b.jpg",
+        "table_caption": [
+            "Table 3. Comparison of different input sequences under the MSE metric to explore what LTSF-Transformers depend on. If the input is Close, we use the $9 6 _ { t h } , . . . , 1 9 1 _ { t h }$ time steps as the input sequence. If the input is Far, we use the $0 _ { t h } , . . . , 9 5 _ { t h }$ time steps. Both of them forecast the $1 9 2 _ { t h } , . . . , ( 1 9 2 + 7 2 0 ) _ { t h }$ time steps."
+        ],
+        "table_footnote": [],
+        "table_body": "<table><tr><td>Methods</td><td colspan=\"2\">FEDformer</td><td colspan=\"2\">Autoformer</td></tr><tr><td>Input</td><td>Close</td><td>Far</td><td>Close</td><td>Far</td></tr><tr><td>Electricity Traffic</td><td>0.251 0.631</td><td>0.265 0.645</td><td>0.255 0.677</td><td>0.287 0.675</td></tr></table>",
+        "bbox": [
+            129,
+            686,
+            415,
+            744
+        ],
+        "page_idx": 5
+    },
+    {
+        "type": "text",
+        "text": "To validate the above hypothesis, in Table 3, we compare the forecasting accuracy for the same future 720 time steps with data from two different look-back windows: (i). the original input L=96 setting (called Close) and (ii). the far input L=96 setting (called Far) that is before the original",
+        "bbox": [
+            75,
+            825,
+            470,
+            901
+        ],
+        "page_idx": 5
+    },
+    {
+        "type": "text",
+        "text": "96 time steps. From the experimental results, the performance of the SOTA Transformers drops slightly, indicating these models only capture similar temporal information from the adjacent time series sequence. Since capturing the intrinsic characteristics of the dataset generally does not require a large number of parameters, i,e. one parameter can represent the periodicity. Using too many parameters will even cause overfitting, which partially explains why LTSF-Linear performs better than Transformer-based methods.",
+        "bbox": [
+            498,
+            308,
+            893,
+            444
+        ],
+        "page_idx": 5
+    },
+    {
+        "type": "text",
+        "text": "Are the self-attention scheme effective for LTSF? We verify whether these complex designs in the existing Transformer (e.g., Informer) are essential. In Table 4, we gradually transform Informer to Linear. First, we replace each self-attention layer by a linear layer, called Att.-Linear, since a self-attention layer can be regarded as a fullyconnected layer where weights are dynamically changed. Furthermore, we discard other auxiliary designs (e.g., FFN) in Informer to leave embedding layers and linear layers, named Embed + Linear. Finally, we simplify the model to one linear layer. Surprisingly, the performance of Informer grows with the gradual simplification, indicating the unnecessary of the self-attention scheme and other complex modules at least for existing LTSF benchmarks.",
+        "bbox": [
+            496,
+            444,
+            893,
+            656
+        ],
+        "page_idx": 5
+    },
+    {
+        "type": "table",
+        "img_path": "images/1adce1ce45cad32bc4ed38a9b256d9ba4a8e908bfda7c489c28801e4f75ec583.jpg",
+        "table_caption": [
+            "Table 4. The MSE comparisons of gradually transforming Informer to a Linear from the left to right columns. Att.-Linear is a structure that replaces each attention layer with a linear layer. Embed + Linear is to drop other designs and only keeps embedding layers and a linear layer. The look-back window size is 96."
+        ],
+        "table_footnote": [],
+        "table_body": "<table><tr><td colspan=\"2\">Methods</td><td>Informer</td><td>Att.-Linear</td><td>Embed + Linear</td><td>Linear</td></tr><tr><td rowspan=\"4\">Excne</td><td>96</td><td>0.847</td><td>1.003</td><td>0.173</td><td>0.084</td></tr><tr><td>192</td><td>1.204</td><td>0.979</td><td>0.443</td><td>0.155</td></tr><tr><td>336</td><td>1.672</td><td>1.498</td><td>1.288</td><td>0.301</td></tr><tr><td>720</td><td>2.478</td><td>2.102</td><td>2.026</td><td>0.763</td></tr><tr><td rowspan=\"5\">ET1</td><td>96</td><td>0.865</td><td>0.613</td><td>0.454</td><td>0.400</td></tr><tr><td>192</td><td>1.008</td><td>0.759</td><td>0.686</td><td>0.438</td></tr><tr><td>336</td><td>1.107</td><td>0.921</td><td>0.821</td><td>0.479</td></tr><tr><td>720</td><td>1.181</td><td>0.902</td><td>1.051</td><td>0.515</td></tr><tr><td></td><td></td><td></td><td></td><td></td></tr></table>",
+        "bbox": [
+            506,
+            670,
+            882,
+            787
+        ],
+        "page_idx": 5
+    },
+    {
+        "type": "text",
+        "text": "Can existing LTSF-Transformers preserve temporal order well? Self-attention is inherently permutationinvariant, i.e., regardless of the order. However, in timeseries forecasting, the sequence order often plays a crucial role. We argue that even with positional and temporal embeddings, existing Transformer-based methods still suffer from temporal information loss. In Table 5, we shuffle the raw input before the embedding strategies. Two shuffling strategies are presented: Shuf. randomly shuffles the whole input sequences and Half-Ex. exchanges the first half of the input sequence with the second half. Interestingly, compared with the original setting (Ori.) on the Exchange Rate, the performance of all Transformer-based methods does not fluctuate even when the input sequence is randomly shuffled. By contrary, the performance of LTSF-Linear is damaged significantly. These indicate that LTSF-Transformers with different positional and temporal embeddings preserve quite limited temporal relations and are prone to overfit on noisy financial data, while the LTSF-Linear can model the order naturally and avoid overfitting with fewer parameters.",
+        "bbox": [
+            498,
+            871,
+            893,
+            900
+        ],
+        "page_idx": 5
+    },
+    {
+        "type": "page_number",
+        "text": "6",
+        "bbox": [
+            478,
+            924,
+            491,
+            936
+        ],
+        "page_idx": 5
+    },
+    {
+        "type": "table",
+        "img_path": "images/f8874c6f70f603f894996c51ec6eb00293f726cb79734e8c88df3f1c89c9b7f9.jpg",
+        "table_caption": [
+            "Table 5. The MSE comparisons of models when shuffling the raw input sequence. Shuf. randomly shuffles the input sequence. Half-EX. randomly exchanges the first half of the input sequences with the second half. Average Drop is the average performance drop under all forecasting lengths after shuffling. All results are the average test MSE of five runs."
+        ],
+        "table_footnote": [],
+        "table_body": "<table><tr><td colspan=\"2\">Methods</td><td colspan=\"3\">Linear</td><td colspan=\"3\">FEDformer</td><td colspan=\"3\">Autoformer</td><td colspan=\"3\">Informer</td></tr><tr><td colspan=\"2\">Predict Length</td><td>Ori.</td><td>Shuf.</td><td>Half-Ex.</td><td>Ori.</td><td>Shuf.</td><td>Half-Ex.</td><td>Ori.</td><td>Shuf.</td><td>Half-Ex.</td><td>Ori.</td><td>Shuf.</td><td>Half-Ex.</td></tr><tr><td rowspan=\"4\">Excange</td><td>96</td><td>0.080</td><td>0.133</td><td>0.169</td><td>0.161</td><td>0.160</td><td>0.162</td><td>0.152</td><td>0.158</td><td>0.160</td><td>0.952</td><td>1.004</td><td>0.959</td></tr><tr><td>192</td><td>0.162</td><td>0.208</td><td>0.243</td><td>0.274</td><td>0.275</td><td>0.275</td><td>0.278</td><td>0.271</td><td>0.277</td><td>1.012</td><td>1.023</td><td>1.014</td></tr><tr><td>336</td><td>0.286</td><td>0.320</td><td>0.345</td><td>0.439</td><td>0.439</td><td>0.439</td><td>0.435</td><td>0.430</td><td>0.435</td><td>1.177</td><td>1.181</td><td>1.177</td></tr><tr><td>720</td><td>0.806</td><td>0.819</td><td>0.836</td><td>1.122</td><td>1.122</td><td>1.122</td><td>1.113</td><td>1.113</td><td>1.113</td><td>1.198</td><td>1.210</td><td>1.196</td></tr><tr><td rowspan=\"4\">ET51</td><td>Average Drop</td><td>N/A</td><td>27.26%</td><td>46.81%</td><td>N/A</td><td>-0.09%</td><td>0.20%</td><td>N/A</td><td>0.09%</td><td>1.12%</td><td>N/A</td><td>-0.12%</td><td>-0.18%</td></tr><tr><td>96</td><td>0.395</td><td>0.824</td><td>0.431</td><td>0.376</td><td>0.753</td><td>0.405</td><td>0.455</td><td>0.838</td><td>0.458</td><td>0.974</td><td>0.971</td><td>0.971</td></tr><tr><td>192</td><td>0.447</td><td>0.824</td><td>0.471</td><td>0.419</td><td>0.730</td><td>0.436</td><td>0.486</td><td>0.774</td><td>0.491</td><td>1.233</td><td>1.232</td><td>1.231</td></tr><tr><td>336</td><td>0.490</td><td>0.825</td><td>0.505</td><td>0.447</td><td>0.736</td><td>0.453</td><td>0.496</td><td>0.752</td><td>0.497</td><td>1.693</td><td>1.693</td><td>1.691</td></tr><tr><td rowspan=\"2\"></td><td>720</td><td>0.520</td><td>0.846</td><td>0.528</td><td>0.468</td><td>0.720</td><td>0.470</td><td>0.525</td><td>0.696</td><td>0.524</td><td>2.720</td><td>2.716</td><td>2.715</td></tr><tr><td>Average Drop</td><td>N/A</td><td>81.06%</td><td>4.78%</td><td>N/A</td><td>73.28%</td><td>3.44%</td><td>N/A</td><td>56.91%</td><td>0.46%</td><td>N/A</td><td>1.98%</td><td>0.18%</td></tr></table>",
+        "bbox": [
+            80,
+            88,
+            893,
+            247
+        ],
+        "page_idx": 6
+    },
+    {
+        "type": "text",
+        "text": "",
+        "bbox": [
+            75,
+            308,
+            472,
+            579
+        ],
+        "page_idx": 6
+    },
+    {
+        "type": "text",
+        "text": "For the ETTh1 dataset, FEDformer and Autoformer introduce time series inductive bias into their models, making them can extract certain temporal information when the dataset has more clear temporal patterns (e.g., periodicity) than the Exchange Rate. Therefore, the average drops of the two Transformers are 73.28% and 56.91% under the Shuf. setting, where it loses the whole order information. Moreover, Informer still suffers less from both Shuf. and Half-Ex. settings due to its no such temporal inductive bias. Overall, the average drops of LTSF-Linear are larger than Transformer-based methods for all cases, indicating the existing Transformers do not preserve temporal order well.",
+        "bbox": [
+            75,
+            582,
+            472,
+            763
+        ],
+        "page_idx": 6
+    },
+    {
+        "type": "text",
+        "text": "How effective are different embedding strategies? We study the benefits of position and timestamp embeddings used in Transformer-based methods. In Table 6, the forecasting errors of Informer largely increase without positional embeddings (wo/Pos.). Without timestamp embeddings (wo/Temp.) will gradually damage the performance of Informer as the forecasting lengths increase. Since Informer uses a single time step for each token, it is necessary to introduce temporal information in tokens.",
+        "bbox": [
+            75,
+            765,
+            472,
+            901
+        ],
+        "page_idx": 6
+    },
+    {
+        "type": "table",
+        "img_path": "images/c5595a2255f6367f76d7b2aa3c49c0f54144fafb68211425c3a452b9ccbe393e.jpg",
+        "table_caption": [
+            "Table 6. The MSE comparisons of different embedding strategies on Transformer-based methods with look-back window size 96 and forecasting lengths {96, 192, 336, 720}."
+        ],
+        "table_footnote": [],
+        "table_body": "<table><tr><td rowspan=\"2\">Methods</td><td rowspan=\"2\">Embedding</td><td colspan=\"4\">Traffic</td></tr><tr><td>96</td><td>192</td><td>336</td><td>720</td></tr><tr><td rowspan=\"4\">FEDformer</td><td>All</td><td>0.597</td><td>0.606</td><td>0.627</td><td>0.649</td></tr><tr><td>wo/Pos.</td><td>0.587</td><td>0.604</td><td>0.621</td><td>0.626</td></tr><tr><td>wo/Temp.</td><td>0.613</td><td>0.623</td><td>0.650</td><td>0.677</td></tr><tr><td>wo/Pos.-Temp.</td><td>0.613</td><td>0.622</td><td>0.648</td><td>0.663</td></tr><tr><td rowspan=\"4\">Autoformer</td><td>All</td><td>0.629</td><td>0.647</td><td>0.676</td><td>0.638</td></tr><tr><td>wo/Pos.</td><td>0.613</td><td>0.616</td><td>0.622</td><td>0.660</td></tr><tr><td>wo/Temp.</td><td>0.681</td><td>0.665</td><td>0.908</td><td>0.769</td></tr><tr><td>wo/Pos.-Temp.</td><td>0.672</td><td>0.811</td><td>1.133</td><td>1.300</td></tr><tr><td rowspan=\"4\">Informer</td><td>All</td><td>0.719</td><td>0.696</td><td>0.777</td><td>0.864</td></tr><tr><td>wo/Pos.</td><td>1.035</td><td>1.186</td><td>1.307</td><td>1.472</td></tr><tr><td>wo/Temp.</td><td>0.754</td><td>0.780</td><td>0.903</td><td>1.259</td></tr><tr><td>wo/Pos.-Temp.</td><td>1.038</td><td>1.351</td><td>1.491</td><td>1.512</td></tr></table>",
+        "bbox": [
+            504,
+            304,
+            883,
+            494
+        ],
+        "page_idx": 6
+    },
+    {
+        "type": "text",
+        "text": "Rather than using a single time step in each token, FEDformer and Autoformer input a sequence of timestamps to embed the temporal information. Hence, they can achieve comparable or even better performance without fixed positional embeddings. However, without timestamp embeddings, the performance of Autoformer declines rapidly because of the loss of global temporal information. Instead, thanks to the frequency-enhanced module proposed in FEDformer to introduce temporal inductive bias, it suffers less from removing any position/timestamp embeddings.",
+        "bbox": [
+            496,
+            551,
+            893,
+            703
+        ],
+        "page_idx": 6
+    },
+    {
+        "type": "text",
+        "text": "Is training data size a limiting factor for existing LTSF-Transformers? Some may argue that the poor performance of Transformer-based solutions is due to the small sizes of the benchmark datasets. Unlike computer vision or natural language processing tasks, TSF is performed on collected time series, and it is difficult to scale up the training data size. In fact, the size of the training data would indeed have a significant impact on the model performance. Accordingly, we conduct experiments on Traffic, comparing the performance of the model trained on a full dataset (17,544\\*0.7 hours), named Ori., with that trained on a shortened dataset (8,760 hours, i.e., 1 year), called Short. Unexpectedly, Table 7 presents that the prediction errors with reduced training data are lower in most cases. This might because the whole-year data maintains more clear temporal features than a longer but incomplete data size. While we cannot conclude that we should use less data for training, it demonstrates that the training data scale is not the limiting reason for the performances of Autoformer and FEDformer.",
+        "bbox": [
+            496,
+            704,
+            895,
+            902
+        ],
+        "page_idx": 6
+    },
+    {
+        "type": "page_number",
+        "text": "7",
+        "bbox": [
+            478,
+            924,
+            490,
+            936
+        ],
+        "page_idx": 6
+    },
+    {
+        "type": "text",
+        "text": "",
+        "bbox": [
+            75,
+            92,
+            472,
+            196
+        ],
+        "page_idx": 7
+    },
+    {
+        "type": "table",
+        "img_path": "images/ea09d719061a0da2a293b71f5450f5b63442a9538b70d305c543b97984834692.jpg",
+        "table_caption": [
+            "Table 7. The MSE comparison of two training data sizes."
+        ],
+        "table_footnote": [],
+        "table_body": "<table><tr><td>Methods</td><td colspan=\"2\">FEDformer</td><td colspan=\"2\">Autoformer</td></tr><tr><td>Dataset</td><td>Ori.</td><td>Short</td><td>Ori.</td><td>Short</td></tr><tr><td>96</td><td>0.587</td><td>0.568</td><td>0.613</td><td>0.594</td></tr><tr><td>192</td><td>0.604</td><td>0.584</td><td>0.616</td><td>0.621</td></tr><tr><td>336</td><td>0.621</td><td>0.601</td><td>0.622</td><td>0.621</td></tr><tr><td>720</td><td>0.626</td><td>0.608</td><td>0.660</td><td>0.650</td></tr></table>",
+        "bbox": [
+            133,
+            207,
+            408,
+            292
+        ],
+        "page_idx": 7
+    },
+    {
+        "type": "text",
+        "text": "Is efficiency really a top-level priority? Existing LTSF-Transformers claim that the $O \\left( L ^ { 2 } \\right)$ complexity of the vanilla Transformer is unaffordable for the LTSF problem. Although they prove to be able to improve the theoretical time and memory complexity from $O \\left( L ^ { 2 } \\right)$ to O (L), it is unclear whether 1) the actual inference time and memory cost on devices are improved, and 2) the memory issue is unacceptable and urgent for today's GPU (e.g., an NVIDIA Titan XP here). In Table 8, we compare the average practical efficiencies with 5 runs. Interestingly, compared with the vanilla Transformer (with the same DMS decoder), most Transformer variants incur similar or even worse inference time and parameters in practice. These follow-ups introduce more additional design elements to make practical costs high. Moreover, the memory cost of the vanilla Transformer is practically acceptable, even for output length $L = 7 2 0$ which weakens the importance of developing a memoryefficient Transformers, at least for existing benchmarks.",
+        "bbox": [
+            75,
+            320,
+            470,
+            594
+        ],
+        "page_idx": 7
+    },
+    {
+        "type": "table",
+        "img_path": "images/f58da1f82d9ba557c1c525c92cc3b7f6ea9211826277958fc9025adfdfbf8e11.jpg",
+        "table_caption": [
+            "- × is modified into the same one-step decoder, which is implemented in the source code from Autoformer. - \\* 236.7M parameters of Pyraformer come from its linear decoder.",
+            "Table 8. Comparison of practical efficiency of LTSF-Transformers under L=96 and T=720 on the Electricity. MACs are the number of multiply-accumulate operations. We use Dlinear for comparison since it has the double cost in LTSF-Linear. The inference time averages 5 runs."
+        ],
+        "table_footnote": [],
+        "table_body": "<table><tr><td>Method</td><td>MACs</td><td>Parameter</td><td>Time</td><td>Memory</td></tr><tr><td>DLinear</td><td>0.04G</td><td>139.7K</td><td>0.4ms</td><td>687MiB</td></tr><tr><td>Transformer×</td><td>4.03G</td><td>13.61M</td><td>26.8ms</td><td>6091MiB</td></tr><tr><td>Informer</td><td>3.93G</td><td>14.39M</td><td>49.3ms</td><td>3869MiB</td></tr><tr><td>Autoformer</td><td>4.41G</td><td>14.91M</td><td>164.1ms</td><td>7607MiB</td></tr><tr><td>Pyraformer</td><td>0.80G</td><td>241.4M*</td><td>3.4ms</td><td>7017MiB</td></tr><tr><td>FEDformer</td><td>4.41G</td><td>20.68M</td><td>40.5ms</td><td>4143MiB</td></tr></table>",
+        "bbox": [
+            81,
+            603,
+            464,
+            700
+        ],
+        "page_idx": 7
+    },
+    {
+        "type": "text",
+        "text": "6. Conclusion and Future Work",
+        "text_level": 2,
+        "bbox": [
+            76,
+            799,
+            348,
+            815
+        ],
+        "page_idx": 7
+    },
+    {
+        "type": "text",
+        "text": "Conclusion. This work questions the effectiveness of emerging favored Transformer-based solutions for the longterm time series forecasting problem. We use an embarrassingly simple linear model LTSF-Linear as a DMS forecasting baseline to verify our claims. Note that our contributions do not come from proposing a linear model but rather from throwing out an important question, showing surprising comparisons, and demonstrating why LTSF-Transformers are not as effective as claimed in these works through various perspectives. We sincerely hope our comprehensive studies can benefit future work in this area.",
+        "bbox": [
+            75,
+            825,
+            472,
+            901
+        ],
+        "page_idx": 7
+    },
+    {
+        "type": "text",
+        "text": "",
+        "bbox": [
+            496,
+            92,
+            893,
+            183
+        ],
+        "page_idx": 7
+    },
+    {
+        "type": "text",
+        "text": "Future work. LTSF-Linear has a limited model capacity, and it merely serves a simple yet competitive baseline with strong interpretability for future research. For example, the one-layer linear network is hard to capture the temporal dynamics caused by change points [25]. Consequently, we believe there is a great potential for new model designs, data processing, and benchmarks to tackle the challenging LTSF problem.",
+        "bbox": [
+            496,
+            780,
+            893,
+            901
+        ],
+        "page_idx": 7
+    },
+    {
+        "type": "page_number",
+        "text": "8",
+        "bbox": [
+            478,
+            924,
+            491,
+            935
+        ],
+        "page_idx": 7
+    },
+    {
+        "type": "text",
+        "text": "Appendix: Are Transformers Effective for Time Series Forecasting?",
+        "text_level": 2,
+        "bbox": [
+            197,
+            99,
+            771,
+            138
+        ],
+        "page_idx": 8
+    },
+    {
+        "type": "text",
+        "text": "In this Appendix, we provide descriptions of non-Transformer-based TSF solutions, detailed experimental settings, more comparisons under different look-back window sizes, and the visualization of LTSF-Linear on all datasets. We also append our code to reproduce the results shown in the paper.",
+        "bbox": [
+            75,
+            150,
+            472,
+            242
+        ],
+        "page_idx": 8
+    },
+    {
+        "type": "text",
+        "text": "A. Related Work: Non-Transformer-Based TSF Solutions",
+        "text_level": 2,
+        "bbox": [
+            76,
+            255,
+            470,
+            290
+        ],
+        "page_idx": 8
+    },
+    {
+        "type": "text",
+        "text": "As a long-standing problem with a wide range of applications, statistical approaches (e.g., autoregressive integrated moving average (ARIMA) [1], exponential smoothing [12], and structural models [14]) for time series forecasting have been used from the 1970s onward. Generally speaking, the parametric models used in statistical methods require significant domain expertise to build.",
+        "bbox": [
+            75,
+            299,
+            470,
+            405
+        ],
+        "page_idx": 8
+    },
+    {
+        "type": "text",
+        "text": "To relieve this burden, many machine learning techniques such as gradient boosting regression tree (GBRT) [10, 11] gain popularity, which learns the temporal dynamics of time series in a data-driven manner. However, these methods still require manual feature engineering and model designs. With the powerful representation learning capability of deep neural networks (DNNs) from abundant data, various deep learning-based TSF solutions are proposed in the literature, achieving better forecasting accuracy than traditional techniques in many cases.",
+        "bbox": [
+            75,
+            405,
+            472,
+            555
+        ],
+        "page_idx": 8
+    },
+    {
+        "type": "text",
+        "text": "Besides Transformers, the other two popular DNN architectures are also applied for time series forecasting:",
+        "bbox": [
+            75,
+            556,
+            468,
+            588
+        ],
+        "page_idx": 8
+    },
+    {
+        "type": "text",
+        "text": "• Recurrent neural networks (RNNs) based methods (e.g., [21]) summarize the past information compactly in internal memory states and recursively update themselves for forecasting.",
+        "bbox": [
+            94,
+            599,
+            470,
+            661
+        ],
+        "page_idx": 8
+    },
+    {
+        "type": "text",
+        "text": "• Convolutional neural networks (CNNs) based methods (e.g., [3]), wherein convolutional filters are used to capture local temporal features.",
+        "bbox": [
+            94,
+            671,
+            470,
+            719
+        ],
+        "page_idx": 8
+    },
+    {
+        "type": "text",
+        "text": "RNN-based TSF methods belong to IMS forecasting techniques. Depending on whether the decoder is implemented in an autoregressive manner, there are either IMS or DMS forecasting techniques for CNN-based TSF methods [3, 17].",
+        "bbox": [
+            75,
+            731,
+            470,
+            808
+        ],
+        "page_idx": 8
+    },
+    {
+        "type": "text",
+        "text": "B. Experimental Details",
+        "text_level": 2,
+        "bbox": [
+            76,
+            820,
+            282,
+            839
+        ],
+        "page_idx": 8
+    },
+    {
+        "type": "text",
+        "text": "B.1. Data Descriptions",
+        "text_level": 2,
+        "bbox": [
+            76,
+            845,
+            254,
+            863
+        ],
+        "page_idx": 8
+    },
+    {
+        "type": "text",
+        "text": "We use nine wildly-used datasets in the main paper. The details are listed in the following.",
+        "bbox": [
+            75,
+            869,
+            470,
+            901
+        ],
+        "page_idx": 8
+    },
+    {
+        "type": "text",
+        "text": "• ETT (Electricity Transformer Temperature) [30]2 consists of two hourly-level datasets (ETTh) and two 15- minute-level datasets (ETTm). Each of them contains seven oil and load features of electricity transformers from July 2016 to July 2018.",
+        "bbox": [
+            517,
+            148,
+            893,
+            227
+        ],
+        "page_idx": 8
+    },
+    {
+        "type": "text",
+        "text": "• Traffic³ describes the road occupancy rates. It contains the hourly data recorded by the sensors of San Francisco freeways from 2015 to 2016.",
+        "bbox": [
+            517,
+            236,
+            893,
+            282
+        ],
+        "page_idx": 8
+    },
+    {
+        "type": "text",
+        "text": "• Electricity⁴ collects the hourly electricity consumption of 321 clients from 2012 to 2014.",
+        "bbox": [
+            517,
+            291,
+            892,
+            324
+        ],
+        "page_idx": 8
+    },
+    {
+        "type": "text",
+        "text": "• Exchange-Rate [15]5 collects the daily exchange rates of 8 countries from 1990 to 2016.",
+        "bbox": [
+            517,
+            333,
+            893,
+            364
+        ],
+        "page_idx": 8
+    },
+    {
+        "type": "text",
+        "text": "• Weather6 includes 21 indicators of weather, such as air temperature, and humidity. Its data is recorded every 10 min for 2020 in Germany.",
+        "bbox": [
+            517,
+            375,
+            893,
+            421
+        ],
+        "page_idx": 8
+    },
+    {
+        "type": "text",
+        "text": "• ILI7 describes the ratio of patients seen with influenzalike illness and the number of patients. It includes weekly data from the Centers for Disease Control and Prevention of the United States from 2002 to 2021.",
+        "bbox": [
+            517,
+            431,
+            893,
+            493
+        ],
+        "page_idx": 8
+    },
+    {
+        "type": "text",
+        "text": "B.2. Implementation Details",
+        "text_level": 2,
+        "bbox": [
+            500,
+            502,
+            720,
+            518
+        ],
+        "page_idx": 8
+    },
+    {
+        "type": "text",
+        "text": "For existing Transformer-based TSF solutions: the implementation of Autoformer [28], Informer [30], and the vanilla Transformer [26] are all taken from the Autoformer work [28]; the implementation of FEDformer [31] and Pyraformer [18] are from their respective code repository. We also adopt their default hyper-parameters to train the models. For DLinear, the moving average kernel size for decomposition is 25, which is the same as Autoformer. The total parameters of a vanilla linear model and a NLinear are TL. The total parameters of the DLinear are 2TL. Since LTSF-Linear will be underfitting when the input length is short, and LTSF-Transformers tend to overfit on a long lookback window size. To compare the best performance of existing LTSF-Transformers with LTSF-Linear, we report L=336 for LTSF-Linear and L=96 for Transformers by default. For more hyper-parameters of LTSF-Linear, please refer to our code.",
+        "bbox": [
+            496,
+            525,
+            895,
+            784
+        ],
+        "page_idx": 8
+    },
+    {
+        "type": "page_footnote",
+        "text": "2https://github.com/zhouhaoyi/ETDataset",
+        "bbox": [
+            516,
+            789,
+            828,
+            804
+        ],
+        "page_idx": 8
+    },
+    {
+        "type": "page_footnote",
+        "text": "3http://pems.dot.ca.gov",
+        "bbox": [
+            516,
+            803,
+            704,
+            816
+        ],
+        "page_idx": 8
+    },
+    {
+        "type": "page_footnote",
+        "text": "4https : / / archive . ics . uci . edu / ml / datasets / ElectricityLoadDiagrams20112014",
+        "bbox": [
+            498,
+            815,
+            892,
+            840
+        ],
+        "page_idx": 8
+    },
+    {
+        "type": "page_footnote",
+        "text": "5https : / / github . com / laiguokun /multivariatetime-series-data",
+        "bbox": [
+            498,
+            839,
+            892,
+            863
+        ],
+        "page_idx": 8
+    },
+    {
+        "type": "page_footnote",
+        "text": "6https://www.bgc-jena.mpg.de/wetter/",
+        "bbox": [
+            516,
+            863,
+            805,
+            877
+        ],
+        "page_idx": 8
+    },
+    {
+        "type": "page_footnote",
+        "text": "7https : / / gis . cdc . gov / grasp / fluview / fluportaldashboard.html",
+        "bbox": [
+            500,
+            876,
+            893,
+            901
+        ],
+        "page_idx": 8
+    },
+    {
+        "type": "page_number",
+        "text": "9",
+        "bbox": [
+            478,
+            924,
+            491,
+            936
+        ],
+        "page_idx": 8
+    },
+    {
+        "type": "text",
+        "text": "C. Additional Comparison with Transformers",
+        "text_level": 2,
+        "bbox": [
+            76,
+            89,
+            465,
+            107
+        ],
+        "page_idx": 9
+    },
+    {
+        "type": "text",
+        "text": "We further compare LTSF-Linear with LTSF-Transformer for Univariate Forecasting on four ETT datasets. Moreover, in Figure 4 of the main paper, we demonstrate that existing Transformers fail to exploit large look-back window sizes with two examples. Here, we give comprehensive comparisons between LTSF-Linear and Transformer-based TSF solutions under various look-back window sizes on all benchmarks.",
+        "bbox": [
+            75,
+            116,
+            470,
+            237
+        ],
+        "page_idx": 9
+    },
+    {
+        "type": "text",
+        "text": "C.1. Comparison of Univariate Forecasting",
+        "text_level": 2,
+        "bbox": [
+            76,
+            250,
+            413,
+            266
+        ],
+        "page_idx": 9
+    },
+    {
+        "type": "text",
+        "text": "We present the univariate forecasting results on the four ETT datasets in table 9. Similarly, LTSF-Linear, especially for NLinear can consistently outperform all transformerbased methods by a large margin in most time. We find that there are serious distribution shifts between training and test sets (as shown in Fig. 5 (a), (b)) on ETTh1 and ETTh2 datasets. Simply normalization via the last value from the lookback window can greatly relieve the distribution shift problem.",
+        "bbox": [
+            75,
+            273,
+            472,
+            411
+        ],
+        "page_idx": 9
+    },
+    {
+        "type": "text",
+        "text": "C.2. Comparison under Different Look-back Windows",
+        "text_level": 2,
+        "bbox": [
+            76,
+            421,
+            468,
+            453
+        ],
+        "page_idx": 9
+    },
+    {
+        "type": "text",
+        "text": "In Figure 6, we provide the MSE comparisons of five LTSF-Transformers with LTSF-Linear under different lookback window sizes to explore whether existing Transformers can extract temporal well from longer input sequences. For hourly granularity datasets (ETTh1, ETTh2, Traffic, and Electricity), the increasing look-back window sizes are {24, 48, 72, 96, 120, 144, 168, 192, 336, 504, 672, 720}, which represent {1, 2, 3, 4, 5, 6, 7, 8, 14, 21, 28, 30} days. The forecasting steps are {24, 720}, which mean {1, 30} days. For 5-minute granularity datasets (ETTm1 and ETTm2), we set the look-back window size as {24, 36, 48, 60, 72, 144, 288}, which represent {2, 3, 4, 5, 6, 12, 24} hours. For 10-minute granularity datasets (Weather), we set the look-back window size as {24, 48, 72, 96, 120, 144, 168, 192, 336, 504, 672, 720}, which mean {4, 8, 12, 16, 20, 24, 28, 32, 56, 84, 112, 120} hours. The forecasting steps are {24, 720} that are {4, 120} hours. For weekly granularity dataset (ILI), we set the look-back window size as {26, 52, 78, 104, 130, 156, 208}, which represent {0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4} years. The corresponding forecasting steps are {26, 208}, meaning {0.5, 4} years.",
+        "bbox": [
+            75,
+            462,
+            472,
+            780
+        ],
+        "page_idx": 9
+    },
+    {
+        "type": "text",
+        "text": "As shown in Figure 6, with increased look-back window sizes, the performance of LTSF-Linear is significantly boosted for most datasets (e.g., ETTm1 and Traffic), while this is not the case for Transformer-based TSF solutions. Most of their performance fluctuates or gets worse as the input lengths increase. To be specific, the results of Exchange-Rate do not show improved results with a long look-back window (from Figure 6(m) and (n)), and we attribute it to the low information-to-noise ratio in such financial data.",
+        "bbox": [
+            75,
+            780,
+            472,
+            901
+        ],
+        "page_idx": 9
+    },
+    {
+        "type": "text",
+        "text": "",
+        "bbox": [
+            496,
+            90,
+            892,
+            122
+        ],
+        "page_idx": 9
+    },
+    {
+        "type": "text",
+        "text": "D. Ablation study on the LTSF-Linear",
+        "text_level": 2,
+        "bbox": [
+            498,
+            133,
+            823,
+            150
+        ],
+        "page_idx": 9
+    },
+    {
+        "type": "text",
+        "text": "D.1. Motivation of NLinear",
+        "text_level": 2,
+        "bbox": [
+            500,
+            157,
+            715,
+            174
+        ],
+        "page_idx": 9
+    },
+    {
+        "type": "text",
+        "text": "If we normalize the test data by the mean and variance of train data, there could be a distribution shift in testing data, i.e, the mean value of testing data is not 0. If the model made a prediction that is out of the distribution of true value, a large error would occur. For example, there is a large error between the true value and the true value minus/add one. Therefore, in NLinear, we use the subtraction and addition to shift the model prediction toward the distribution of true value. Then, large errors are avoided, and the model performances can be improved. Figure 5 illustrates histograms of the trainset-test set distributions, where each bar represents the number of data points. Clear distribution shifts between training and testing data can be observed in ETTh1, ETTh2, and ILI. Accordingly, from Table 9 and Table 2 in the main paper, we can observe that there are great improvements in the three datasets comparing the NLinear to the Linear, showing the effectiveness of the NLinear in relieving distribution shifts. Moreover, for the datasets without obvious distribution shifts, like Electricity in Figure 5(c), using the vanilla Linear can be enough, demonstrating the similar performance with NLinear and DLinear.",
+        "bbox": [
+            496,
+            181,
+            895,
+            501
+        ],
+        "page_idx": 9
+    },
+    {
+        "type": "text",
+        "text": "D.2. The Features of LTSF-Linear",
+        "text_level": 2,
+        "bbox": [
+            500,
+            506,
+            767,
+            522
+        ],
+        "page_idx": 9
+    },
+    {
+        "type": "text",
+        "text": "Although LTSF-Linear is simple, it has some compelling characteristics:",
+        "bbox": [
+            498,
+            530,
+            892,
+            560
+        ],
+        "page_idx": 9
+    },
+    {
+        "type": "text",
+        "text": "• An O(1) maximum signal traversing path length: The shorter the path, the better the dependencies are captured [18], making LTSF-Linear capable of capturing both short-range and long-range temporal relations.",
+        "bbox": [
+            517,
+            569,
+            893,
+            645
+        ],
+        "page_idx": 9
+    },
+    {
+        "type": "text",
+        "text": "• High-efficiency: As LTSF-Linear is a linear model with two linear layers at most, it costs much lower memory and fewer parameters and has a faster inference speed than existing Transformers (see Table 8 in main paper).",
+        "bbox": [
+            517,
+            655,
+            893,
+            731
+        ],
+        "page_idx": 9
+    },
+    {
+        "type": "text",
+        "text": "• Interpretability: After training, we can visualize weights from the seasonality and trend branches to have some insights on the predicted values [9].",
+        "bbox": [
+            517,
+            738,
+            893,
+            785
+        ],
+        "page_idx": 9
+    },
+    {
+        "type": "text",
+        "text": "• Easy-to-use: LTSF-Linear can be obtained easily without tuning model hyper-parameters.",
+        "bbox": [
+            517,
+            792,
+            892,
+            824
+        ],
+        "page_idx": 9
+    },
+    {
+        "type": "text",
+        "text": "D.3. Interpretability of LTSF-Linear",
+        "text_level": 2,
+        "bbox": [
+            500,
+            832,
+            785,
+            848
+        ],
+        "page_idx": 9
+    },
+    {
+        "type": "text",
+        "text": "Because LTSF-Linear is a set of linear models, the weights of linear layers can directly reveal how LTSF-Linear works. The weight visualization of LTSF-Linear can also reveal certain characteristics in the data used for forecasting.",
+        "bbox": [
+            498,
+            854,
+            893,
+            901
+        ],
+        "page_idx": 9
+    },
+    {
+        "type": "page_number",
+        "text": "10",
+        "bbox": [
+            475,
+            924,
+            495,
+            936
+        ],
+        "page_idx": 9
+    },
+    {
+        "type": "table",
+        "img_path": "images/bdf022c6281806ed531442b90e6e661d9753aad1fbcd560a2d323839ff4d30ea.jpg",
+        "table_caption": [
+            "Table 9. Univariate long sequence time-series forecasting results on ETT full benchmark. The best results are highlighted in bold and the best results of Transformers are highlighted with a underline."
+        ],
+        "table_footnote": [],
+        "table_body": "<table><tr><td colspan=\"2\">Methods</td><td colspan=\"2\">Linear</td><td colspan=\"2\">NLinear</td><td colspan=\"2\">DLinear</td><td colspan=\"2\">FEDformer-f</td><td colspan=\"2\">FEDformer-w</td><td colspan=\"2\">Autoformer</td><td colspan=\"2\">Informer</td><td colspan=\"2\">LogTrans</td></tr><tr><td>Metric</td><td></td><td>MSE</td><td>MAE</td><td>MSE</td><td>MSE</td><td>MAE</td><td>MAE</td><td>MSE</td><td>MAE</td><td>MSE</td><td>MAE</td><td>MSE</td><td>MAE</td><td>MSE</td><td>MAE</td><td>MSE</td><td>MAE</td></tr><tr><td>ETT41</td><td>96</td><td>0.189</td><td>0.359</td><td>0.053</td><td>0.177</td><td>0.056</td><td>0.180</td><td>0.079</td><td>0.215</td><td>0.080</td><td>0.214</td><td>0.071</td><td>0.206</td><td>0.193</td><td>0.377</td><td>0.283</td><td>0.468</td></tr><tr><td></td><td>192</td><td>0.078</td><td>0.212</td><td>0.069</td><td>0.204</td><td>0.071</td><td>0.204</td><td>0.104</td><td>0.245</td><td>0.105</td><td>0.256</td><td>0.114</td><td>0.262</td><td>0.217</td><td>0.395</td><td>0.234</td><td>0.409</td></tr><tr><td></td><td>336</td><td>0.091</td><td>0.237</td><td>0.081</td><td>0.226</td><td>0.098</td><td>0.244</td><td>0.119</td><td>0.270</td><td>0.120</td><td>0.269</td><td>0.107</td><td>0.258</td><td>0.202</td><td>0.381</td><td>0.386</td><td>0.546</td></tr><tr><td></td><td>720</td><td>0.172</td><td>0.340</td><td>0.080</td><td>0.226</td><td>0.189</td><td>0.359</td><td>0.142</td><td>0.299</td><td>0.127</td><td>0.280</td><td>0.126</td><td>0.283</td><td>0.183</td><td>0.355</td><td>0.475</td><td>0.629</td></tr><tr><td>ET2</td><td>96</td><td>0.133</td><td>0.283</td><td>0.129</td><td>0.278</td><td>0.131</td><td>0.279</td><td>0.128</td><td>0.271</td><td>0.156</td><td>0.306</td><td>0.153</td><td>0.306</td><td>0.213</td><td>0.373</td><td>0.217</td><td>0.379</td></tr><tr><td></td><td>192</td><td>0.176</td><td>0.330</td><td>0.169</td><td>0.324</td><td>0.176</td><td>0.329</td><td>0.185</td><td>0.330</td><td>0.238</td><td>0.380</td><td>0.204</td><td>0.351</td><td>0.227</td><td>0.387</td><td>0.281</td><td>0.429</td></tr><tr><td></td><td>336</td><td>0.213</td><td>0.371</td><td>0.194</td><td>0.355</td><td>0.209</td><td>0.367</td><td>0.231</td><td>0.378</td><td>0.271</td><td>0.412</td><td>0.246</td><td>0.389</td><td>0.242</td><td>0.401</td><td>0.293</td><td>0.437</td></tr><tr><td></td><td>720</td><td>0.292</td><td>0.440</td><td>0.225</td><td>0.381</td><td>0.276</td><td>0.426</td><td>0.278</td><td>0.420</td><td>0.288</td><td>0.438</td><td>0.268</td><td>0.409</td><td>0.291</td><td>0.439</td><td>0.218</td><td>0.387</td></tr><tr><td></td><td>96</td><td>0.028</td><td>0.125</td><td>0.026</td><td>0.122</td><td>0.028</td><td>0.123</td><td>0.033</td><td>0.140</td><td>0.036</td><td>0.149</td><td>0.056</td><td>0.183</td><td>0.109</td><td>0.277</td><td>0.049</td><td>0.171</td></tr><tr><td></td><td>192</td><td>0.043</td><td>0.154</td><td>0.039</td><td>0.149</td><td>0.045</td><td>0.156</td><td>0.058</td><td>0.186</td><td>0.069</td><td>0.206</td><td>0.081</td><td>0.216</td><td>0.151</td><td>0.310</td><td>0.157</td><td>0.317</td></tr><tr><td>ETTm1</td><td>336</td><td>0.059</td><td>0.180</td><td>0.052</td><td>0.172</td><td>0.061</td><td>0.182</td><td>0.084</td><td>0.231</td><td>0.071</td><td>0.209</td><td>0.076</td><td>0.218</td><td>0.427</td><td>0.591</td><td>0.289</td><td>0.459</td></tr><tr><td></td><td>720</td><td>0.080</td><td>0.211</td><td>0.073</td><td>0.207</td><td>0.080</td><td>0.210</td><td>0.102</td><td>0.250</td><td>0.105</td><td>0.248</td><td>0.110</td><td>0.267</td><td>0.438</td><td>0.586</td><td>0.430</td><td>0.579</td></tr><tr><td></td><td>96</td><td>0.066</td><td>0.189</td><td>0.063</td><td>0.182</td><td>0.063</td><td>0.183</td><td>0.067</td><td>0.198</td><td>0.063</td><td>0.189</td><td>0.065</td><td>0.189</td><td>0.088</td><td>0.225</td><td>0.075</td><td>0.208</td></tr><tr><td></td><td>192</td><td>0.094</td><td>0.230</td><td>0.090</td><td>0.223</td><td>0.092</td><td>0.227</td><td>0.102</td><td>0.245</td><td>0.110</td><td>0.252</td><td>0.118</td><td>0.256</td><td>0.132</td><td>0.283</td><td>0.129</td><td>0.275</td></tr><tr><td></td><td>336</td><td>0.120</td><td>0.263</td><td>0.117</td><td>0.259</td><td>0.119</td><td>0.261</td><td>0.130</td><td>0.279</td><td>0.147</td><td>0.301</td><td>0.154</td><td>0.305</td><td>0.180</td><td>0.336</td><td>0.154</td><td>0.302</td></tr><tr><td>ETm2</td><td>720</td><td>0.175</td><td>0.320</td><td>0.170</td><td>0.318</td><td>0.175</td><td>0.320</td><td>0.178</td><td>0.325</td><td>0.219</td><td>0.368</td><td>0.182</td><td>0.335</td><td>0.300</td><td>0.435</td><td>0.160</td><td>0.321</td></tr></table>",
+        "bbox": [
+            81,
+            88,
+            915,
+            323
+        ],
+        "page_idx": 10
+    },
+    {
+        "type": "chart",
+        "img_path": "images/cc00df4a8204649f447aae2251456a70e545bb97c57e1293a342edeba54395b5.jpg",
+        "content": "",
+        "chart_caption": [
+            "(a) ETTh1 channel6"
+        ],
+        "chart_footnote": [],
+        "bbox": [
+            94,
+            398,
+            285,
+            507
+        ],
+        "page_idx": 10
+    },
+    {
+        "type": "chart",
+        "img_path": "images/c3673ef45ddfedfa078273604e20bfbc5eebc892ea8b9c7bd514cbe6c1b12804.jpg",
+        "content": "",
+        "chart_caption": [
+            "(b) ETTh2 channel3"
+        ],
+        "chart_footnote": [],
+        "bbox": [
+            294,
+            397,
+            486,
+            506
+        ],
+        "page_idx": 10
+    },
+    {
+        "type": "chart",
+        "img_path": "images/86eb3dae850ed4c0e97dadb6e35770aab8270d09ad01251673cefac5ff24d46c.jpg",
+        "content": "",
+        "chart_caption": [
+            "(c) Electricity channel3"
+        ],
+        "chart_footnote": [],
+        "bbox": [
+            496,
+            397,
+            689,
+            507
+        ],
+        "page_idx": 10
+    },
+    {
+        "type": "chart",
+        "img_path": "images/0679f04ef5e3af758f07582c682930f5297ef4646fd1640f994e9df614f10002.jpg",
+        "content": "",
+        "chart_caption": [
+            "(d) ILI channel6",
+            "Figure 5. Distribution of ETTh1, ETTh2, Electricity, and ILI dataset. A clear distribution shift between training and testing data can be observed in ETTh1, ETTh2, and ILI."
+        ],
+        "chart_footnote": [],
+        "bbox": [
+            704,
+            398,
+            890,
+            507
+        ],
+        "page_idx": 10
+    },
+    {
+        "type": "text",
+        "text": "",
+        "bbox": [
+            75,
+            594,
+            468,
+            626
+        ],
+        "page_idx": 10
+    },
+    {
+        "type": "text",
+        "text": "Here we take DLinear as an example. Accordingly, we visualize the trend and remainder weights of all datasets with a fixed input length of 96 and four different forecasting horizons. To obtain a smooth weight with a clear pattern in visualization, we initialize the weights of the linear layers in DLinear as $1 / L$ rather than random initialization. That is, we use the same weight for every forecasting time step in the look-back window at the start of training.",
+        "bbox": [
+            75,
+            626,
+            470,
+            747
+        ],
+        "page_idx": 10
+    },
+    {
+        "type": "text",
+        "text": "How the model works: Figure 7(c) visualize the weights of the trend and the remaining layers on the Exchange-Rate dataset. Due to the lack of periodicity and seasonality in financial data, it is hard to observe clear patterns, but the trend layer reveals greater weights of information closer to the outputs, representing their larger contributions to the predicted values.",
+        "bbox": [
+            75,
+            748,
+            470,
+            853
+        ],
+        "page_idx": 10
+    },
+    {
+        "type": "text",
+        "text": "Periodicity of data: For Traffic data, as shown in Figure 7(d), the model gives high weights to the latest time step of the look-back window for the 0,23,47...719 forecasting steps. Among these forecasting time steps, the 0, 167, 335, 503, 671 time steps have higher weights. Note that 24 time steps are a day, and 168 time steps are a week. This indicates that Traffic has a daily periodicity and a weekly periodicity.",
+        "bbox": [
+            75,
+            854,
+            470,
+            900
+        ],
+        "page_idx": 10
+    },
+    {
+        "type": "text",
+        "text": "",
+        "bbox": [
+            498,
+            594,
+            892,
+            671
+        ],
+        "page_idx": 10
+    },
+    {
+        "type": "text",
+        "text": "References",
+        "text_level": 2,
+        "bbox": [
+            500,
+            690,
+            598,
+            707
+        ],
+        "page_idx": 10
+    },
+    {
+        "type": "list",
+        "sub_type": "ref_text",
+        "list_items": [
+            "[1] Adebiyi A Ariyo, Adewumi O Adewumi, and Charles K Ayo. Stock price prediction using the arima model. In 2014 UKSim-AMSS 16th International Conference on Computer Modelling and Simulation, pages 106–112. IEEE, 2014. 1, 2, 9",
+            "[2] Dzmitry Bahdanau, Kyunghyun Cho, and Yoshua Bengio. Neural machine translation by jointly learning to align and translate. arXiv: Computation and Language, 2014. 2",
+            "[3] Shaojie Bai, J Zico Kolter, and Vladlen Koltun. An empirical evaluation of generic convolutional and"
+        ],
+        "bbox": [
+            509,
+            718,
+            892,
+            792
+        ],
+        "page_idx": 10
+    },
+    {
+        "type": "page_number",
+        "text": "11",
+        "bbox": [
+            475,
+            924,
+            495,
+            936
+        ],
+        "page_idx": 10
+    },
+    {
+        "type": "chart",
+        "img_path": "images/b1e7879793f7debde032792c250f08bdc2129e10a0fe49c9c048484593f230b4.jpg",
+        "content": "",
+        "chart_caption": [
+            "(a) 24 steps-ETTh1"
+        ],
+        "chart_footnote": [],
+        "bbox": [
+            96,
+            98,
+            290,
+            222
+        ],
+        "page_idx": 11
+    },
+    {
+        "type": "chart",
+        "img_path": "images/342ac61495b1c16ea2a5d7c1deb92ec49b08604b27dccf6526fde91ff53c34c2.jpg",
+        "content": "",
+        "chart_caption": [
+            "(b) 720 steps-ETTh1"
+        ],
+        "chart_footnote": [],
+        "bbox": [
+            299,
+            98,
+            495,
+            222
+        ],
+        "page_idx": 11
+    },
+    {
+        "type": "chart",
+        "img_path": "images/b0782cca7f1162a21ee7512716078be0d62ef92175ed27c6e7d32531bb0f895e.jpg",
+        "content": "",
+        "chart_caption": [
+            "(c) 24 steps-ETTh2"
+        ],
+        "chart_footnote": [],
+        "bbox": [
+            504,
+            98,
+            699,
+            222
+        ],
+        "page_idx": 11
+    },
+    {
+        "type": "chart",
+        "img_path": "images/c553b9a273d60896d3a4c98b187434676f4be204a28c0de42fe3c735f748f3b9.jpg",
+        "content": "",
+        "chart_caption": [
+            "(d) 720 steps-ETTh2"
+        ],
+        "chart_footnote": [],
+        "bbox": [
+            709,
+            98,
+            901,
+            222
+        ],
+        "page_idx": 11
+    },
+    {
+        "type": "chart",
+        "img_path": "images/daadd1adc078bfc9ee1276ced4794410d2cafc92f8da54b1e2c4ed26fb1ee7b5.jpg",
+        "content": "",
+        "chart_caption": [
+            "(e) 24 steps-ETTm1"
+        ],
+        "chart_footnote": [],
+        "bbox": [
+            96,
+            252,
+            289,
+            377
+        ],
+        "page_idx": 11
+    },
+    {
+        "type": "chart",
+        "img_path": "images/092eb382fd4783d0b3ba6fe4c83d7598ed7e533ecd1714bf9febed7fbc81472c.jpg",
+        "content": "",
+        "chart_caption": [
+            "(f) 576 steps-ETTm1"
+        ],
+        "chart_footnote": [],
+        "bbox": [
+            299,
+            252,
+            493,
+            377
+        ],
+        "page_idx": 11
+    },
+    {
+        "type": "chart",
+        "img_path": "images/1c5ec16cab69ae0d34378f0e05c08c5afcbf362e3f4c6d118652426af61ea1f7.jpg",
+        "content": "",
+        "chart_caption": [
+            "(g) 24 steps-ETTm2"
+        ],
+        "chart_footnote": [],
+        "bbox": [
+            501,
+            252,
+            699,
+            377
+        ],
+        "page_idx": 11
+    },
+    {
+        "type": "chart",
+        "img_path": "images/b45474325bd8861224730adce0aca223268d8be13fdef5bf8d1d32bff764b27a.jpg",
+        "content": "",
+        "chart_caption": [
+            "(h) 576 steps-ETTm2"
+        ],
+        "chart_footnote": [],
+        "bbox": [
+            709,
+            252,
+            901,
+            377
+        ],
+        "page_idx": 11
+    },
+    {
+        "type": "chart",
+        "img_path": "images/4b4a8f85368b386b9ef02281679a04d28b881dfd8bef792421550c1cdb3dcc4a.jpg",
+        "content": "",
+        "chart_caption": [],
+        "chart_footnote": [],
+        "bbox": [
+            94,
+            407,
+            290,
+            532
+        ],
+        "page_idx": 11
+    },
+    {
+        "type": "chart",
+        "img_path": "images/56e9e493fad05db6d34d604314cc588676d8af8e2f2b9359b88d8ce5f0a7ec20.jpg",
+        "content": "",
+        "chart_caption": [
+            "(i) 24 steps-Weather",
+            "(j) 720 steps-Weather"
+        ],
+        "chart_footnote": [],
+        "bbox": [
+            299,
+            407,
+            493,
+            532
+        ],
+        "page_idx": 11
+    },
+    {
+        "type": "chart",
+        "img_path": "images/35561450f8bd7fcf8a7e56363b02bdc4957510c66d8c476690d24b60c81e15a7.jpg",
+        "content": "",
+        "chart_caption": [],
+        "chart_footnote": [],
+        "bbox": [
+            504,
+            407,
+            697,
+            532
+        ],
+        "page_idx": 11
+    },
+    {
+        "type": "chart",
+        "img_path": "images/f43bd24c534643c499bfaaf199de28e1423585b7e9bd9d02be517b4259fb301e.jpg",
+        "content": "",
+        "chart_caption": [
+            "(1) 720 steps-Traffic"
+        ],
+        "chart_footnote": [],
+        "bbox": [
+            707,
+            407,
+            901,
+            532
+        ],
+        "page_idx": 11
+    },
+    {
+        "type": "chart",
+        "img_path": "images/71c6af3fa547e974e23988d70e1e85caf7a25a6db9c4aafb8784aea20caea031.jpg",
+        "content": "",
+        "chart_caption": [
+            "(m) 24 steps-Exchange"
+        ],
+        "chart_footnote": [],
+        "bbox": [
+            96,
+            563,
+            290,
+            686
+        ],
+        "page_idx": 11
+    },
+    {
+        "type": "chart",
+        "img_path": "images/816f71fa980327c63b6ca4a331112c5d5beaf25b790cbd2933eebd2f77e4163e.jpg",
+        "content": "",
+        "chart_caption": [
+            "(n) 720 steps-Exchange"
+        ],
+        "chart_footnote": [],
+        "bbox": [
+            299,
+            561,
+            493,
+            688
+        ],
+        "page_idx": 11
+    },
+    {
+        "type": "chart",
+        "img_path": "images/44e016697bab2a49f6f09516324e63a509ce22b908187cf8b6347376bf9c299a.jpg",
+        "content": "",
+        "chart_caption": [
+            "(k) 24 steps-Traffic",
+            "(0) 24 steps-ILI"
+        ],
+        "chart_footnote": [],
+        "bbox": [
+            503,
+            563,
+            696,
+            686
+        ],
+        "page_idx": 11
+    },
+    {
+        "type": "chart",
+        "img_path": "images/263ce3495fc8ef63ec6564e613ce8191095d1ecc5a06243553e83c8c68aa1ab7.jpg",
+        "content": "",
+        "chart_caption": [
+            "(p) 60 steps-ILI",
+            "Figure 6. The MSE results (Y-axis) of models with different look-back window sizes (X-axis) of the long-term forecasting (e.g., 720-time steps) and the short-term forecasting (e.g., 24 time steps) on different benchmarks"
+        ],
+        "chart_footnote": [],
+        "bbox": [
+            705,
+            563,
+            898,
+            686
+        ],
+        "page_idx": 11
+    },
+    {
+        "type": "list",
+        "sub_type": "ref_text",
+        "list_items": [
+            "recurrent networks for sequence modeling. arXiv preprint arXiv:1803.01271, 2018. 1,9",
+            "[4] Guillaume Chevillon. Direct multi-step estimation and forecasting. Journal of Economic Surveys, 21(4):746–785, 2007. 2",
+            "[5] Razvan-Gabriel Cirstea, Chenjuan Guo, Bin Yang, Tung Kieu, Xuanyi Dong, and Shirui Pan. Triformer:",
+            "Triangular, variable-specific attentions for long sequence multivariate time series forecasting-full version. arXiv preprint arXiv:2204.13767, 2022. 1",
+            "[6] R. B. Cleveland. Stl : A seasonal-trend decomposition procedure based on loess. Journal of Office Statistics, 1990.3",
+            "[7] Jacob Devlin, Ming-Wei Chang, Kenton Lee, and"
+        ],
+        "bbox": [
+            111,
+            776,
+            470,
+            806
+        ],
+        "page_idx": 11
+    },
+    {
+        "type": "page_number",
+        "text": "12",
+        "bbox": [
+            475,
+            924,
+            495,
+            936
+        ],
+        "page_idx": 11
+    },
+    {
+        "type": "text",
+        "text": "(f2) Trend",
+        "bbox": [
+            266,
+            765,
+            315,
+            776
+        ],
+        "page_idx": 12
+    },
+    {
+        "type": "chart",
+        "img_path": "images/2e3b437d4bb15024aaa89685c418d5fdd078afd22a7f5cad87f9542d613e163a.jpg",
+        "content": "",
+        "chart_caption": [
+            "(f5) Remainder"
+        ],
+        "chart_footnote": [
+            "(a1) Remainder"
+        ],
+        "bbox": [
+            101,
+            95,
+            263,
+            183
+        ],
+        "page_idx": 12
+    },
+    {
+        "type": "chart",
+        "img_path": "images/824a00a7cee4fd7eb2359f9b10fd40d0ad92bb1a1656d775d89235c89b30721f.jpg",
+        "content": "",
+        "chart_caption": [
+            "(a2) Trend",
+            "In-96, Out-96"
+        ],
+        "chart_footnote": [],
+        "bbox": [
+            264,
+            95,
+            398,
+            183
+        ],
+        "page_idx": 12
+    },
+    {
+        "type": "chart",
+        "img_path": "images/1d4f88a25233435cf284380dff8a945d1a359b0ca649119e16df227461a451dd.jpg",
+        "content": "",
+        "chart_caption": [
+            "(a3) Remainder"
+        ],
+        "chart_footnote": [],
+        "bbox": [
+            411,
+            93,
+            501,
+            178
+        ],
+        "page_idx": 12
+    },
+    {
+        "type": "chart",
+        "img_path": "images/dca5a33490b934da7a99874c0aa55e10602735bbf1c0859d81bd52a10b1dd06f.jpg",
+        "content": "",
+        "chart_caption": [
+            "(a4) Trend",
+            "In-96, Out-168"
+        ],
+        "chart_footnote": [],
+        "bbox": [
+            501,
+            94,
+            591,
+            178
+        ],
+        "page_idx": 12
+    },
+    {
+        "type": "chart",
+        "img_path": "images/35f0accd818cc65d14635979907caa242917d32ccbd3e9700933e7ac10831aa1.jpg",
+        "content": "",
+        "chart_caption": [
+            "(a5) Remainder"
+        ],
+        "chart_footnote": [],
+        "bbox": [
+            602,
+            94,
+            668,
+            178
+        ],
+        "page_idx": 12
+    },
+    {
+        "type": "chart",
+        "img_path": "images/9f22b18fa7e5e20edac618c3b326782394497f8bc41fee2301dcbf5225bec1c1.jpg",
+        "content": "",
+        "chart_caption": [
+            "(a6) Trend"
+        ],
+        "chart_footnote": [],
+        "bbox": [
+            671,
+            94,
+            735,
+            178
+        ],
+        "page_idx": 12
+    },
+    {
+        "type": "chart",
+        "img_path": "images/b0039b404cd96119aabbbd4a841087fb805dd26539982b1e9b7f3e5763f57671.jpg",
+        "content": "",
+        "chart_caption": [],
+        "chart_footnote": [],
+        "bbox": [
+            756,
+            94,
+            808,
+            176
+        ],
+        "page_idx": 12
+    },
+    {
+        "type": "chart",
+        "img_path": "images/344a60964d0d115e03bbb0654c4604a5a8d3befa385f4b938c6d6e26e4534117.jpg",
+        "content": "",
+        "chart_caption": [
+            "(a7) Remainder (a8) Trend"
+        ],
+        "chart_footnote": [],
+        "bbox": [
+            818,
+            94,
+            867,
+            175
+        ],
+        "page_idx": 12
+    },
+    {
+        "type": "chart",
+        "img_path": "images/db0af18780496781f2831977458f1bbae3daa8b9413bcff8153356422050c1a9.jpg",
+        "content": "",
+        "chart_caption": [],
+        "chart_footnote": [],
+        "bbox": [
+            99,
+            207,
+            259,
+            297
+        ],
+        "page_idx": 12
+    },
+    {
+        "type": "chart",
+        "img_path": "images/4d2373d7a99eb9bb62cc04c7fecbdae461d332ac20a1e6e1eef22cc3e5e11a6c.jpg",
+        "content": "",
+        "chart_caption": [
+            "In-96, Out-720",
+            "In-96, Out-336",
+            "(b1) Remainder"
+        ],
+        "chart_footnote": [
+            "(b2) Trend"
+        ],
+        "bbox": [
+            264,
+            207,
+            405,
+            299
+        ],
+        "page_idx": 12
+    },
+    {
+        "type": "chart",
+        "img_path": "images/3c6307e87508be4c60190b0956ddded7259ba71ccc01b0fad72b5e01e35bb341.jpg",
+        "content": "",
+        "chart_caption": [
+            "(b3) Remainder"
+        ],
+        "chart_footnote": [],
+        "bbox": [
+            410,
+            205,
+            498,
+            297
+        ],
+        "page_idx": 12
+    },
+    {
+        "type": "chart",
+        "img_path": "images/49610470a3a46393d4eb2a5a8abc8f49be886fa20ee64a2bf5971d9c28b178c8.jpg",
+        "content": "",
+        "chart_caption": [
+            "In-96, Out-96",
+            "(b4) Trend"
+        ],
+        "chart_footnote": [],
+        "bbox": [
+            501,
+            207,
+            591,
+            297
+        ],
+        "page_idx": 12
+    },
+    {
+        "type": "chart",
+        "img_path": "images/7cb152546d9d2d7a2a6bbe6f61012754b765505ce307f939557b9a94e20dccb8.jpg",
+        "content": "",
+        "chart_caption": [],
+        "chart_footnote": [],
+        "bbox": [
+            598,
+            207,
+            668,
+            297
+        ],
+        "page_idx": 12
+    },
+    {
+        "type": "chart",
+        "img_path": "images/3f036a2770de093054381339148a5e131d5b7843fa54e5255943715f919190a3.jpg",
+        "content": "",
+        "chart_caption": [],
+        "chart_footnote": [],
+        "bbox": [
+            673,
+            207,
+            743,
+            296
+        ],
+        "page_idx": 12
+    },
+    {
+        "type": "chart",
+        "img_path": "images/45aa26a5476ab1fb011f0619b61a93268e273f389ba84047d1cd05a02588ae90.jpg",
+        "content": "",
+        "chart_caption": [],
+        "chart_footnote": [],
+        "bbox": [
+            750,
+            208,
+            805,
+            296
+        ],
+        "page_idx": 12
+    },
+    {
+        "type": "chart",
+        "img_path": "images/d376a55b415da182df6f1f2db0450c340819df135c040a8302aff6575cf50f29.jpg",
+        "content": "",
+        "chart_caption": [
+            "(b5) Remainder (b6) Trend"
+        ],
+        "chart_footnote": [],
+        "bbox": [
+            815,
+            207,
+            879,
+            297
+        ],
+        "page_idx": 12
+    },
+    {
+        "type": "chart",
+        "img_path": "images/578070d1d163962839fc107e52512b071baae2f5485a05d4ce994c016436bba6.jpg",
+        "content": "",
+        "chart_caption": [],
+        "chart_footnote": [
+            "(b7) Remainder (b8) Trend"
+        ],
+        "bbox": [
+            101,
+            327,
+            261,
+            416
+        ],
+        "page_idx": 12
+    },
+    {
+        "type": "chart",
+        "img_path": "images/b69335b761c546eed6837354be8f615f44f1348e524c670962008fe2f44b35ee.jpg",
+        "content": "",
+        "chart_caption": [
+            "In-96, Out-192"
+        ],
+        "chart_footnote": [
+            "(c1) Remainder"
+        ],
+        "bbox": [
+            264,
+            328,
+            398,
+            419
+        ],
+        "page_idx": 12
+    },
+    {
+        "type": "chart",
+        "img_path": "images/b11d0d5a15f36c2a7379a0ac1d02e3f853d8ffa43be503fc79d434e596db8472.jpg",
+        "content": "",
+        "chart_caption": [
+            "In-96, Out-336",
+            "(c2) Trend",
+            "In-96, Out-96"
+        ],
+        "chart_footnote": [],
+        "bbox": [
+            411,
+            327,
+            500,
+            417
+        ],
+        "page_idx": 12
+    },
+    {
+        "type": "chart",
+        "img_path": "images/7d967c08c78c141da890d85c4cb7268e491241e1ff8704a6d3decf7c05f8d0d5.jpg",
+        "content": "",
+        "chart_caption": [
+            "In-96, Out-720",
+            "(c3) Remainder",
+            "(c4) Trend"
+        ],
+        "chart_footnote": [],
+        "bbox": [
+            501,
+            327,
+            588,
+            419
+        ],
+        "page_idx": 12
+    },
+    {
+        "type": "chart",
+        "img_path": "images/84a7b201d034ca6ca3b3f01739cb9ae781d07b3ca0531c8c900e353e5fdd5323.jpg",
+        "content": "",
+        "chart_caption": [
+            "(c5) Remainder"
+        ],
+        "chart_footnote": [],
+        "bbox": [
+            599,
+            327,
+            669,
+            417
+        ],
+        "page_idx": 12
+    },
+    {
+        "type": "chart",
+        "img_path": "images/28f35af0895c8357d40d930923f96f10da3e279e6e7602a5a55df337d211e3d7.jpg",
+        "content": "",
+        "chart_caption": [],
+        "chart_footnote": [],
+        "bbox": [
+            671,
+            327,
+            738,
+            421
+        ],
+        "page_idx": 12
+    },
+    {
+        "type": "chart",
+        "img_path": "images/232b4697d6007036ec182be318d73f69e2c7eec6a5ac821ec63697d515f9604b.jpg",
+        "content": "",
+        "chart_caption": [],
+        "chart_footnote": [
+            "(d1) Remainder"
+        ],
+        "bbox": [
+            751,
+            328,
+            805,
+            416
+        ],
+        "page_idx": 12
+    },
+    {
+        "type": "chart",
+        "img_path": "images/cd13727b3dba0a05c2e065a46f971a4991bd5152fbc1b0bd4446a2c0b1ec5757.jpg",
+        "content": "",
+        "chart_caption": [],
+        "chart_footnote": [],
+        "bbox": [
+            816,
+            327,
+            869,
+            417
+        ],
+        "page_idx": 12
+    },
+    {
+        "type": "chart",
+        "img_path": "images/74609e1868dc5d5e3d84be8a33a5d9f104861ac07108d22d1536eea38f6a3ee7.jpg",
+        "content": "",
+        "chart_caption": [
+            "In-96, Out-192"
+        ],
+        "chart_footnote": [
+            "(c7) Remainder (c8) Trend"
+        ],
+        "bbox": [
+            101,
+            448,
+            259,
+            537
+        ],
+        "page_idx": 12
+    },
+    {
+        "type": "chart",
+        "img_path": "images/b42d40b066e2622bcec9d6a2c052db0035c85d63fcc5169f2e91810423ef9b5f.jpg",
+        "content": "",
+        "chart_caption": [
+            "In-96, Out-336"
+        ],
+        "chart_footnote": [
+            "(d2) Trend"
+        ],
+        "bbox": [
+            261,
+            448,
+            395,
+            537
+        ],
+        "page_idx": 12
+    },
+    {
+        "type": "chart",
+        "img_path": "images/3872e37f44364723efe9fb978f46fff62b72d34edf05ec4014545e29d3db3ea7.jpg",
+        "content": "",
+        "chart_caption": [],
+        "chart_footnote": [],
+        "bbox": [
+            410,
+            446,
+            496,
+            535
+        ],
+        "page_idx": 12
+    },
+    {
+        "type": "chart",
+        "img_path": "images/208490ebff5308e43fba7785eabeb89a7293f154ece4838d452884df0dc842ba.jpg",
+        "content": "",
+        "chart_caption": [
+            "(d3) Remainder",
+            "In-96, Out-96",
+            "(d4) Trend"
+        ],
+        "chart_footnote": [],
+        "bbox": [
+            501,
+            445,
+            589,
+            536
+        ],
+        "page_idx": 12
+    },
+    {
+        "type": "chart",
+        "img_path": "images/c12b9108412d7f06c54eb955d847753f6b4d33cc734b402018cd4009a41225fc.jpg",
+        "content": "",
+        "chart_caption": [],
+        "chart_footnote": [],
+        "bbox": [
+            596,
+            444,
+            666,
+            536
+        ],
+        "page_idx": 12
+    },
+    {
+        "type": "chart",
+        "img_path": "images/da9005ee5bed3a351eab9140e7c2cf6ee960f560ca7bd7ba4eeedbb5539a6c8a.jpg",
+        "content": "",
+        "chart_caption": [
+            "(d5) Remainder (d6) Trend"
+        ],
+        "chart_footnote": [],
+        "bbox": [
+            669,
+            445,
+            736,
+            535
+        ],
+        "page_idx": 12
+    },
+    {
+        "type": "chart",
+        "img_path": "images/1be18c80245196324e1bc271b8da6e4d3483779b303c3d104338110ae6074a54.jpg",
+        "content": "",
+        "chart_caption": [
+            "In-96, Out-720"
+        ],
+        "chart_footnote": [],
+        "bbox": [
+            751,
+            445,
+            807,
+            535
+        ],
+        "page_idx": 12
+    },
+    {
+        "type": "chart",
+        "img_path": "images/94dd6a724cd4e38d3103f40a324be6405438fe359e9c146beeca86776c85c6b4.jpg",
+        "content": "",
+        "chart_caption": [
+            "(d7) Remainder (d8) Trend"
+        ],
+        "chart_footnote": [],
+        "bbox": [
+            813,
+            445,
+            870,
+            535
+        ],
+        "page_idx": 12
+    },
+    {
+        "type": "chart",
+        "img_path": "images/3c4039e26d50a423008198f074b6b5955a1d76100043991b789b7eebd0489900.jpg",
+        "content": "",
+        "chart_caption": [
+            "(e1) Remainder"
+        ],
+        "chart_footnote": [],
+        "bbox": [
+            101,
+            569,
+            267,
+            656
+        ],
+        "page_idx": 12
+    },
+    {
+        "type": "chart",
+        "img_path": "images/65153a2eab394c1ccecd13ec17137487baf054681cab7f247bf20077c160d2ed.jpg",
+        "content": "",
+        "chart_caption": [
+            "In-96, Out-720",
+            "In-96, Out-336",
+            "In-96, Out-192",
+            "(e2) Trend"
+        ],
+        "chart_footnote": [],
+        "bbox": [
+            271,
+            569,
+            405,
+            657
+        ],
+        "page_idx": 12
+    },
+    {
+        "type": "chart",
+        "img_path": "images/5600e97be01bc7ec41b6e249bb80103acf51b8df337410b77e8e8f03322c743a.jpg",
+        "content": "",
+        "chart_caption": [
+            "(e3) Remainder"
+        ],
+        "chart_footnote": [],
+        "bbox": [
+            413,
+            565,
+            501,
+            656
+        ],
+        "page_idx": 12
+    },
+    {
+        "type": "chart",
+        "img_path": "images/52e26bb299827071c950dd4cd85b1afac056910fd666e789409cd7985b694b2e.jpg",
+        "content": "",
+        "chart_caption": [
+            "(e4) Trend"
+        ],
+        "chart_footnote": [],
+        "bbox": [
+            503,
+            568,
+            588,
+            656
+        ],
+        "page_idx": 12
+    },
+    {
+        "type": "chart",
+        "img_path": "images/b2595a825e18bc89bf3d04675caf2b34f6af45f20d938b13092cc0c57fd3ac5b.jpg",
+        "content": "",
+        "chart_caption": [],
+        "chart_footnote": [],
+        "bbox": [
+            599,
+            568,
+            669,
+            656
+        ],
+        "page_idx": 12
+    },
+    {
+        "type": "chart",
+        "img_path": "images/81a0bd0bb9d55d07eb74f427a55f13cce34bf35976546612b1ff8c64568eda08.jpg",
+        "content": "",
+        "chart_caption": [
+            "In-96, Out-96",
+            "(e5) Remainder (e6) Trend"
+        ],
+        "chart_footnote": [],
+        "bbox": [
+            671,
+            566,
+            738,
+            655
+        ],
+        "page_idx": 12
+    },
+    {
+        "type": "chart",
+        "img_path": "images/c9eb639b003dc9d091a03cb9f88746cc573fa6a10389b1bc9b34d4de5aa274d0.jpg",
+        "content": "",
+        "chart_caption": [
+            "In-96, Out-336",
+            "(e7) Remainder (e8) Trend",
+            "In-96, Out-192"
+        ],
+        "chart_footnote": [],
+        "bbox": [
+            751,
+            566,
+            880,
+            657
+        ],
+        "page_idx": 12
+    },
+    {
+        "type": "chart",
+        "img_path": "images/f7c3105f3e9335de7689e0625f367d57c50316a7d8d724bb26a5faf5063d8e87.jpg",
+        "content": "",
+        "chart_caption": [
+            "(f1) Remainder"
+        ],
+        "chart_footnote": [],
+        "bbox": [
+            99,
+            691,
+            236,
+            761
+        ],
+        "page_idx": 12
+    },
+    {
+        "type": "chart",
+        "img_path": "images/dbe632e707dea2a2852b57be2bf28d062e8a5382df3e158423043e0548416172.jpg",
+        "content": "",
+        "chart_caption": [
+            "In-36, Out-24"
+        ],
+        "chart_footnote": [],
+        "bbox": [
+            232,
+            689,
+            372,
+            763
+        ],
+        "page_idx": 12
+    },
+    {
+        "type": "chart",
+        "img_path": "images/211afe539e8b540cef12bfe87b6c400515b620f23f983223f86e745c5f48618b.jpg",
+        "content": "",
+        "chart_caption": [
+            "(f3) Remainder",
+            "In-36, Out-36"
+        ],
+        "chart_footnote": [],
+        "bbox": [
+            375,
+            690,
+            470,
+            763
+        ],
+        "page_idx": 12
+    },
+    {
+        "type": "chart",
+        "img_path": "images/b6091954aae96ee81cf88d3aa382ec6e324f86f510eb5fecda8ffd3ee0054f17.jpg",
+        "content": "",
+        "chart_caption": [],
+        "chart_footnote": [],
+        "bbox": [
+            467,
+            691,
+            568,
+            765
+        ],
+        "page_idx": 12
+    },
+    {
+        "type": "chart",
+        "img_path": "images/1adffcbfddb97166fef08752285cffca000244e93137f8d105a12bd30574112c.jpg",
+        "content": "",
+        "chart_caption": [],
+        "chart_footnote": [],
+        "bbox": [
+            568,
+            690,
+            648,
+            765
+        ],
+        "page_idx": 12
+    },
+    {
+        "type": "chart",
+        "img_path": "images/17101c7cf49bcb3c549ea77d4de52c4b88f36e243224d95e6f3a24dcfc6d0b21.jpg",
+        "content": "",
+        "chart_caption": [
+            "In-96, Out-720",
+            "In-36, Out-48"
+        ],
+        "chart_footnote": [],
+        "bbox": [
+            645,
+            690,
+            736,
+            765
+        ],
+        "page_idx": 12
+    },
+    {
+        "type": "chart",
+        "img_path": "images/971445c0c234bb871099a16c3f5f621f57b9de5d8c896b36663dc830d26c335a.jpg",
+        "content": "",
+        "chart_caption": [
+            "(f7) Remainder (f8) Trend",
+            "In-36, Out-60"
+        ],
+        "chart_footnote": [],
+        "bbox": [
+            736,
+            689,
+            888,
+            763
+        ],
+        "page_idx": 12
+    },
+    {
+        "type": "text",
+        "text": "Figure 7. Visualization of the weights(T\\*L) of LTSF-Linear on several benchmarks. Models are trained with a look-back window L (X-axis) and different forecasting time steps T (Y-axis). We show weights in the remainder and trend layer.",
+        "bbox": [
+            76,
+            819,
+            892,
+            847
+        ],
+        "page_idx": 12
+    },
+    {
+        "type": "text",
+        "text": "Kristina Toutanova. Bert: Pre-training of deep bidirec-",
+        "bbox": [
+            112,
+            873,
+            470,
+            888
+        ],
+        "page_idx": 12
+    },
+    {
+        "type": "text",
+        "text": "tional transformers for language understanding. arXiv",
+        "bbox": [
+            534,
+            873,
+            892,
+            890
+        ],
+        "page_idx": 12
+    },
+    {
+        "type": "page_number",
+        "text": "13",
+        "bbox": [
+            475,
+            924,
+            495,
+            936
+        ],
+        "page_idx": 12
+    },
+    {
+        "type": "list",
+        "sub_type": "ref_text",
+        "list_items": [
+            "preprint arXiv:1810.04805, 2018. 1",
+            "[8] Linhao Dong, Shuang Xu, and Bo Xu. Speechtransformer: a no-recurrence sequence-to-sequence model for speech recognition. In 2018 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP), pages 5884–5888. IEEE, 2018. 1",
+            "[9] Ruijun Dong and Witold Pedrycz. A granular time series approach to long-term forecasting and trend forecasting. Physica A: Statistical Mechanics and its Applications, 387(13):3253–3270, 2008. 10",
+            "[10] Shereen Elsayed, Daniela Thyssens, Ahmed Rashed, Hadi Samer Jomaa, and Lars Schmidt-Thieme. Do we really need deep learning models for time series forecasting?arXiv preprint arXiv:2101.02118, 2021. 9",
+            "[11] Jerome H Friedman. Greedy function approximation: a gradient boosting machine. Annals of statistics pages 1189–1232, 2001. 1,9",
+            "[12] Everette S Gardner Jr. Exponential smoothing: The state of the art. Journal of forecasting, 4(1):1–28, 1985.9",
+            "[13] James Douglas Hamilton. Time series analysis. Princeton university press, 2020. 3",
+            "[14] Andrew C Harvey. Forecasting, structural time series models and the kalman filter. 1990. 9",
+            "[15] Guokun Lai, Wei-Cheng Chang, Yiming Yang, and Hanxiao Liu. Modeling long- and short-term temporal patterns with deep neural networks. international acm sigir conference on research and development in information retrieval, 2017. 1, 4, 9",
+            "[16] Shiyang Li, Xiaoyong Jin, Yao Xuan, Xiyou Zhou, Wenhu Chen, Yu-Xiang Wang, and Xifeng Yan. Enhancing the locality and breaking the memory bottleneck of transformer on time series forecasting. Advances in Neural Information Processing Systems, 32, 2019. 1, 2, 3, 4",
+            "[17] Minhao Liu, Ailing Zeng, Zhijian Xu, Qiuxia Lai, and Qiang Xu. Time series is a special sequence: Forecasting with sample convolution and interaction. arXiv preprint arXiv:2106.09305, 2021. 1,9",
+            "[18] Shizhan Liu, Hang Yu, Cong Liao, Jianguo Li, Weiyao Lin, Alex X Liu, and Schahram Dustdar. Pyraformer: Low-complexity pyramidal attention for long-range time series modeling and forecasting. In International Conference on Learning Representations, 2021. 1, 2, 3,4, 9, 10",
+            "[19] Ze Liu, Yutong Lin, Yue Cao, Han Hu, Yixuan Wei, Zheng Zhang, Stephen Lin, and Baining Guo. Swin transformer: Hierarchical vision transformer using",
+            "shifted windows. In Proceedings of the IEEE/CVF International Conference on Computer Vision, pages 10012–10022, 2021. 1",
+            "[20] LIU Minhao, Ailing Zeng, LAI Qiuxia, Ruiyuan Gao, Min Li, Jing Qin, and Qiang Xu. T-wavenet: A treestructured wavelet neural network for time series signal analysis. In International Conference on Learning Representations, 2021. 2",
+            "[21] Gábor Petneházi. Recurrent neural networks for time series forecasting. arXiv preprint arXiv:1901.00069, 2019.9",
+            "[22] David Salinas, Valentin Flunkert, and Jan Gasthaus. Deepar: Probabilistic forecasting with autoregressive recurrent networks. International Journal of Forecasting, 2017. 2",
+            "[23] Souhaib Ben Taieb, Rob J Hyndman, et al. Recursive and direct multi-step forecasting: the best of both worlds, volume 19. Citeseer, 2012. 2",
+            "[24] Sean J. Taylor and Benjamin Letham. Forecasting at scale. PeerJ Prepr., 2017. 2",
+            "[25] Gerrit JJ van den Burg and Christopher KI Williams. An evaluation of change point detection algorithms. arXiv preprint arXiv:2003.06222, 2020. 8",
+            "[26] Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N Gomez, Łukasz Kaiser, and Illia Polosukhin. Attention is all you need. Advances in neural information processing systems, 30, 2017.1, 2, 9",
+            "[27] Qingsong Wen, Tian Zhou, Chaoli Zhang, Weiqi Chen, Ziqing Ma, Junchi Yan, and Liang Sun. Transformers in time series: A survey. arXiv preprint arXiv:2202.07125, 2022. 1, 2, 5",
+            "[28] Jiehui Xu, Jianmin Wang, Mingsheng Long, et al. Autoformer: Decomposition transformers with autocorrelation for long-term series forecasting. Advances in Neural Information Processing Systems, 34, 2021. 1, 2, 3, 4, 5, 9",
+            "[29] Ailing Zeng, Xuan Ju, Lei Yang, Ruiyuan Gao, Xizhou Zhu, Bo Dai, and Qiang Xu. Deciwatch: A simple baseline for 10x efficient 2d and 3d pose estimation. arXiv preprint arXiv:2203.08713, 2022. 1",
+            "[30] Haoyi Zhou, Shanghang Zhang, Jieqi Peng, Shuai Zhang, Jianxin Li, Hui Xiong, and Wancai Zhang. Informer: Beyond efficient transformer for long sequence time-series forecasting. In The Thirty-Fifth AAAI Conference on Artificial Intelligence, AAAI 2021, Virtual Conference, volume 35, pages 11106– 11115. AAAI Press, 2021. 1, 2, 3, 4, 5, 9",
+            "[31] Tian Zhou, Ziqing Ma, Qingsong Wen, Xue Wang, Liang Sun, and Rong Jin. Fedformer: Frequency enhanced decomposed transformer for long-term series"
+        ],
+        "bbox": [
+            112,
+            92,
+            352,
+            106
+        ],
+        "page_idx": 13
+    },
+    {
+        "type": "page_number",
+        "text": "14",
+        "bbox": [
+            475,
+            924,
+            495,
+            935
+        ],
+        "page_idx": 13
+    },
+    {
+        "type": "text",
+        "text": "forecasting. In International Conference on Machine Learning, 2022. 1, 2, 3, 4, 5, 9",
+        "bbox": [
+            111,
+            90,
+            470,
+            122
+        ],
+        "page_idx": 14
+    },
+    {
+        "type": "page_number",
+        "text": "15",
+        "bbox": [
+            475,
+            924,
+            496,
+            936
+        ],
+        "page_idx": 14
+    }
+]
