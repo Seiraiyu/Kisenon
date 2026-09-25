@@ -27,7 +27,7 @@ Changing how you chunk or embed means re-indexing everything. Normally that
 means a second database, or a maintenance window, or re-indexing `main` and
 hoping retrieval didn't get worse.
 
-`rag-complex experiment` forks `main` in about a second, re-chunks and
+`rag-complex experiment` forks `main` in a few seconds, re-chunks and
 re-embeds the full corpus *into the fork* (and a fork-only Meilisearch
 index), runs the same 30 eval questions against `main` and the fork, prints
 recall and MRR side by side, then deletes the fork and its index. `main`
@@ -71,11 +71,15 @@ uv run rag-complex ingest
 ```
 
 ```
-[ingested: source=2112.09118 | chunks=… | duration_ms=…]
+[ingested: source=2112.09118 | chunks=118 | duration_ms=13081]
+[ingested: source=2201.03545 | chunks=135 | duration_ms=12662]
 …
-Ingested … chunks from 10 documents into chunks_main + rag_complex.chunks.
-{"documents": 10, "chunks": …, "chunker": "block", "embedder": "fastembed", "dim": 384, "index": "chunks_main", "duration_ms": …}
+[ingested: source=2401.18059 | chunks=154 | duration_ms=13981]
+Ingested 1278 chunks from 10 documents into chunks_main + rag_complex.chunks.
+{"documents": 10, "chunks": 1278, "chunker": "block", "embedder": "fastembed", "dim": 384, "index": "chunks_main", "duration_ms": 118342}
 ```
+
+The first run also downloads the fastembed model (`BAAI/bge-small-en-v1.5`).
 
 ### 2. Search, and see why each hit ranked
 
@@ -84,16 +88,35 @@ uv run rag-complex search "execution accuracy of Codex on the Spider dev set" --
 ```
 
 ```
- 1. [2204.00498 p.2] Evaluating the Text-to-SQL Capabilities of Large Language Models > 3 Z
-    rrf=0.03202 vector=1 keyword=4 rerank=None
-    Codex provides a strong baseline for Text-to-SQL tasks In Table 1 the best performing …
- 2. …
-{"query": "…", "mode": "hybrid", "hits": [{"id": "…", "source": "2204.00498", "page_start": 2, "page_end": 2, "heading_context": "…", "score": 0.03202, "contributions": {"vector": 1, "keyword": 4, "rerank": null}}, …]}
+ 1. [2204.00498 p.1] Evaluating the Text-to-SQL Capabilities of Large Language Models > 1 I
+    rrf=0.03154 vector=6 keyword=1 rerank=0.9531
+    We find that Codex achieves a competitive performance of up to 67% execution accuracy on the Spider development set. We analyze the predicted queries that autom
+ 2. [2204.00498 p.2] Evaluating the Text-to-SQL Capabilities of Large Language Models > 3 Z
+    rrf=0.03202 vector=1 keyword=4 rerank=0.9023
+    Codex provides a strong baseline for Text-to-SQL tasks In Table 1 the best performing model (davinci-codex, Create Table + Select 3) achieves 67% execution accu
+ 3. [2204.00498 p.2] Evaluating the Text-to-SQL Capabilities of Large Language Models > 2 E
+    rrf=0.01613 vector=None keyword=2 rerank=0.8828
+    Table 2: Spider development set performance across prompt styles on the davinci-codex model, as measured by percentage of predictions which are valid SQL (VA),
+ …
+{"query": "execution accuracy of Codex on the Spider dev set", "mode": "hybrid", "hits": [{"id": "483aa35c8863a80cf3ca23c7-10", "source": "2204.00498", "page_start": 1, "page_end": 1, "heading_context": "Evaluating the Text-to-SQL Capabilities of Large Language Models > 1 Introduction", "score": 0.03154, "contributions": {"vector": 6, "keyword": 1, "rerank": 0.9531}}, …]}
 ```
 
 `vector` / `keyword` are 1-based ranks in each list (`null` = not in that
-list's top 2k); `rerank` is the Voyage relevance score when rerank ran.
+list's top 2k); `rerank` is the Voyage relevance score when rerank ran. Hit 3
+never made the vector list: Meilisearch alone brought it in. Hit 1 was 6th by
+vector but 1st by keyword, and the reranker put it on top.
 `--mode semantic` or `--mode keyword` uses one list only.
+
+Without `VOYAGE_API_KEY` the same pipeline runs with no rerank step:
+
+```
+$ uv run rag-complex search "tree of thoughts game of 24 success rate" --k 3
+[no VOYAGE_API_KEY: action=skipping rerank]
+ 1. [2305.10601 p.5] Tree of Thoughts: Deliberate Problem Solving with Large Language Model
+    rrf=0.032 vector=3 keyword=2 rerank=None
+    Task Setup. We scrape data from 4nums.com, which has 1,362 games that are sorted from easy to hard by human solving time, and use a subset of relatively hard ga
+ …
+```
 
 ### 3. Ask
 
@@ -111,22 +134,43 @@ uv run rag-complex experiment --chunker heading-merge
 uv run rag-complex experiment --chunker heading-merge --embedder voyage   # needs VOYAGE_API_KEY
 ```
 
+First run (same embedder, coarser chunks):
+
 ```
-[fork created: branch=rag-exp-3f9a1c | id=… | duration_ms=…]
-[ingested: source=2112.09118 | chunks=… | duration_ms=…]
+[fork created: branch=rag-exp-ef0715 | id=51c8c6cd-4dcb-4c77-8daf-c80f189882b0 | duration_ms=2714]
+[ingested: source=2112.09118 | chunks=31 | duration_ms=4448]
 …
-[fork indexed: chunks=… | duration_ms=…]
-[meili index deleted: index=chunks_rag-exp-3f9a1c]
-[fork deleted: id=…]
+[ingested: source=2401.18059 | chunks=31 | duration_ms=4108]
+[fork indexed: chunks=262 | duration_ms=38846]
+[meili index deleted: index=chunks_rag-exp-ef0715]
+[fork deleted: id=51c8c6cd-4dcb-4c77-8daf-c80f189882b0]
 main: chunker=block embedder=fastembed   fork: chunker=heading-merge embedder=fastembed   questions=30 rerank=on
 
 metric          main      fork     delta
-recall@5         …         …        …
-recall@10        …         …        …
-mrr              …         …        …
-p50_ms           …         …        …
-{"branch": {"name": "rag-exp-3f9a1c", "id": "…", "kept": false}, "questions": 30, "main": {…}, "fork": {…}}
+recall@5       0.933     0.867    -0.066
+recall@10      0.933       0.9    -0.033
+mrr            0.821     0.796    -0.025
+p50_ms         412.6     519.2  +106.600
+{"branch": {"name": "rag-exp-ef0715", "id": "51c8c6cd-4dcb-4c77-8daf-c80f189882b0", "kept": false}, "questions": 30, "main": {"recall@5": 0.933, "recall@10": 0.933, "mrr": 0.821, "p50_ms": 412.6, "chunker": "block", "embedder": "fastembed"}, "fork": {"recall@5": 0.867, "recall@10": 0.9, "mrr": 0.796, "p50_ms": 519.2, "chunker": "heading-merge", "embedder": "fastembed"}}
 ```
+
+Second run (coarser chunks and Voyage `voyage-4` embeddings):
+
+```
+main: chunker=block embedder=fastembed   fork: chunker=heading-merge embedder=voyage   questions=30 rerank=on
+
+metric          main      fork     delta
+recall@5       0.933       1.0    +0.067
+recall@10      0.933       1.0    +0.067
+mrr            0.821     0.907    +0.086
+p50_ms         442.4     988.9  +546.500
+```
+
+With the small local model, `heading-merge` did worse than `block`; paired
+with `voyage-4` it beat `main` on every retrieval metric. (The second run
+changes two things at once; `--chunker block --embedder voyage` would separate
+them.) The price is latency: each query then makes a Voyage embedding call as
+well as the rerank call. `main` was never written during either run.
 
 The fork and its Meilisearch index are deleted on success, on error, on
 Ctrl-C and on SIGTERM. Pass `--keep` to keep both for inspection; delete them
