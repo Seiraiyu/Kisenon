@@ -1,0 +1,41 @@
+[project]
+name = "rag-complex"
+version = "0.1.0"
+description = "Hybrid RAG (pgvector + Meilisearch + RRF + rerank) with fork-based re-index experiments on Kisenon."
+requires-python = ">=3.11"
+license = { text = "MIT" }
+dependencies = [
+  "anthropic>=1.8,<2",
+  "fastembed>=0.8,<0.9",
+  "httpx>=0.28,<1",
+  "openai>=3.19,<4",
+  "psycopg[binary]>=3.3,<4",
+  "python-dotenv>=1.2",
+  "voyageai>=0.5,<0.6",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=9.0",
+  "ruff>=0.16",
+]
+
+[project.scripts]
+rag-complex = "rag_complex.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/rag_complex"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W", "UP", "B"]
