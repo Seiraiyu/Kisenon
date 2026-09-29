@@ -108,28 +108,30 @@ def test_checkout(kisenon_db):          # a connection URL for the session fork
 ## Demo 2 — timing: re-seed vs fork vs reset
 
 ```bash
-uv run seed-snapshots timing --fixture prodlike --runs 3
+uv run seed-snapshots timing --fixture small --runs 3
 ```
 
-Output shape (the numbers are yours to measure: `timing` was not run
-during this example's verification, so no figures are claimed here):
+Real run against a Kisenon project (`--fixture prodlike` is the default):
 
 ```text
-fixture=prodlike runs=3
+fixture=small runs=3
 method                    p50_ms  runs_ms
-re-seed (SQL)                ...  [...]
-fork fixture branch          ...  [...]
-reset fork to fixture        ...  [...]
-{"fixture": "prodlike", "runs": 3, "p50_ms": {...}, "runs_ms": {...}}
+re-seed (SQL)                624  [692, 590, 624]
+fork fixture branch         4672  [5903, 4672, 4364]
+reset fork to fixture       2496  [2575, 2431, 2496]
+{"fixture": "small", "runs": 3, "p50_ms": {"reseed": 624, "fork": 4672, "reset": 2496}, ...}
 ```
 
-For scale: seeding `fixture-prodlike` during `build` took 12064 ms, and
-each demo session above (one fork, four resets) took about 28 s in total.
+Read it honestly: on `small`, re-seeding is **faster** than forking or
+resetting. A fork costs a few seconds and a reset about 2.5 s no matter how
+big the fixture is, so branches pay off once seeding takes longer than
+that. Seeding `fixture-prodlike` during `build` took 12064 ms, and a
+factory-based seed in a real suite is slower still than this example's
+server-side `generate_series`. Run `timing` on your own fixture to see
+where your crossover is.
 
 Each "fork" and "reset" timing includes getting the connection string,
-connecting, and counting orders — i.e. until the data is usable. The
-re-seed uses server-side `generate_series`, the fastest seeding there is;
-factory-based seeding in a real suite is slower, so the gap is a lower bound.
+connecting, and counting orders — i.e. until the data is usable.
 
 ## Flags and exit codes
 
