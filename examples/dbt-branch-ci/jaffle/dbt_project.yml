@@ -1,0 +1,17 @@
+name: jaffle
+version: "1.0.0"
+config-version: 2
+profile: jaffle
+
+model-paths: ["models"]
+seed-paths: ["seeds"]
+
+models:
+  jaffle:
+    staging:
+      +materialized: view
+    marts:
+      +materialized: table
+
+flags:
+  send_anonymous_usage_stats: false
