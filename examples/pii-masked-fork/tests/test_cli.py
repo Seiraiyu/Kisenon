@@ -54,12 +54,14 @@ def test_leaks_delete_branch_and_exit_1(monkeypatch, capsys):
 
 
 def test_failure_mid_mask_deletes_and_exits_2(monkeypatch, capsys):
-    deleted = _patch(monkeypatch, apply_error=RuntimeError("null value violates not-null"))
+    deleted = _patch(monkeypatch, apply_error=RuntimeError(
+        "null value violates not-null\nDETAIL:  Failing row contains (1, Sam Rivera)"))
     with pytest.raises(SystemExit) as e:
         cli.main([])
     assert e.value.code == 2
     assert deleted == ["br_1"]
-    assert "not-null" in capsys.readouterr().err
+    err = capsys.readouterr().err
+    assert "not-null" in err and "Sam Rivera" not in err
 
 
 def test_bad_spec_exits_2_without_forking(monkeypatch, tmp_path, capsys):

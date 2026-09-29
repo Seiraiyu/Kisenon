@@ -72,7 +72,8 @@ def main(argv: list[str] | None = None) -> int:
             conn.close()
         ok = not leaks
     except Exception as e:  # noqa: BLE001 — anything before verification passes is fatal
-        fatal = f"{type(e).__name__}: {e}"
+        # First line only: Postgres' DETAIL line can echo a row that still holds raw PII.
+        fatal = f"{type(e).__name__}: {str(e).splitlines()[0] if str(e) else ''}"
     finally:
         # An unverified fork may still hold raw PII: delete unless verification passed.
         if branch is not None and (not ok or args.delete):
