@@ -121,6 +121,28 @@ def test_down_is_noop_when_branch_gone(project, monkeypatch):
     assert not any(c[:2] == ["branches", "delete"] for c in fake.calls)
 
 
+def test_down_is_noop_when_delete_says_not_found(project, monkeypatch):
+    # delete is async: list can still show a branch that is being deleted
+    fake = FakeKeon({"main": "br_main", "pr-7": "br_pr7"})
+
+    def gone(argv, **kw):
+        if argv[1:3] == ["branches", "delete"]:
+            return subprocess.CompletedProcess(argv, 1, "", '{"error":"not_found","code":404}')
+        return fake(argv, **kw)
+    monkeypatch.setattr(subprocess, "run", gone)
+    assert kp.main(["down", "--pr", "7"]) == 0
+
+
+def test_changed_lines_keeps_changes_and_their_table():
+    diff = ("--- a/main\n+++ b/pr\n TABLE other.t\n   COLUMN id int NOT NULL\n"
+            " TABLE gh_preview.todos\n   COLUMN id bigint NOT NULL\n+  COLUMN due_date date NULL\n"
+            "   PRIMARY KEY todos_pkey (id)\n+  INDEX todos_open_due_date_idx ...\n")
+    assert kp.changed_lines(diff) == (" TABLE gh_preview.todos\n+  COLUMN due_date date NULL\n"
+                                      "+  INDEX todos_open_due_date_idx ...")
+    assert kp.changed_lines("--- a/x\n+++ b/y\n TABLE t\n   COLUMN id int\n") == \
+        "(no schema changes vs main)"
+
+
 def test_missing_project_exits_2(monkeypatch):
     monkeypatch.delenv("KISENON_PROJECT_ID", raising=False)
     assert kp.main(["down", "--pr", "7"]) == 2

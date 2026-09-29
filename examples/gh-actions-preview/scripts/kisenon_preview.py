@@ -113,9 +113,25 @@ def schema_diff(project: str, name: str) -> str:
         mask(main_url)
         wake(main_url)
         raw = keon("branches", "schema-diff", ids["main"], ids[name], "-o", "json")
-        return json.dumps(json.loads(raw), indent=2)
-    except (KeonError, ValueError) as e:
+        return changed_lines(json.loads(raw)["diff"])
+    except (KeonError, ValueError, KeyError, TypeError) as e:
         return f"schema diff unavailable: {e}"
+
+
+def changed_lines(diff: str) -> str:
+    """keon's diff lists the whole schema; keep changed lines and their TABLE header."""
+    out, table = [], None
+    for line in diff.splitlines():
+        if line.startswith(("---", "+++")):
+            continue
+        if line.startswith(" TABLE "):
+            table = line
+        elif line.startswith(("+", "-")):
+            if table:
+                out.append(table)
+                table = None
+            out.append(line)
+    return "\n".join(out) or "(no schema changes vs main)"
 
 
 def render_comment(*, name: str, migrations: str, tests: str, diff: str, url: str) -> str:
@@ -132,7 +148,7 @@ Forked from `main` on every push to this PR.
 
 <details><summary>Schema diff vs main</summary>
 
-```json
+```diff
 {diff}
 ```
 
@@ -184,7 +200,14 @@ def cmd_down(args: argparse.Namespace, project: str) -> int:
     if not branch_id:
         event(f"nothing to delete: {name}")
         return 0
-    keon("branches", "delete", "--cascade", branch_id)
+    try:
+        keon("branches", "delete", "--cascade", branch_id)
+    except KeonError as e:
+        # delete is async: `branches list` can still show a branch that is going away
+        if "not_found" not in str(e):
+            raise
+        event(f"nothing to delete: {name} (already deleting)")
+        return 0
     event(f"branch deleted: {name} | id={branch_id}")
     return 0
 

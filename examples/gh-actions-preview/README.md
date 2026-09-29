@@ -166,6 +166,6 @@ uv run ruff check .
   runs untrusted code with your key.
 - One branch per open PR. Idle branches suspend their compute, but they
   still count toward your project's branch limit.
-- The schema diff is `keon branches schema-diff` JSON, truncated at 50,000
-  characters. If `main`'s compute can't be woken in time, the comment says
+- The schema diff is the changed lines (and their `TABLE` header) from
+  `keon branches schema-diff`, truncated at 50,000 characters. If `main`'s compute can't be woken in time, the comment says
   `schema diff unavailable` and the job still reports tests normally.
