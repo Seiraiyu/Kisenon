@@ -166,6 +166,12 @@ Chunk text files, embed them into pgvector, retrieve the top matches, and answer
 
 ➡ **[examples/rag-simple](examples/rag-simple)**
 
+#### Hybrid RAG + fork-based re-index experiments
+
+pgvector + Meilisearch hybrid search with reciprocal rank fusion and reranking over ten table-heavy arXiv papers. `experiment` re-chunks and re-embeds the corpus on a disposable fork and reports recall/MRR against main, without touching main.
+
+➡ **[examples/rag-complex](examples/rag-complex)**
+
 ---
 
 ### CI & workflow
