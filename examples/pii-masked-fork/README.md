@@ -48,9 +48,35 @@ psql "$KISENON_URL" -f setup.sql
 uv run pii-masked-fork
 ```
 
+Real output (connection URL elided):
+
 ```text
-TODO_DEMO1
+[mask start: pii_masked_fork | tables=1]
+[branch forked: 3a54fc8c-f614-4cf1-a973-da484bf19fe5 | duration_ms=2383]
+[masked: customers.phone | rows=5000]
+[masked: customers.ssn | rows=5000]
+[masked: customers.loyalty_id | rows=5000]
+[masked: customers.notes | rows=5000]
+[masked: customers.email | rows=5000]
+[masked: customers.full_name | rows=5000]
+Masked branch: pii-masked-fork-f15a10de (3a54fc8c-f614-4cf1-a973-da484bf19fe5)
+Verified: no PII detector hits (sampled up to 1000 rows per text column)
+Connect: postgresql://…
+{"branch": {"name": "pii-masked-fork-f15a10de", "id": "3a54fc8c-f614-4cf1-a973-da484bf19fe5", "url": "postgresql://…", "deleted": false}, "masked": {"customers.phone": 5000, "customers.ssn": 5000, "customers.loyalty_id": 5000, "customers.notes": 5000, "customers.email": 5000, "customers.full_name": 5000}, "leaks": [], "sample": 1000}
 ```
+
+`duration_ms` is the whole `keon branches create --wait` round-trip (fork
+plus waiting for the endpoint to be ready). On the masked branch:
+
+```text
+ id |          email          |     full_name     |  phone   | ssn |            loyalty_id            |  notes
+----+-------------------------+-------------------+----------+-----+----------------------------------+----------
+  1 | vanessa89@example.org   | Peter Montgomery  | REDACTED |     | 5d0c1ff283d87d6b0c5e085277890793 | REDACTED
+  2 | corey15@example.com     | Theodore Mcgrath  | REDACTED |     | 2e4c6588aaaec030ac3b6c89a78c3535 | REDACTED
+  3 | gomezleslie@example.net | Stephanie Collins | REDACTED |     | 97e82c5fc2974e333a9b5ec432f9fa56 | REDACTED
+```
+
+`main` still has `person1@acme-mail.com` for customer 1.
 
 Point your agent at the `Connect:` URL. The branch stays until you delete it:
 `keon branches delete --cascade <id>`.
@@ -66,7 +92,19 @@ uv run pii-masked-fork --mask /tmp/mask-no-notes.yaml; echo "exit=$?"
 ```
 
 ```text
-TODO_DEMO2
+[mask start: pii_masked_fork | tables=1]
+[branch forked: 14445a9b-24e9-4192-8180-9c348d80ac7f | duration_ms=3619]
+[masked: customers.phone | rows=5000]
+[masked: customers.ssn | rows=5000]
+[masked: customers.loyalty_id | rows=5000]
+[masked: customers.email | rows=5000]
+[masked: customers.full_name | rows=5000]
+[branch deleted: 14445a9b-24e9-4192-8180-9c348d80ac7f]
+LEAKS FOUND — masked branch deleted. Add these columns to mask.yaml:
+  customers.notes          phone    103 hits  e.g. Cal***
+  customers.notes          email    105 hits  e.g. Pre***
+{"branch": {"name": "pii-masked-fork-58fd6bc4", "id": "14445a9b-24e9-4192-8180-9c348d80ac7f", "url": null, "deleted": true}, "masked": {"customers.phone": 5000, "customers.ssn": 5000, "customers.loyalty_id": 5000, "customers.email": 5000, "customers.full_name": 5000}, "leaks": [{"table": "customers", "column": "notes", "detector": "phone", "hits": 103, "example": "Cal***"}, {"table": "customers", "column": "notes", "detector": "email", "hits": 105, "example": "Pre***"}], "sample": 1000}
+exit=1
 ```
 
 Every text column in the schema is scanned, listed in `mask.yaml` or not.
