@@ -1,0 +1,38 @@
+[project]
+name = "pii-masked-fork"
+version = "0.1.0"
+description = "Fork main, mask PII declaratively, verify nothing leaked, hand out the masked branch."
+requires-python = ">=3.11"
+license = { text = "MIT" }
+dependencies = [
+  "faker>=40.0",
+  "psycopg[binary]>=3.2",
+  "python-dotenv>=1.0",
+  "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0",
+  "ruff>=0.5",
+]
+
+[project.scripts]
+pii-masked-fork = "pii_masked_fork.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/pii_masked_fork"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W", "UP", "B"]
