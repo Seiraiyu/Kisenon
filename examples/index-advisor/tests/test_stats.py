@@ -38,7 +38,8 @@ def test_check_pgss_ok():
 
 def test_top_queries_maps_rows_and_passes_filters():
     conn = MagicMock()
-    conn.execute.return_value = _cur(rows=[("123", "SELECT … WHERE customer_id = $1", 50, 4200.0, 84.0)])
+    conn.execute.return_value = _cur(
+        rows=[("123", "SELECT … WHERE customer_id = $1", 50, 4200.0, 84.0)])
     tops = st.top_queries(conn, match="%index_advisor.%", limit=5)
     assert tops == [st.TopQuery("123", "SELECT … WHERE customer_id = $1", 50, 4200.0, 84.0)]
     assert conn.execute.call_args.args[1] == ("%index_advisor.%", 5)
@@ -48,7 +49,8 @@ def test_table_stats_and_describe():
     conn = MagicMock()
     conn.execute.side_effect = [
         _cur(rows=[("orders", 1000000, 1000000)]),
-        _cur(rows=[("orders", "CREATE UNIQUE INDEX orders_pkey ON index_advisor.orders USING btree (id)")]),
+        _cur(rows=[("orders",
+                    "CREATE UNIQUE INDEX orders_pkey ON index_advisor.orders USING btree (id)")]),
         _cur(rows=[("orders", "id", "bigint"), ("orders", "customer_id", "integer")]),
     ]
     stats = st.table_stats(conn)

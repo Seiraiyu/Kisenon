@@ -34,9 +34,11 @@ def test_check_exits_2_when_extension_missing(monkeypatch, capsys):
 def test_check_ok(monkeypatch, capsys):
     _env(monkeypatch)
     monkeypatch.setattr(cli, "check_pgss", lambda conn: None)
-    monkeypatch.setattr(cli, "top_queries", lambda conn, match, limit: [TopQuery("1", "q", 3, 9.0, 3.0)])
+    monkeypatch.setattr(cli, "top_queries",
+                        lambda conn, match, limit: [TopQuery("1", "q", 3, 9.0, 3.0)])
     assert cli.main(["check"]) == 0
-    assert json.loads(capsys.readouterr().out.strip().splitlines()[-1])["pg_stat_statements"] == "ok"
+    last = capsys.readouterr().out.strip().splitlines()[-1]
+    assert json.loads(last)["pg_stat_statements"] == "ok"
 
 
 def test_advise_exits_2_before_forking_when_pgss_missing(monkeypatch):
@@ -72,7 +74,8 @@ def test_advise_happy_path(monkeypatch, capsys):
     monkeypatch.setattr(cli, "top_queries",
                         lambda conn, match, limit: [TopQuery("7", "SELECT … $1", 50, 4200.0, 84.0)])
     monkeypatch.setattr(cli, "table_stats", lambda conn: {"orders": TableStats("orders", 1, 1)})
-    monkeypatch.setattr(cli, "describe_schema", lambda conn, stats: "index_advisor.orders(id bigint)")
+    monkeypatch.setattr(cli, "describe_schema",
+                        lambda conn, stats: "index_advisor.orders(id bigint)")
     monkeypatch.setattr(cli, "complete", lambda *a, **k: json.dumps({"candidates": [{
         "queryid": "7", "table": "index_advisor.orders",
         "index_sql": "CREATE INDEX ON index_advisor.orders (customer_id)",

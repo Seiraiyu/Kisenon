@@ -77,7 +77,8 @@ STATS = {"orders": TableStats("orders", 1000000, 1000000, ["CREATE UNIQUE INDEX 
 def test_benchmark_measures_on_fork(monkeypatch):
     conn = _patch_fork(monkeypatch)
     p = Proposal(**GOOD)
-    r = bench.benchmark(p, project="pr", name="index-advisor-x-1", keep=False, stats=STATS, calls=50)
+    r = bench.benchmark(p, project="pr", name="index-advisor-x-1", keep=False, stats=STATS,
+                        calls=50)
     assert r.error is None
     assert (r.before_ms, r.after_ms, r.used, r.index_bytes) == (80.0, 0.5, True, 819200)
     assert r.est_saved_ms == pytest.approx((80.0 - 0.5) * 50)
