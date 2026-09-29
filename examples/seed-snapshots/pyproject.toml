@@ -18,6 +18,9 @@ dev = [
 [project.scripts]
 seed-snapshots = "seed_snapshots.cli:main"
 
+[project.entry-points.pytest11]
+seed_snapshots = "seed_snapshots.pytest_plugin"
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
