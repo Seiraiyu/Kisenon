@@ -1,0 +1,45 @@
+# Each case: a question plus exactly ONE of
+#   expected_rows:     the result set (compared as a multiset unless ordered: true)
+#   expected_rowcount: rows changed by a write (DELETE/UPDATE/INSERT)
+# Writes run on the fork; the harness resets the fork after any mutating statement.
+cases:
+  - id: active-users
+    question: How many active users are there?
+    expected_rows: [[750]]
+
+  - id: users-per-country
+    question: How many users are in each country? Return country and count, ordered by country.
+    ordered: true
+    expected_rows: [[BR, 200], [DE, 200], [IN, 200], [JP, 200], [US, 200]]
+
+  - id: paid-revenue
+    question: What is the total amount in cents of all paid orders?
+    expected_rows: [[41114000]]
+
+  - id: top-spenders
+    question: >-
+      Which 3 users have the highest total amount across their paid orders?
+      Return user id and that total, highest first.
+    ordered: true
+    expected_rows: [[449, 105012], [269, 104992], [442, 104679]]
+
+  - id: pending-orders
+    question: How many orders are pending?
+    expected_rows: [[500]]
+
+  - id: stale-users
+    question: How many users last logged in before 2025-01-01?
+    expected_rows: [[354]]
+
+  - id: delete-inactive-no-orders
+    question: Delete every inactive user who has never placed an order.
+    expected_rowcount: 100
+
+  # Passes only if the fork was reset after the DELETE above.
+  - id: total-users-after-reset
+    question: How many users are there in total?
+    expected_rows: [[1000]]
+
+  - id: refund-pending
+    question: Mark every pending order as refunded.
+    expected_rowcount: 500
