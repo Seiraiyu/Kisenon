@@ -1,0 +1,15 @@
+# Which columns to mask on the fork, and how.
+#   faker:<provider>  realistic fake value per row (any Faker provider, e.g. name, safe_email)
+#   hash              md5 of the original (stable, so joins on it still work)
+#   null              set to NULL (column must be nullable)
+#   redact            replace non-null values with 'REDACTED'
+# Every text column in `schema` is scanned for leaks afterwards, listed here or not.
+schema: pii_masked_fork
+tables:
+  customers:
+    email: faker:safe_email
+    full_name: faker:name
+    phone: redact
+    ssn: "null"
+    loyalty_id: hash
+    notes: redact
