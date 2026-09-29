@@ -74,6 +74,8 @@ def run_candidate(
         c.setup_sql = [str(s) for s in proposal.get("setup_sql") or []]
         c.query = str(proposal.get("query") or query).strip().rstrip(";")
         c.rationale = str(proposal.get("rationale") or "")
+        if strategy == "rewrite" and c.setup_sql:
+            raise ValueError("rewrite strategy proposed DDL; only the query may change")
         for stmt in c.setup_sql:
             event("apply", strategy=strategy, sql=stmt.replace("\n", " ")[:120])
             conn.execute(stmt)

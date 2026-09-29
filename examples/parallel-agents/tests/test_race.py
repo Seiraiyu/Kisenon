@@ -58,6 +58,15 @@ def test_run_candidate_marks_wrong_rows(monkeypatch):
     assert c.correct is False and c.error is None
 
 
+def test_rewrite_rejects_ddl(monkeypatch):
+    conn = _patch_fork(monkeypatch)
+    c = run_candidate("rewrite", project="p", name="n", query="SELECT 0", goal_ms=5,
+                      ask=lambda s, u: '{"setup_sql": ["CREATE INDEX ON events (id)"],'
+                                       ' "query": "SELECT 0"}', created=[])
+    assert "proposed DDL" in c.error
+    assert all("CREATE INDEX" not in str(call) for call in conn.execute.call_args_list)
+
+
 def test_run_candidate_captures_errors(monkeypatch):
     _patch_fork(monkeypatch, create_error=KeonError("quota"))
     created: list[Branch] = []

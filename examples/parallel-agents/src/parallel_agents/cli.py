@@ -52,7 +52,8 @@ def main(argv: list[str] | None = None) -> int:
         output_error(f"unknown strategy: {', '.join(unknown) or '(none given)'}",
                      {"known": sorted(STRATEGIES)}, exit_code=2)
     try:
-        query = Path(args.query_file).read_text().strip().rstrip(";")
+        lines = Path(args.query_file).read_text().splitlines()
+        query = "\n".join(s for s in lines if not s.lstrip().startswith("--")).strip().rstrip(";")
     except OSError as e:
         output_error(str(e), exit_code=2)
 
