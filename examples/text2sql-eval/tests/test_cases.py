@@ -58,7 +58,9 @@ def test_score_ordered_requires_exact():
 def test_score_rowcount():
     case = Case(id="c", question="q", expected_rowcount=100)
     assert score(case, _outcome(rowcount=100, status="DELETE 100")) == ("rowcount", "rowcount 100")
-    assert score(case, _outcome(rowcount=7, status="DELETE 7")) == (None, "rowcount 7, expected 100")
+    assert score(case, _outcome(rowcount=7, status="DELETE 7")) == (
+        None, "rowcount 7, expected 100",
+    )
     assert score(case, _outcome(rows=[(1,)])) == (None, "expected a write, got a result set")
 
 

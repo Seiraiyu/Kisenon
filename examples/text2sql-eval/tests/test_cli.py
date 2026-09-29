@@ -55,7 +55,9 @@ def test_main_prints_table_and_json(monkeypatch, capsys, matches, code):
     monkeypatch.setattr(cli, "forked", _fake_forked)
     monkeypatch.setattr(
         cli, "run_eval",
-        lambda cases, ask, connect, reset_fork: [_result(f"c{i}", m) for i, m in enumerate(matches)],
+        lambda cases, ask, connect, reset_fork: [
+            _result(f"c{i}", m) for i, m in enumerate(matches)
+        ],
     )
     assert cli.main([]) == code
     out = capsys.readouterr().out.strip().splitlines()
