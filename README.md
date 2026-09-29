@@ -156,6 +156,12 @@ Your production database never changes until you decide.
 
 ➡ **[examples/agent-migrate](examples/agent-migrate)**
 
+#### MCP server: disposable forks as tools
+
+Give Claude Code, Cursor or Claude Desktop `fork_database`, `run_sql`, `explain_analyze`, `schema_diff` and `destroy_fork` tools. Main is unreachable by construction, and forks expire on their own.
+
+➡ **[examples/mcp-server](examples/mcp-server)**
+
 ---
 
 ### RAG & search
