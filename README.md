@@ -162,6 +162,30 @@ Give Claude Code, Cursor or Claude Desktop `fork_database`, `run_sql`, `explain_
 
 ➡ **[examples/mcp-server](examples/mcp-server)**
 
+#### Text-to-SQL eval on a fork
+
+Grade an LLM's text-to-SQL answers, including destructive questions, against a fork. The fork is reset after every write, so main is never touched.
+
+➡ **[examples/text2sql-eval](examples/text2sql-eval)**
+
+#### Parallel agents racing on forks
+
+Several agents each try a different fix for a slow query (index, materialized view, rewrite) on their own fork at the same time; the fastest correct result wins.
+
+➡ **[examples/parallel-agents](examples/parallel-agents)**
+
+#### Index advisor
+
+Reads `pg_stat_statements` on main, asks an LLM for candidate indexes, and benchmarks each one on its own fork before you create anything in production.
+
+➡ **[examples/index-advisor](examples/index-advisor)**
+
+#### PII-masked fork
+
+Fork main, mask the columns listed in `mask.yaml`, then scan every text column for leftover emails, SSNs and phone numbers. Leaks fail the run and delete the fork.
+
+➡ **[examples/pii-masked-fork](examples/pii-masked-fork)**
+
 ---
 
 ### RAG & search
@@ -194,6 +218,12 @@ Perfect for:
 * migration validation
 
 ➡ **[examples/branch-test](examples/branch-test)**
+
+#### Stripe webhook replay
+
+Replay your whole Stripe event history through a changed webhook handler on a fork and diff the result against production before you deploy (TypeScript; runs offline from a fixture log).
+
+➡ **[examples/stripe-webhook-replay](examples/stripe-webhook-replay)**
 
 ---
 
