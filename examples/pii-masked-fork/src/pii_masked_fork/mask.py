@@ -1,8 +1,11 @@
 """mask.yaml -> masking statements on the fork, then regex leak detection."""
 from __future__ import annotations
 
+import re
+import time
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 import yaml
 from psycopg import sql
@@ -69,3 +72,114 @@ def update_sql(schema: str, table: str, columns: dict[str, str]) -> sql.Composed
     return sql.SQL("UPDATE {} SET {}").format(
         sql.Identifier(schema, table), sql.SQL(", ").join(sets)
     )
+
+
+# Values that look like PII after masking. Faker's safe_email uses example.com/org/net,
+# so those domains are allowed. Phone needs separators so md5 hex can't match.
+DETECTORS = {
+    "email": re.compile(r"[\w.+-]+@(?!example\.(?:com|org|net)\b)[\w-]+(?:\.[\w-]+)+"),
+    "ssn": re.compile(r"\b\d{3}-\d{2}-\d{4}\b"),
+    "phone": re.compile(r"\+?\d{1,3}[-. ]\d{3}[-. ]\d{3}[-. ]\d{4}\b"),
+}
+
+
+@dataclass(slots=True)
+class Leak:
+    table: str
+    column: str
+    detector: str
+    hits: int
+    example: str  # first 3 chars + *** — never print the full value
+
+
+def connect(url: str, attempts: int = 10, delay_s: float = 2.0) -> Any:
+    import psycopg
+    for i in range(attempts):
+        try:
+            return psycopg.connect(url, autocommit=True)
+        except psycopg.OperationalError:
+            if i == attempts - 1:
+                raise
+            time.sleep(delay_s)
+    raise AssertionError("unreachable")
+
+
+def primary_key(conn: Any, schema: str, table: str) -> str:
+    rows = conn.execute(
+        "SELECT a.attname FROM pg_index i JOIN pg_attribute a "
+        "ON a.attrelid = i.indrelid AND a.attnum = ANY(i.indkey) "
+        "WHERE i.indrelid = %s::regclass AND i.indisprimary",
+        (sql.Identifier(schema, table).as_string(None),),
+    ).fetchall()
+    if len(rows) != 1:
+        raise SpecError(f"{schema}.{table}: faker masking needs a single-column primary key")
+    return rows[0][0]
+
+
+def faker_values(provider: str, keys: list[Any], seed: int = 0) -> list[tuple[str, str]]:
+    from faker import Faker
+    fake = Faker()
+    fake.seed_instance(seed)
+    gen = getattr(fake, provider)
+    return [(str(k), str(gen())) for k in keys]
+
+
+def apply_faker(conn: Any, schema: str, table: str, col: str, provider: str) -> int:
+    pk = primary_key(conn, schema, table)
+    t, c, k = sql.Identifier(schema, table), sql.Identifier(col), sql.Identifier(pk)
+    keys = [r[0] for r in conn.execute(
+        sql.SQL("SELECT {} FROM {} WHERE {} IS NOT NULL").format(k, t, c)
+    ).fetchall()]
+    rows = faker_values(provider, keys)
+    with conn.transaction():
+        conn.execute("CREATE TEMP TABLE _mask (k text PRIMARY KEY, v text) ON COMMIT DROP")
+        with conn.cursor() as cur, cur.copy("COPY _mask (k, v) FROM STDIN") as cp:
+            for row in rows:
+                cp.write_row(row)
+        conn.execute(sql.SQL("UPDATE {t} SET {c} = _mask.v FROM _mask WHERE {t}.{k}::text = _mask.k")
+                     .format(t=t, c=c, k=k))
+    return len(rows)
+
+
+def apply_mask(conn: Any, spec: MaskSpec) -> dict[str, int]:
+    """Mask every configured column; return rows touched per `table.column`."""
+    done: dict[str, int] = {}
+    for table, cols in spec.tables.items():
+        stmt = update_sql(spec.schema, table, cols)
+        if stmt is not None:
+            n = conn.execute(stmt).rowcount
+            done.update({f"{table}.{c}": n for c, s in cols.items() if not s.startswith("faker:")})
+        for col, s in cols.items():
+            if s.startswith("faker:"):
+                done[f"{table}.{col}"] = apply_faker(
+                    conn, spec.schema, table, col, s.removeprefix("faker:")
+                )
+    return done
+
+
+def find_leaks(values: list[str]) -> dict[str, list[str]]:
+    hits: dict[str, list[str]] = {}
+    for v in values:
+        for name, rx in DETECTORS.items():
+            if rx.search(v):
+                hits.setdefault(name, []).append(v)
+    return hits
+
+
+def verify(conn: Any, schema: str, sample: int) -> list[Leak]:
+    """Sample up to `sample` non-null values of EVERY text column in `schema`."""
+    cols = conn.execute(
+        "SELECT table_name, column_name FROM information_schema.columns "
+        "WHERE table_schema = %s AND data_type IN ('text', 'character varying', 'character') "
+        "ORDER BY table_name, ordinal_position",
+        (schema,),
+    ).fetchall()
+    leaks: list[Leak] = []
+    for table, col in cols:
+        q = sql.SQL("SELECT {c} FROM {t} WHERE {c} IS NOT NULL ORDER BY random() LIMIT %s").format(
+            c=sql.Identifier(col), t=sql.Identifier(schema, table)
+        )
+        values = [str(r[0]) for r in conn.execute(q, (sample,)).fetchall()]
+        for detector, found in find_leaks(values).items():
+            leaks.append(Leak(table, col, detector, len(found), found[0][:3] + "***"))
+    return leaks
