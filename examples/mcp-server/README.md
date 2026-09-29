@@ -50,9 +50,10 @@ Each `fork_database` call is a copy-on-write fork of `main` in seconds, and
 | `KEON_API_KEY` | Kisenon console → Settings → API keys: scope it to the project, capability `agent` (the secret is shown once). The `keon` CLI can't create keys. | Recommended | Falls back to your `keon login` session, which has your full permissions. |
 | `KISENON_PROJECT_ID` | `keon projects list -o json` | Recommended | `keon`'s default project from `keon set-context` is used. |
 
-An `agent`-capability key can create and use sandboxes but can't read
-connection URIs for `main`, rotate passwords, or manage branch roles. That's
-the right blast radius for a tool an LLM drives. No LLM API key is needed:
+According to `keon`'s capability description, an `agent` key can create and
+use sandboxes but is denied connection URIs, password rotation and branch-role
+management. That's the right blast radius for a tool an LLM drives. (This
+example was verified with a `keon login` session, not an `agent` key.) No LLM API key is needed:
 the MCP client brings the model.
 
 ## Setup
