@@ -1,0 +1,26 @@
+services:
+  meilisearch:
+    image: getmeili/meilisearch:v1.54.0
+    environment:
+      MEILI_MASTER_KEY: ${MEILI_MASTER_KEY:?set MEILI_MASTER_KEY in .env (openssl rand -hex 16)}
+      MEILI_NO_ANALYTICS: "true"
+    ports:
+      - "7700:7700"
+    volumes:
+      - meili_data:/meili_data
+
+  # One-shot PDF parser, only needed to (re)build corpus/parsed/:
+  #   mkdir -p .mineru-cache && docker compose --profile mineru run --rm mineru
+  mineru:
+    profiles: [mineru]
+    build: ./mineru
+    user: "${UID:-1000}:${GID:-1000}"
+    environment:
+      HOME: /cache
+    volumes:
+      - ./corpus:/corpus
+      - ./.mineru-cache:/cache
+    command: ["-p", "/corpus/pdfs", "-o", "/corpus/parsed", "-b", "pipeline", "-m", "auto"]
+
+volumes:
+  meili_data:

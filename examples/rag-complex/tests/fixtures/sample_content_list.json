@@ -1,0 +1,16 @@
+[
+  {"type": "header", "text": "Preprint. Under review.", "page_idx": 0},
+  {"type": "text", "text": "A Tiny Paper About Tables", "text_level": 1, "page_idx": 0},
+  {"type": "text", "text": "We measure things and put them in tables.", "page_idx": 0},
+  {"type": "text", "text": "1 Introduction", "text_level": 2, "page_idx": 0},
+  {"type": "text", "text": "Tables are useful.", "page_idx": 0},
+  {"type": "page_number", "text": "1", "page_idx": 0},
+  {"type": "text", "text": "2 Results", "text_level": 2, "page_idx": 1},
+  {"type": "table", "img_path": "images/t1.jpg", "table_caption": ["Table 1: Accuracy by model."], "table_body": "<table><tr><td>Model</td><td>Acc</td></tr><tr><td>A</td><td>91.2</td></tr></table>", "table_footnote": ["Higher is better."], "page_idx": 1},
+  {"type": "equation", "img_path": "images/e1.jpg", "text": "$$ acc = \\frac{correct}{total} $$", "text_format": "latex", "page_idx": 1},
+  {"type": "image", "img_path": "images/f1.jpg", "image_caption": [], "image_footnote": [], "page_idx": 1},
+  {"type": "text", "text": "2.1 Ablations", "text_level": 3, "page_idx": 2},
+  {"type": "text", "text": "Removing the widget costs 3 points.", "page_idx": 2},
+  {"type": "footer", "text": "Tiny Paper, 2026", "page_idx": 2},
+  {"type": "list", "sub_type": "ref_text", "list_items": ["[1] Someone. A paper. 2020."], "page_idx": 2}
+]
