@@ -57,17 +57,22 @@ uv run dbt-branch-ci check
 ```
 
 ```text
-[branch forked: dbt-branch-ci-1a2b3c4d | id=...]
-[dbt build on dbt-branch-ci-1a2b3c4d]
+[branch forked: dbt-branch-ci-fd7823fd | id=...]
+[dbt build on dbt-branch-ci-fd7823fd]
 ... dbt output ...
+15:17:41  Done. PASS=14 WARN=0 ERROR=0 SKIP=0 NO-OP=0 REUSED=0 TOTAL=14
 [branch deleted: ...]
 model               main    fork    delta  schema
 customers             10      10    +0.0%
 orders                30      30    +0.0%
 raw_customers         10      10    +0.0%
-...
+raw_orders            30      30    +0.0%
+raw_payments          30      30    +0.0%
+stg_customers         10      10    +0.0%
+stg_orders            30      30    +0.0%
+stg_payments          30      30    +0.0%
 PASS
-{"passed": true, "failures": [], "branch": {...}, "max_row_delta_pct": 10.0, "models": [...], "total_duration_ms": ...}
+{"passed": true, "failures": [], "branch": {"name": "dbt-branch-ci-fd7823fd", "id": "...", "kept": false}, "max_row_delta_pct": 10.0, "models": [...], "total_duration_ms": 16079}
 ```
 
 ## Demo 2 — a model change that drops 17% of orders fails
@@ -80,18 +85,31 @@ git checkout jaffle/models/marts/orders.sql
 ```
 
 ```text
+[branch forked: dbt-branch-ci-e8e1685b | id=...]
+[dbt build on dbt-branch-ci-e8e1685b]
+... dbt output ...
+[branch deleted: ...]
 model               main    fork    delta  schema
 customers             10      10    +0.0%
 orders                30      25   -16.7%
-...
+raw_customers         10      10    +0.0%
+raw_orders            30      30    +0.0%
+raw_payments          30      30    +0.0%
+stg_customers         10      10    +0.0%
+stg_orders            30      30    +0.0%
+stg_payments          30      30    +0.0%
 FAIL orders: row count 30 -> 25 (-16.7%, limit 10%)
 1 problem(s)
-{"passed": false, "failures": ["orders: row count 30 -> 25 (-16.7%, limit 10%)"], ...}
+{"passed": false, "failures": ["orders: row count 30 -> 25 (-16.7%, limit 10%)"], "branch": {"name": "dbt-branch-ci-e8e1685b", "id": "...", "kept": false}, "max_row_delta_pct": 10.0, "models": [...], "total_duration_ms": 14151}
 exit=1
 ```
 
+`customers` keeps 10 rows: its `number_of_orders` and `lifetime_value`
+values change, which this check doesn't look at (see Limitations).
+
 If the change is intended, raise the limit for this run:
-`uv run dbt-branch-ci check --max-row-delta-pct 20`.
+`uv run dbt-branch-ci check --max-row-delta-pct 20` (same table, `PASS`,
+exit 0).
 
 ## What fails the check
 
