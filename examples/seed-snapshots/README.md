@@ -52,12 +52,15 @@ uv run seed-snapshots build
 ```
 
 ```text
-[built fixture-empty: ...ms | id=...]
-[built fixture-small: ...ms | id=...]
-[built fixture-prodlike: ...ms | id=...]
+[built fixture-empty: 1097ms | id=...]
+[built fixture-small: 1345ms | id=...]
+[built fixture-prodlike: 12064ms | id=...]
 built 3 fixture branch(es)
-{"built": [{"fixture": "empty", "branch": "fixture-empty", "id": "...", "seed_ms": ...}, ...]}
+{"built": [{"fixture": "empty", "branch": "fixture-empty", "id": "...", "seed_ms": 1097}, ...]}
 ```
+
+(Real run against a Kisenon project; `seed_ms` is the seeding time, not
+counting the branch create.)
 
 Existing fixture branches are skipped; `--rebuild` deletes and re-seeds
 them, `--fixture small` limits the build to one.
@@ -77,7 +80,12 @@ demo_tests/test_orders.py::test_delete_every_order PASSED
 demo_tests/test_orders.py::test_orders_are_back_after_reset PASSED
 demo_tests/test_orders.py::test_drop_users_table PASSED
 demo_tests/test_orders.py::test_users_are_back_after_reset PASSED
+
+4 passed in 28.69s
 ```
+
+The prodlike run passed the same 4 tests in 27.21s. That wall time includes
+the session fork, four `branches reset` calls and the fork's deletion.
 
 Use it in your own suite by installing this package (the plugin registers
 itself through the `pytest11` entry point) and requesting `kisenon_db`:
@@ -103,6 +111,9 @@ def test_checkout(kisenon_db):          # a connection URL for the session fork
 uv run seed-snapshots timing --fixture prodlike --runs 3
 ```
 
+Output shape (the numbers are yours to measure: `timing` was not run
+during this example's verification, so no figures are claimed here):
+
 ```text
 fixture=prodlike runs=3
 method                    p50_ms  runs_ms
@@ -111,6 +122,9 @@ fork fixture branch          ...  [...]
 reset fork to fixture        ...  [...]
 {"fixture": "prodlike", "runs": 3, "p50_ms": {...}, "runs_ms": {...}}
 ```
+
+For scale: seeding `fixture-prodlike` during `build` took 12064 ms, and
+each demo session above (one fork, four resets) took about 28 s in total.
 
 Each "fork" and "reset" timing includes getting the connection string,
 connecting, and counting orders — i.e. until the data is usable. The
