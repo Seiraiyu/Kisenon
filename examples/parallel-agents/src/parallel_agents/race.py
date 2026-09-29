@@ -20,7 +20,9 @@ SYSTEM = """You are a PostgreSQL 17 performance engineer working on a disposable
 You must use this strategy: {strategy}
 Tables are on the search_path; do not schema-qualify them.
 Reply with only a ```json block:
-{{"setup_sql": ["<one statement>", ...], "query": "<the query to run>", "rationale": "<one sentence>"}}
+{{"setup_sql": ["<one statement>", ...],
+ "query": "<the query to run>",
+ "rationale": "<one sentence>"}}
 The query you return must produce exactly the same rows as the original."""
 
 USER = """Goal: make this query run in under {goal_ms} ms. It currently takes {baseline_ms:.1f} ms.

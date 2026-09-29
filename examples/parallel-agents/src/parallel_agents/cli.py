@@ -115,7 +115,8 @@ def _print_report(cands: list[Candidate], winner: Candidate | None, goal: float,
         before = f"{c.baseline_ms:.2f}" if c.baseline_ms is not None else "-"
         after = f"{c.after_ms:.2f}" if c.after_ms is not None else "-"
         note = c.error or c.rationale
-        print(f"{c.strategy:<10} {'yes' if c.correct else 'no':<8} {before:>10} {after:>10}  {note}")
+        ok = "yes" if c.correct else "no"
+        print(f"{c.strategy:<10} {ok:<8} {before:>10} {after:>10}  {note}")
     if winner is None:
         print("Winner: none (no candidate returned identical rows)")
         return
