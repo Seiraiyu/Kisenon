@@ -20,6 +20,6 @@ SELECT i,
        1 + (i * 7919) % 2000,
        (ARRAY['view', 'click', 'signup', 'purchase'])[1 + i % 4],
        TIMESTAMPTZ '2026-06-30 00:00:00+00' - ((i * 104729) % 31536000) * INTERVAL '1 second'
-FROM generate_series(1, 1000000) i;
+FROM generate_series(1::bigint, 1000000) i;  -- bigint: i * 104729 overflows int4
 
 ANALYZE events;
