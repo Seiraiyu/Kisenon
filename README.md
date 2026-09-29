@@ -191,6 +191,16 @@ Perfect for:
 
 ---
 
+### App integrations
+
+#### GraphQL + React
+
+PostGraphile v5 serves a GraphQL API straight from Postgres to a Vite + React + urql app (infinite-scroll feed, votes). `npm run preview-branch` adds a column on a fork and serves it side by side with main.
+
+➡ **[examples/graphql-react](examples/graphql-react)**
+
+---
+
 ### Quickstart
 
 Connect and query a Kisenon branch from your language of choice — Node.js (`pg`), Drizzle + Next.js, or Python (`psycopg`).
