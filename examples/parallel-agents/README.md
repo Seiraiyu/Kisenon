@@ -11,8 +11,8 @@ Losing forks are destroyed.
 Three agents trying three fixes against one database step on each other: an
 index created by agent A makes agent B's rewrite look fast. You'd need three
 full copies of the data. With Kisenon each agent gets a copy-on-write fork
-of `main` in ~500 ms, works in isolation, and the comparison is fair. Main
-is never touched.
+of `main` (1.4–3.2 s each, created concurrently, in our runs), works in
+isolation, and the comparison is fair. Main is never touched.
 
 ## What you need
 
@@ -52,26 +52,36 @@ uv run parallel-agents --goal-ms 5
 
 ```text
 [race start: 3 | goal_ms=5.0 | model=claude-sonnet-5]
-[branch forked: … | strategy=index | ms=…]
-[branch forked: … | strategy=rewrite | ms=…]
-[branch forked: … | strategy=matview | ms=…]
-[apply: index | sql=CREATE INDEX … ON events (account_id, created_at)]
-[measured: index | before_ms=… | after_ms=… | correct=True]
-...
-[branch deleted: …]  ×3
+[branch forked: 0cfbd0e2-68dc-4ccd-80f5-07eeb20e6c81 | strategy=rewrite | ms=1756]
+[branch forked: 1d669145-484c-4e91-b6d3-149292d7157d | strategy=index | ms=1793]
+[branch forked: 809504bf-f598-4906-8543-9618647f6641 | strategy=matview | ms=1818]
+[apply: index | sql=CREATE INDEX events_account_created_kind_idx ON events (account_id, created_at, kind)]
+[agent failed: rewrite | error=ValueError: rewrite strategy proposed DDL; only the query may change]
+[measured: index | before_ms=49.58 | after_ms=0.06 | correct=True]
+[apply: matview | sql=CREATE MATERIALIZED VIEW events_daily_kind_mv AS SELECT account_id, date_trunc('day', created_at) AS day, kind, count(*)]
+[apply: matview | sql=CREATE UNIQUE INDEX events_daily_kind_mv_idx ON events_daily_kind_mv (account_id, day, kind)]
+[measured: matview | before_ms=49.52 | after_ms=0.11 | correct=True]
+[branch deleted: 0cfbd0e2-68dc-4ccd-80f5-07eeb20e6c81]
+[branch deleted: 1d669145-484c-4e91-b6d3-149292d7157d]
+[branch deleted: 809504bf-f598-4906-8543-9618647f6641]
 strategy   correct   before_ms   after_ms  note
-index      yes           …          …      …
-rewrite    yes           …          …      …
-matview    yes           …          …      …
-Winner: … — … ms (goal 5 ms: met)
-{"goal_ms": 5.0, "winner": "…", "met_goal": true, …}
+index      yes           49.58       0.06  A composite index on (account_id, created_at, kind) lets PostgreSQL use an index scan to quickly filter and access only the matching rows, avoiding the costly sequential scan and sort.
+rewrite    no            46.42          -  ValueError: rewrite strategy proposed DDL; only the query may change
+matview    yes           49.52       0.11  Precomputing per-account/day/kind counts in a materialized view with a covering unique index lets the filtered, ordered query be answered via a fast index scan instead of a full table scan and aggregation.
+Winner: index — 0.06 ms (goal 5 ms: met)
+  CREATE INDEX events_account_created_kind_idx ON events (account_id, created_at, kind)
+  -- query: SELECT date_trunc('day', created_at) AS day, kind, count(*) AS n FROM events WHERE account_id = 42 AND created_at >= TIMESTAMPTZ '2026-06-01 00:00:00+00' GROUP BY 1, 2 ORDER BY 1, 2
+{"goal_ms": 5.0, "winner": "index", "met_goal": true, "kept_branch": null, "provider": "anthropic", "model": "claude-sonnet-5", "candidates": [...]}
 ```
 
-(Numbers are filled in from the live verification run.)
+(Real output from the live verification run; the JSON line's `candidates`
+array is elided. It has each agent's SQL, timings and error.)
 
 The `rewrite` agent usually can't win: without an index, any query over
-`events` still reads the table. That's the point of measuring instead of
-trusting the proposal.
+`events` still reads the table. Models know this and often propose an index
+anyway. The harness rejects any `setup_sql` from `rewrite` (as in the run
+above), so each strategy is judged on what it's allowed to do. That's the
+point of measuring instead of trusting the proposal.
 
 ## Reading the result
 
@@ -110,4 +120,4 @@ trusting the proposal.
   median reduce but don't remove noise.
 - If you press Ctrl-C mid-race the harness waits for running agents to finish
   their current step, then deletes every fork it created.
-- `--provider openai` is untested unless noted in the PR.
+- `--provider openai` is untested (no OpenAI key during verification).
