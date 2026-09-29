@@ -89,7 +89,8 @@ def main(argv: list[str] | None = None) -> int:
     if leaks:
         print("LEAKS FOUND — masked branch deleted. Add these columns to mask.yaml:")
         for lk in leaks:
-            print(f"  {lk.table}.{lk.column:<14} {lk.detector:<6} {lk.hits:>5} hits  e.g. {lk.example}")
+            print(f"  {lk.table}.{lk.column:<14} {lk.detector:<6} {lk.hits:>5} hits"
+                  f"  e.g. {lk.example}")
     else:
         print(f"Masked branch: {branch.name} ({branch.id})")
         print(f"Verified: no PII detector hits (sampled up to {args.sample} rows per text column)")

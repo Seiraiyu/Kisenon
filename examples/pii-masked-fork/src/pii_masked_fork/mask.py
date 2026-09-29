@@ -136,8 +136,10 @@ def apply_faker(conn: Any, schema: str, table: str, col: str, provider: str) -> 
         with conn.cursor() as cur, cur.copy("COPY _mask (k, v) FROM STDIN") as cp:
             for row in rows:
                 cp.write_row(row)
-        conn.execute(sql.SQL("UPDATE {t} SET {c} = _mask.v FROM _mask WHERE {t}.{k}::text = _mask.k")
-                     .format(t=t, c=c, k=k))
+        conn.execute(
+            sql.SQL("UPDATE {t} SET {c} = _mask.v FROM _mask WHERE {t}.{k}::text = _mask.k")
+            .format(t=t, c=c, k=k)
+        )
     return len(rows)
 
 
