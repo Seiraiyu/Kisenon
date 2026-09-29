@@ -1,0 +1,32 @@
+{
+  "name": "kisenon-example-stripe-webhook-replay",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Stripe webhooks into an idempotent event log; replay the log through new handler code on a Kisenon fork and diff the projections.",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=20.12"
+  },
+  "scripts": {
+    "seed": "tsx src/seed.ts",
+    "server": "tsx src/server.ts",
+    "replay": "tsx src/replay.ts",
+    "make-fixture": "tsx scripts/make-fixture.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "express": "^5.2.1",
+    "pg": "^8.23.0",
+    "stripe": "^22.6.2"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^22.20.4",
+    "@types/pg": "^8.23.1",
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.7"
+  }
+}
