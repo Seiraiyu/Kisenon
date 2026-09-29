@@ -10,9 +10,9 @@ Every run gets a disposable Kisenon fork; writes are rolled back with
 Text-to-SQL evals usually stop at `SELECT`, because grading a `DELETE`
 means running it. Against a shared staging database that corrupts every
 later case; against production it's unthinkable. Here each run forks `main`
-(~500 ms), the model's SQL runs for real, and after any statement that
-wrote, the fork is reset to `main` so the next case starts clean. Main is
-never written.
+(a few seconds, including the wait until the fork accepts connections), the
+model's SQL runs for real, and after any statement that wrote, the fork is
+reset to `main` so the next case starts clean. Main is never written.
 
 ## What you need
 
@@ -54,20 +54,34 @@ Output (stderr events, then the table and one JSON line on stdout):
 
 ```text
 [eval start: 9 | provider=anthropic | model=claude-sonnet-5]
-[branch forked: br_… | duration_ms=…]
-[case: active-users | sql=SELECT count(*) FROM users WHERE active]
+[branch forked: db05a148-e3d0-4437-bfc3-d47759e3ee72 | duration_ms=6743]
+[case: active-users | sql=SELECT COUNT(*) AS active_users_count FROM users WHERE active = TRUE]
 [case done: active-users | match=exact | reason=exact match | reset=False]
 ...
-[case: delete-inactive-no-orders | sql=DELETE FROM users u WHERE NOT u.active AND NOT EXISTS (…)]
-[branch reset: br_…]
+[case: delete-inactive-no-orders | sql=DELETE FROM users WHERE active = false   AND NOT EXISTS (     SELECT 1 FROM orders WHERE orders.user_id = users.id   )]
+[branch reset: db05a148-e3d0-4437-bfc3-d47759e3ee72]
 [case done: delete-inactive-no-orders | match=rowcount | reason=rowcount 100 | reset=True]
-...
+[case: total-users-after-reset | sql=SELECT COUNT(*) AS total_users FROM users]
+[case done: total-users-after-reset | match=exact | reason=exact match | reset=False]
+[case: refund-pending | sql=UPDATE orders SET status = 'refunded' WHERE status = 'pending']
+[branch reset: db05a148-e3d0-4437-bfc3-d47759e3ee72]
+[case done: refund-pending | match=rowcount | reason=rowcount 500 | reset=True]
 case                         exec  match     reason
 active-users                 ok    exact     exact match
-...
+users-per-country            ok    exact     exact match
+paid-revenue                 ok    exact     exact match
+top-spenders                 ok    exact     exact match
+pending-orders               ok    exact     exact match
+stale-users                  ok    exact     exact match
+delete-inactive-no-orders    ok    rowcount  rowcount 100
+total-users-after-reset      ok    exact     exact match
+refund-pending               ok    rowcount  rowcount 500
 Score: 9/9 passed (exact 7, set 0, rowcount 2, executed 9, resets 2)
-{"branch": {...}, "provider": "anthropic", "model": "claude-sonnet-5", "passed": 9, "total": 9, "cases": [...]}
+{"branch": {"name": "text2sql-eval-71fd7cc4", "id": "db05a148-e3d0-4437-bfc3-d47759e3ee72", "kept": false}, "provider": "anthropic", "model": "claude-sonnet-5", "passed": 9, "total": 9, "cases": [...]}
 ```
+
+The whole run took about a minute. Each `branch reset` took about 1.7 s,
+measured from the write to the `[branch reset]` event.
 
 `total-users-after-reset` only passes if the fork really was reset after the
 `DELETE` before it — that case is the proof.
