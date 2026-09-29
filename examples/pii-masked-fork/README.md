@@ -10,7 +10,7 @@ masked branch. If anything leaks, the fork is deleted.
 
 The usual way to get a safe dev database is a nightly dump → scrub → restore
 pipeline that's hours stale and costs a second server. With Kisenon the copy
-is a ~500 ms copy-on-write fork of `main`; masking rewrites only the
+is a copy-on-write fork of `main` that is ready in a few seconds; masking rewrites only the
 columns you name; production is never modified or exposed to the consumer
 of the masked branch.
 
