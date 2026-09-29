@@ -14,7 +14,8 @@ CLI and a test-mode key.
 "What would this handler change do to our existing customers?" is
 normally answered by reading code and hoping. Replaying months of events
 needs a database with production's event log that you're allowed to
-truncate and rebuild. `npm run replay` forks `main` (~500 ms), truncates
+truncate and rebuild. `npm run replay` forks `main` (~3 s, including
+waiting for the fork's endpoint), truncates
 the projections **on the fork**, rebuilds them from the log with the code
 on disk, diffs, and deletes the fork. Production isn't touched.
 
@@ -55,6 +56,16 @@ npm run seed
 {"deliveries":57,"stored":56,"duplicates":1}
 ```
 
+Running it again stores nothing — every delivery is a duplicate:
+
+```text
+[seeded: 0 new | duplicates=57]
+{"deliveries":57,"stored":0,"duplicates":57}
+```
+
+(`pg` also prints a `SECURITY WARNING` about `sslmode` aliases; it is
+harmless and omitted from the outputs here.)
+
 `fixtures/events.jsonl` is 57 synthetic deliveries for 20 customers: sign-ups,
 trials, payment failures (`past_due`), recoveries, cancellations, one Stripe
 retry (duplicate id — stored once) and one out-of-order pair (the older
@@ -67,13 +78,13 @@ npm run replay; echo "exit=$?"
 ```
 
 ```text
-[branch forked: stripe-webhook-replay-… | …ms]
+[branch forked: stripe-webhook-replay-fedd00fc | 2949ms]
 [replayed: 56 events]
-Replayed 56 events on stripe-webhook-replay-… with the handler on disk.
+Replayed 56 events on stripe-webhook-replay-fedd00fc with the handler on disk.
 users: identical
 subscriptions: identical
-{"branch":{…},"events":56,"changed":0,"diffs":{"users":[],"subscriptions":[]}}
-[branch deleted: …]
+{"branch":{"name":"stripe-webhook-replay-fedd00fc","id":"0e9c9965-e4af-4406-a628-8de4f964ce19","kept":false},"events":56,"changed":0,"diffs":{"users":[],"subscriptions":[]}}
+[branch deleted: 0e9c9965-e4af-4406-a628-8de4f964ce19]
 exit=0
 ```
 
@@ -87,11 +98,16 @@ npm run replay; echo "exit=$?"
 ```
 
 ```text
+[branch forked: stripe-webhook-replay-b6e7bf12 | 3306ms]
+[replayed: 56 events]
+Replayed 56 events on stripe-webhook-replay-b6e7bf12 with the handler on disk.
 users: 3 rows differ
-  cus_fixture_003: main={"stripe_id":"cus_fixture_003","email":"customer003@example.com","type":"free-trial"} fork={…"type":"paid"}
-  cus_fixture_009: …
-  cus_fixture_015: …
+  cus_fixture_003: main={"stripe_id":"cus_fixture_003","email":"customer003@example.com","type":"free-trial"} fork={"stripe_id":"cus_fixture_003","email":"customer003@example.com","type":"paid"}
+  cus_fixture_009: main={"stripe_id":"cus_fixture_009","email":"customer009@example.com","type":"free-trial"} fork={"stripe_id":"cus_fixture_009","email":"customer009@example.com","type":"paid"}
+  cus_fixture_015: main={"stripe_id":"cus_fixture_015","email":"customer015@example.com","type":"free-trial"} fork={"stripe_id":"cus_fixture_015","email":"customer015@example.com","type":"paid"}
 subscriptions: identical
+{"branch":{"name":"stripe-webhook-replay-b6e7bf12","id":"12696be2-a447-44f2-8d75-dd93c841b2ec","kept":false},"events":56,"changed":3,"diffs":{"users":[ …the same three rows… ],"subscriptions":[]}}
+[branch deleted: 12696be2-a447-44f2-8d75-dd93c841b2ec]
 exit=1
 ```
 
