@@ -53,7 +53,8 @@ def connect(url: str, attempts: int = 10, delay_s: float = 2.0) -> Any:
             if i == attempts - 1:
                 raise
             time.sleep(delay_s)
-    conn.execute(f"SET search_path TO {SCHEMA}")
+    # public too: that's where CREATE EXTENSION puts the pg_stat_statements view.
+    conn.execute(f"SET search_path TO {SCHEMA}, public")
     conn.execute("SET statement_timeout = '120s'")
     return conn
 

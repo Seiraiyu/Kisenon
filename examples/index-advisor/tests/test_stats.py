@@ -72,4 +72,4 @@ def test_connect_retries_and_sets_search_path(monkeypatch):
     monkeypatch.setattr(psycopg, "connect", fake_connect)
     monkeypatch.setattr(st.time, "sleep", lambda s: None)
     assert st.connect("postgresql://f") is good
-    good.execute.assert_any_call("SET search_path TO index_advisor")
+    good.execute.assert_any_call("SET search_path TO index_advisor, public")
