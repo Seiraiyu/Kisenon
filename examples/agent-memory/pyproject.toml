@@ -1,0 +1,41 @@
+[project]
+name = "agent-memory"
+version = "0.1.0"
+description = "Long-term memory for an LLM agent (episodes + deduped, embedded facts) on Kisenon Postgres."
+requires-python = ">=3.11"
+license = { text = "MIT" }
+dependencies = [
+  "anthropic>=1.8",
+  "fastembed>=0.8.1",
+  "numpy>=2.0",
+  "pgvector>=0.5",
+  "psycopg[binary]>=3.3",
+  "python-dotenv>=1.0",
+  "voyageai>=0.5",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=9.0",
+  "ruff>=0.16",
+]
+
+[project.scripts]
+agent-memory = "agent_memory.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/agent_memory"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W", "UP", "B"]
