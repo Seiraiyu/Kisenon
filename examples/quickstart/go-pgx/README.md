@@ -13,7 +13,8 @@ go run .
 ```
 
 ```
-OUTPUT_GO
+now:     2026-09-30T02:17:09.061063-04:00
+version: PostgreSQL 17.11 (Kisenon multiver-7b8b6c8-v17) on x86_64-pc-linux-gnu, ...
 ```
 
 ## How it works

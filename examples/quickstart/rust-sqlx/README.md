@@ -14,7 +14,8 @@ cargo run
 ```
 
 ```
-OUTPUT_RUST
+now:     2026-09-30 06:17:23.630127 UTC
+version: PostgreSQL 17.11 (Kisenon multiver-7b8b6c8-v17) on x86_64-pc-linux-gnu, ...
 ```
 
 ## How it works

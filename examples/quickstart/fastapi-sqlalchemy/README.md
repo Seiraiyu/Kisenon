@@ -13,7 +13,7 @@ curl localhost:8000/now
 ```
 
 ```json
-OUTPUT_FASTAPI
+{"now":"2026-09-30T06:17:49.802443Z","version":"PostgreSQL 17.11 (Kisenon multiver-7b8b6c8-v17) on x86_64-pc-linux-gnu, ..."}
 ```
 
 ## Notes
