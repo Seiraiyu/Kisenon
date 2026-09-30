@@ -1,0 +1,20 @@
+{"title": "Database branching for AI agents", "body": "A branch is a copy-on-write fork of a database. Agents can run destructive SQL on a branch and throw it away afterwards, so production is never touched."}
+{"title": "Vacuum and table bloat", "body": "Updates and deletes leave dead tuples behind. Autovacuum reclaims the space and keeps the visibility map current so index-only scans stay fast."}
+{"title": "Choosing the right index", "body": "B-tree handles equality and range queries, GIN handles arrays, jsonb and full-text search, and BRIN suits huge append-only tables ordered by time."}
+{"title": "Vector search with HNSW", "body": "The pgvector HNSW index gives approximate nearest-neighbour search over embeddings. Tune ef_search to trade recall for latency."}
+{"title": "Full-text search basics", "body": "A tsvector stores normalized lexemes and a tsquery describes what to match. websearch_to_tsquery accepts quotes, OR and a leading minus like a search engine."}
+{"title": "Fuzzy matching with trigrams", "body": "The pg_trgm extension splits text into three-character sequences. Similarity and word_similarity find matches even when the user makes a typo."}
+{"title": "The write-ahead log", "body": "Every change is written to the write-ahead log before the data files. After a crash, Postgres replays the log to reach a consistent state."}
+{"title": "Streaming replication", "body": "A standby server receives the write-ahead log from the primary over the network and replays it, staying a few milliseconds behind."}
+{"title": "Connection pooling", "body": "Postgres forks a process per connection. A pooler such as PgBouncer in transaction mode lets thousands of clients share a few server connections."}
+{"title": "LISTEN and NOTIFY", "body": "NOTIFY sends a message to every session listening on a channel when the transaction commits. It needs a session-level connection, not a transaction-mode pooler."}
+{"title": "Job queues with SKIP LOCKED", "body": "SELECT ... FOR UPDATE SKIP LOCKED lets many workers claim different rows from the same table without blocking each other."}
+{"title": "Working with jsonb", "body": "jsonb stores parsed JSON. The containment operator @> and a GIN index make lookups inside documents fast."}
+{"title": "Table partitioning", "body": "Declarative partitioning splits a large table by range, list or hash. Old partitions can be detached and dropped instantly instead of deleted row by row."}
+{"title": "Reading EXPLAIN ANALYZE", "body": "EXPLAIN ANALYZE runs the query and reports the real time and row counts of each plan node. Compare estimated and actual rows to spot bad statistics."}
+{"title": "Row level security", "body": "Policies attached to a table filter which rows each role can see or modify, enforcing tenant isolation inside the database."}
+{"title": "Sequences and identity columns", "body": "GENERATED ALWAYS AS IDENTITY is the standard way to create auto-incrementing keys. Sequence values are never rolled back, so gaps are normal."}
+{"title": "Common table expressions", "body": "WITH queries name intermediate results. A recursive CTE walks trees and graphs such as org charts or category hierarchies."}
+{"title": "Materialized views", "body": "A materialized view stores the result of a query. REFRESH MATERIALIZED VIEW CONCURRENTLY updates it without blocking readers when it has a unique index."}
+{"title": "Point-in-time recovery", "body": "With a base backup and archived write-ahead log you can restore a database to any moment, for example just before an accidental DROP TABLE."}
+{"title": "Extensions", "body": "Extensions such as pgvector, pg_trgm and pg_stat_statements add types, operators and views. CREATE EXTENSION installs one into the current database."}
