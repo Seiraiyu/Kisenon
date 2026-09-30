@@ -5,7 +5,9 @@
   "type": "module",
   "license": "MIT",
   "description": "Next.js 15 + Vercel AI SDK chat with a read-only SQL tool over a Kisenon database.",
-  "engines": { "node": ">=22" },
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -31,6 +33,7 @@
     "@types/react-dom": "^19.3.0",
     "tsx": "^4.23.15",
     "typescript": "^5.9.3",
+    "vite": "^8.3.1",
     "vitest": "^5.0.1"
   }
 }
