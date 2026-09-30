@@ -1,0 +1,36 @@
+{
+  "name": "kisenon-example-vercel-ai-sdk",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "description": "Next.js 15 + Vercel AI SDK chat with a read-only SQL tool over a Kisenon database.",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "check-readonly": "tsx scripts/check-readonly.ts"
+  },
+  "dependencies": {
+    "@ai-sdk/anthropic": "^4.0.63",
+    "@ai-sdk/react": "^4.0.117",
+    "ai": "^7.0.114",
+    "next": "^15.5.26",
+    "pg": "^8.23.0",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.6",
+    "@types/pg": "^8.23.1",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.3",
+    "vitest": "^5.0.1"
+  }
+}
