@@ -186,6 +186,12 @@ Fork main, mask the columns listed in `mask.yaml`, then scan every text column f
 
 ➡ **[examples/pii-masked-fork](examples/pii-masked-fork)**
 
+#### Long-term agent memory
+
+Store facts an agent learns in pgvector, recall them by similarity and recency, and try a risky memory change on a `--what-if` fork that is deleted afterwards.
+
+➡ **[examples/agent-memory](examples/agent-memory)**
+
 ---
 
 ### RAG & search
@@ -201,6 +207,18 @@ Chunk text files, embed them into pgvector, retrieve the top matches, and answer
 pgvector + Meilisearch hybrid search with reciprocal rank fusion and reranking over ten table-heavy arXiv papers. `experiment` re-chunks and re-embeds the corpus on a disposable fork and reports recall/MRR against main, without touching main.
 
 ➡ **[examples/rag-complex](examples/rag-complex)**
+
+#### LangChain + pgvector
+
+The LangChain `PGVectorStore` pointed at Kisenon: ingest a folder, ask questions, get answers that cite their source files.
+
+➡ **[examples/langchain-pgvector](examples/langchain-pgvector)**
+
+#### Postgres full-text search
+
+Ranked `tsvector` search with a `pg_trgm` fuzzy fallback for typos, no search engine needed.
+
+➡ **[examples/fulltext-search](examples/fulltext-search)**
 
 ---
 
@@ -253,11 +271,29 @@ PostGraphile v5 serves a GraphQL API straight from Postgres to a Vite + React + 
 
 ➡ **[examples/graphql-react](examples/graphql-react)**
 
+#### Vercel AI SDK chat with a read-only SQL tool
+
+Next.js + AI SDK chat that answers questions by querying your data through a read-only role, a read-only transaction and a single-statement guard.
+
+➡ **[examples/vercel-ai-sdk](examples/vercel-ai-sdk)**
+
+#### Job queue with LISTEN/NOTIFY
+
+A Postgres job queue using `FOR UPDATE SKIP LOCKED`, retries with backoff, and NOTIFY to wake workers, verified through the Kisenon proxy.
+
+➡ **[examples/job-queue](examples/job-queue)**
+
+#### Realtime updates with LISTEN
+
+A trigger sends NOTIFY on every row change; a small Node server relays it to browsers over WebSocket.
+
+➡ **[examples/realtime-listen](examples/realtime-listen)**
+
 ---
 
 ### Quickstart
 
-Connect and query a Kisenon branch from your language of choice — Node.js (`pg`), Drizzle + Next.js, or Python (`psycopg`).
+Connect and query a Kisenon branch from your language of choice — Node.js (`pg`), Drizzle + Next.js, Prisma, Python (`psycopg`, FastAPI + SQLAlchemy, Django), Go (`pgx`) or Rust (`sqlx`).
 
 ➡ **[examples/quickstart](examples/quickstart)**
 
