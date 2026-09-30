@@ -1,0 +1,40 @@
+[project]
+name = "seed-snapshots"
+version = "0.1.0"
+description = "Named Kisenon fixture branches built once; pytest forks or resets them instead of re-seeding."
+requires-python = ">=3.11"
+license = { text = "MIT" }
+dependencies = [
+  "psycopg[binary]>=3.2",
+  "pytest>=9.0",
+  "python-dotenv>=1.0",
+]
+
+[dependency-groups]
+dev = [
+  "ruff>=0.16",
+]
+
+[project.scripts]
+seed-snapshots = "seed_snapshots.cli:main"
+
+[project.entry-points.pytest11]
+seed_snapshots = "seed_snapshots.pytest_plugin"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/seed_snapshots"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-p pytester"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W", "UP", "B"]
