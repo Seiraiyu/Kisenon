@@ -1,0 +1,32 @@
+[project]
+name = "langchain-pgvector"
+version = "0.1.0"
+description = "LangChain PGVectorStore on Kisenon: ingest + retrieval chain."
+requires-python = ">=3.11"
+license = { text = "MIT" }
+dependencies = [
+  "fastembed>=0.8.1",
+  "langchain-anthropic>=1.7",
+  "langchain-core>=1.6",
+  "langchain-postgres>=0.0.18",
+  "langchain-text-splitters>=1.1",
+  "psycopg[binary]>=3.3",
+  "python-dotenv>=1.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=9.0", "ruff>=0.16"]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W", "UP", "B"]
