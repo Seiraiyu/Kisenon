@@ -42,19 +42,22 @@ The first run downloads the `BAAI/bge-small-en-v1.5` model (about 70 MB) into `F
 uv run agent-memory say "I'm vegetarian and I just moved to Lisbon." "Where should I go for dinner tonight?"
 ```
 
-Expected (stderr events, then stdout):
+Real output (stderr events, then stdout; replies trimmed):
 
 ```
 [recall: 0]
 [fact added: User is vegetarian]
-[fact added: User recently moved to Lisbon]
+[fact added: User just moved to Lisbon]
 You: I'm vegetarian and I just moved to Lisbon.
-Assistant: ...
+Assistant: Welcome to Lisbon! That's an exciting move. Portuguese cuisine leans heavily on seafood and meat, but Lisbon does have a solid and growing vegetarian scene ...
 [recall: 2]
+[fact added: User is planning to have dinner tonight.]
 You: Where should I go for dinner tonight?
-Assistant: ... (suggests vegetarian places in Lisbon)
-{"session":"default","turns":[...],"what_if":null,"embedder":"fastembed","model":"claude-sonnet-5"}
+Assistant: Here are a few solid vegetarian-friendly spots depending on the vibe you're after: ...
+{"session": "default", "turns": [...], "what_if": null, "embedder": "fastembed", "model": "claude-sonnet-5"}
 ```
+
+The LLM decides what counts as a durable fact, so the extracted facts vary from run to run.
 
 ### 2. Inspect recall
 
@@ -63,8 +66,10 @@ uv run agent-memory recall "food preferences"
 ```
 
 ```
-0.6xx  (sim 0.6xx, recency 1.00)  User is vegetarian
-...
+0.700  (sim 0.700, recency 1.00)  User is vegetarian
+0.655  (sim 0.655, recency 1.00)  User is planning to have dinner tonight.
+0.517  (sim 0.517, recency 1.00)  User just moved to Lisbon
+{"query": "food preferences", "facts": [...], "embedder": "fastembed"}
 ```
 
 Say the same thing twice and the fact is **merged** (`[fact merged: ...]`, `hits` +1,
@@ -77,29 +82,34 @@ uv run agent-memory say --what-if "Actually, I started eating fish last month."
 ```
 
 ```
-[fork created: agent-memory-1a2b3c4d | id=...]
+[fork created: agent-memory-a69d043a | id=679017d1-4b80-44cd-ae38-2d778e792421]
+[recall: 3]
 [fact added: User started eating fish last month]
-...
-[fork deleted: ...]
-{"...","what_if":{"branch":"agent-memory-1a2b3c4d","deleted":true,"main_facts_before":2,"main_facts_after":2}}
+You: Actually, I started eating fish last month.
+Assistant: Ah, good to know—thanks for the update! That actually opens up a lot more options in Lisbon ...
+[fork deleted: 679017d1-4b80-44cd-ae38-2d778e792421]
+{..., "what_if": {"branch": "agent-memory-a69d043a", "id": "679017d1-4b80-44cd-ae38-2d778e792421", "deleted": true, "main_facts_before": 3, "main_facts_after": 3}, ...}
 ```
 
 The fork is a copy-on-write clone of `main` (so recall sees all real memories), but the
-new fact dies with it: `main_facts_before == main_facts_after`. Add `--keep` to keep the
-fork for inspection (the cleanup command is printed).
+new fact dies with it: `main_facts_before == main_facts_after`. Creating the fork took a few
+seconds (the whole run above took about 6 s without an LLM). Ctrl-C or `SIGTERM` mid-run
+still deletes the fork. Add `--keep` to keep the fork for inspection (the cleanup command is printed).
 
 ### 4. Key-free
 
+Set the key to empty (`env -u` is not enough: `.env` would load it back):
+
 ```bash
-env -u ANTHROPIC_API_KEY uv run agent-memory say "I prefer window seats."
+ANTHROPIC_API_KEY= uv run agent-memory say "I prefer window seats."
 ```
 
 ```
 [no ANTHROPIC_API_KEY: key-free: user messages stored verbatim as facts]
-[recall: ...]
+[recall: 3]
 [fact added: I prefer window seats.]
 You: I prefer window seats.
-Assistant: Recalled: ...
+Assistant: Recalled: User just moved to Lisbon; User is planning to have dinner tonight.; User is vegetarian
 ```
 
 ## Flags
