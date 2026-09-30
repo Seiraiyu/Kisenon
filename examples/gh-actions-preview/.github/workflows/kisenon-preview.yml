@@ -1,0 +1,88 @@
+# Kisenon preview branch per pull request.
+#
+# Copy into your repo: this file -> .github/workflows/kisenon-preview.yml,
+# plus scripts/kisenon_preview.py. Then set:
+#   secret   KEON_API_KEY        project-scoped read_write key (Kisenon console → API keys)
+#   variable KISENON_PROJECT_ID  your Kisenon project id
+# Replace the "Run migrations" / "Run tests" steps with your own tools.
+name: kisenon-preview
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, closed]
+
+concurrency:
+  group: kisenon-preview-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  pull-requests: write
+
+env:
+  KEON_API_KEY: ${{ secrets.KEON_API_KEY }}
+  KISENON_PROJECT_ID: ${{ vars.KISENON_PROJECT_ID }}
+  PR_NUMBER: ${{ github.event.pull_request.number }}
+
+jobs:
+  preview:
+    if: github.event.action != 'closed'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install keon
+        run: |
+          curl -fsSL https://kisenon.com/install.sh | KEON_INSTALL_DIR="$HOME/.local/bin" sh
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Fork main as pr-${{ github.event.pull_request.number }}
+        id: up
+        run: python3 scripts/kisenon_preview.py up --pr "$PR_NUMBER"
+
+      - name: Run migrations
+        id: migrate
+        run: |
+          for f in db/migrations/*.sql; do
+            echo "applying $f"
+            psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -q -f "$f"
+          done
+
+      - name: Run tests
+        id: tests
+        run: psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -q -f db/test.sql
+
+      - name: Build PR comment
+        if: always() && steps.up.outcome == 'success'
+        run: >-
+          python3 scripts/kisenon_preview.py comment --pr "$PR_NUMBER"
+          --migrations "${{ steps.migrate.outcome }}"
+          --tests "${{ steps.tests.outcome }}"
+          --out kisenon-preview.md
+
+      - name: Post sticky PR comment
+        if: always() && steps.up.outcome == 'success'
+        uses: marocchino/sticky-pull-request-comment@v3
+        with:
+          header: kisenon-preview
+          path: kisenon-preview.md
+
+  cleanup:
+    if: github.event.action == 'closed'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install keon
+        run: |
+          curl -fsSL https://kisenon.com/install.sh | KEON_INSTALL_DIR="$HOME/.local/bin" sh
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Delete pr-${{ github.event.pull_request.number }}
+        run: python3 scripts/kisenon_preview.py down --pr "$PR_NUMBER"
+
+      - name: Update sticky PR comment
+        uses: marocchino/sticky-pull-request-comment@v3
+        with:
+          header: kisenon-preview
+          message: "Kisenon preview branch `pr-${{ github.event.pull_request.number }}` deleted (PR closed)."
