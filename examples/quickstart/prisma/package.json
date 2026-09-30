@@ -1,0 +1,20 @@
+{
+  "name": "kisenon-example-prisma",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "description": "Minimal Prisma 7 + @prisma/adapter-pg example talking to a Kisenon endpoint.",
+  "engines": { "node": ">=20.19" },
+  "scripts": {
+    "start": "prisma generate && tsx index.ts"
+  },
+  "dependencies": {
+    "@prisma/adapter-pg": "7.10.0",
+    "@prisma/client": "7.10.0"
+  },
+  "devDependencies": {
+    "prisma": "7.10.0",
+    "tsx": "^4.23.15"
+  }
+}
