@@ -1,0 +1,13 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.env
+.ruff_cache/
+dist/
+*.egg-info/
+jaffle/target/
+jaffle/logs/
+jaffle/dbt_packages/
+logs/
+jaffle/.user.yml
