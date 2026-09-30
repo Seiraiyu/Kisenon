@@ -1,0 +1,14 @@
+[project]
+name = "kisenon-example-django"
+version = "0.1.0"
+description = "Minimal single-file Django app with one view querying a Kisenon endpoint."
+requires-python = ">=3.12"
+license = { text = "MIT" }
+dependencies = [
+  "dj-database-url>=3.1",
+  "django>=6.1",
+  "psycopg[binary]>=3.3",
+]
+
+[tool.uv]
+package = false
