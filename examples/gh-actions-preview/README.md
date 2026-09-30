@@ -30,7 +30,7 @@ before it merges, and `main` is never written by CI.
 
 | Key | Where to get it | Required? | Without it |
 |---|---|---|---|
-| `KEON_API_KEY` (repo **secret**) | `keon api-keys create --scope project --capability read_write` (see Setup) | required | the fork step fails because `keon` is not authenticated; no comment is posted |
+| `KEON_API_KEY` (repo **secret**) | Kisenon console → Settings → API keys: project scope, capability `read_write` (see Setup) | required | the fork step fails because `keon` is not authenticated; no comment is posted |
 | `KISENON_PROJECT_ID` (repo **variable**) | `keon projects list -o json` | required | the fork step exits 2: `KISENON_PROJECT_ID is not set` |
 | `GITHUB_TOKEN` | provided by Actions | automatic | — |
 
@@ -47,9 +47,9 @@ cp -r path/to/examples/gh-actions-preview/{.github,scripts,db} .
 psql "$(keon connection-string main --project "$KISENON_PROJECT_ID")" \
   -v ON_ERROR_STOP=1 -f db/migrations/001_create_todos.sql
 
-# 3. Create a project-scoped key; the secret is printed once.
-keon api-keys create --name gh-preview --scope project \
-  --scope-id "$KISENON_PROJECT_ID" --capability read_write -o table
+# 3. In the Kisenon console (Settings → API keys), create a key scoped to
+#    this project with capability read_write; the secret is shown once.
+#    (`keon api-keys create` needs a browser session and fails from the CLI.)
 gh secret set KEON_API_KEY          # paste the nsk_... secret when prompted
 gh variable set KISENON_PROJECT_ID --body "$KISENON_PROJECT_ID"
 
@@ -60,6 +60,8 @@ git push
 ```
 
 ## Demo
+
+> The workflow has not yet been verified end to end in a GitHub repo; the script it calls is verified locally against Kisenon.
 
 Open a PR that adds a migration:
 

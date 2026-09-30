@@ -2,7 +2,7 @@
 #
 # Copy into your repo: this file -> .github/workflows/kisenon-preview.yml,
 # plus scripts/kisenon_preview.py. Then set:
-#   secret   KEON_API_KEY        project-scoped read_write key (keon api-keys create)
+#   secret   KEON_API_KEY        project-scoped read_write key (Kisenon console → API keys)
 #   variable KISENON_PROJECT_ID  your Kisenon project id
 # Replace the "Run migrations" / "Run tests" steps with your own tools.
 name: kisenon-preview
