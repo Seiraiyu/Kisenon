@@ -1,0 +1,27 @@
+{
+  "name": "kisenon-example-realtime-listen",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "description": "Postgres trigger -> pg_notify -> Node LISTEN -> WebSocket -> browser, on Kisenon.",
+  "engines": { "node": ">=20.12" },
+  "scripts": {
+    "start": "tsx src/server.ts",
+    "check": "tsx src/check.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "pg": "^8.23.0",
+    "ws": "^8.21.3"
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.6",
+    "@types/pg": "^8.23.1",
+    "@types/ws": "^8.18.1",
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.3",
+    "vitest": "^5.0.1"
+  }
+}

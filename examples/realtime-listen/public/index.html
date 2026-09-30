@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Live rows</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 760px; margin: 2rem auto; padding: 0 1rem; }
+    table { width: 100%; border-collapse: collapse; }
+    td, th { text-align: left; padding: .35rem .5rem; border-bottom: 1px solid #ddd; font-variant-numeric: tabular-nums; }
+    .INSERT { color: #1a7f37; } .UPDATE { color: #9a6700; } .DELETE { color: #cf222e; }
+  </style>
+</head>
+<body>
+  <h1>realtime_listen.items</h1>
+  <p id="status">connecting…</p>
+  <table>
+    <thead><tr><th>time</th><th>op</th><th>id</th><th>name</th><th>qty</th></tr></thead>
+    <tbody id="rows"></tbody>
+  </table>
+  <script>
+    const status = document.getElementById("status");
+    const rows = document.getElementById("rows");
+    const ws = new WebSocket(`ws://${location.host}`);
+    ws.onopen = () => { status.textContent = "live: change rows with psql and watch them appear"; };
+    ws.onclose = () => { status.textContent = "disconnected (restart the server and reload)"; };
+    ws.onmessage = (e) => {
+      const c = JSON.parse(e.data);
+      const tr = document.createElement("tr");
+      for (const v of [new Date().toLocaleTimeString(), c.op, c.row.id, c.row.name, c.row.qty]) {
+        const td = document.createElement("td");
+        td.textContent = String(v);
+        tr.appendChild(td);
+      }
+      tr.className = c.op;
+      rows.prepend(tr);
+    };
+  </script>
+</body>
+</html>
