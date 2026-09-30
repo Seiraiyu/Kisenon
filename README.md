@@ -225,6 +225,24 @@ Replay your whole Stripe event history through a changed webhook handler on a fo
 
 ➡ **[examples/stripe-webhook-replay](examples/stripe-webhook-replay)**
 
+#### Preview branch per pull request
+
+A copyable GitHub Actions workflow: each PR gets its own `pr-<n>` branch, migrations and tests run against it, one sticky comment reports results and the schema diff, and the branch is deleted when the PR closes.
+
+➡ **[examples/gh-actions-preview](examples/gh-actions-preview)**
+
+#### dbt CI on a fork
+
+`dbt build` your changed models on a fork of main, then compare row counts and columns for every model against main and fail on thresholds, before anything lands.
+
+➡ **[examples/dbt-branch-ci](examples/dbt-branch-ci)**
+
+#### Fixture branches for tests
+
+Build `fixture-empty`, `fixture-small` and `fixture-prodlike` branches once; a pytest plugin forks one per session and resets it after each test. `timing` shows where branches beat re-seeding for your data.
+
+➡ **[examples/seed-snapshots](examples/seed-snapshots)**
+
 ---
 
 ### App integrations
