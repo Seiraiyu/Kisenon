@@ -83,6 +83,24 @@ npm run dev     # http://localhost:3000
 Try: *"Which product category brought in the most revenue in the last 30 days?"* The UI
 shows each `query` call (SQL + rows) as it runs, then the answer.
 
+Without a browser (`npm run build && npm start`, then):
+
+```bash
+curl -sN localhost:3000/api/chat -H 'content-type: application/json' \
+  -d '{"messages":[{"id":"1","role":"user","parts":[{"type":"text","text":"How many orders are there?"}]}]}'
+```
+
+This streams UI-message events. Trimmed:
+
+```
+data: {"type":"tool-input-available","toolCallId":"toolu_…","toolName":"query","input":{"sql":"SELECT COUNT(*) FROM orders"},…}
+data: {"type":"tool-output-available","toolCallId":"toolu_…","output":{"rows":[{"count":"5000"}],"rowCount":1,"truncated":false},…}
+data: {"type":"text-delta","id":"0","delta":"er:** There are **5,"}
+data: {"type":"text-delta","id":"0","delta":"000** orders."}
+…
+data: [DONE]
+```
+
 ## How the guard works
 
 1. **Database role**: `ai_readonly` can only `SELECT` from `vercel_ai_sdk`. This is the real boundary.
@@ -92,9 +110,14 @@ shows each `query` call (SQL + rows) as it runs, then the answer.
 ## Clean up
 
 ```bash
-psql "$DATABASE_URL" -c "DROP SCHEMA vercel_ai_sdk CASCADE"
+psql "$DATABASE_URL" -c "DROP SCHEMA vercel_ai_sdk CASCADE" -c "REVOKE ALL ON SCHEMA public FROM ai_readonly"
 keon roles delete ai_readonly --branch "$MAIN_ID"
 ```
+
+Drop the grants first. If the role still holds privileges, `keon roles delete` reports
+`{"ok":true}`, but the Postgres role stays behind. Also, as of 2026-09, re-creating a role
+name that was deleted on the same branch fails with `mirror_error`, so pick a new name if
+you set this up again on the same branch.
 
 ## Limitations
 
